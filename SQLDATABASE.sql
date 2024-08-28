@@ -139,7 +139,7 @@ INSERT INTO Rate (MovieID, UserId, Content, Rating) VALUES
 (2, 3, 'A fun comedy with great moments.', 8.5),
 (3, 4, 'An unforgettable classic, highly recommend.', 9.7),
 (4, 1, 'Not as scary as expected, but still good.', 7.8),
-(5, 2, 'A mind-bending experience, worth watching.', 9.3);
+(5, 2, 'A mind-bending experience, worth watching.', 9.2);
 
 INSERT INTO Language (LanguageName, Subtitle) VALUES
 ('English', 1),
