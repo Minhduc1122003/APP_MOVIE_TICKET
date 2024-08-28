@@ -70,8 +70,31 @@ CREATE TABLE Favourite (
     FOREIGN KEY (UserId) REFERENCES Users(UserId)
 );
 
+CREATE TABLE Cinemas (
+    CinemaID INT PRIMARY KEY IDENTITY(1,1),  -- Mã rạp, tự động tăng
+    CinemaName NVARCHAR(100) NOT NULL,       -- Tên rạp
+    Address NVARCHAR(255) NOT NULL           -- Địa chỉ của rạp
+);
+ALTER TABLE Movies
+ADD CinemaID INT;
+
+ALTER TABLE Movies
+ADD CONSTRAINT FK_CinemaID FOREIGN KEY (CinemaID)
+REFERENCES Cinemas (CinemaID);
 
 
+INSERT INTO Cinemas (CinemaName, Address) VALUES
+('Cinema A', '123 Main St, City A'),
+('Cinema B', '456 Elm St, City B'),
+('Cinema C', '789 Oak St, City C'),
+('Cinema D', '101 Maple Ave, City D'),
+('Cinema E', '202 Pine Rd, City E');
+
+UPDATE Movies SET CinemaID = 1 WHERE MovieID = 1;  -- Ví dụ: "Avengers: Endgame" chiếu tại "Cinema A"
+UPDATE Movies SET CinemaID = 2 WHERE MovieID = 2;  -- "The Hangover" chiếu tại "Cinema B"
+UPDATE Movies SET CinemaID = 3 WHERE MovieID = 3;  -- "The Godfather" chiếu tại "Cinema C"
+UPDATE Movies SET CinemaID = 4 WHERE MovieID = 4;  -- "It" chiếu tại "Cinema D"
+UPDATE Movies SET CinemaID = 5 WHERE MovieID = 5;  -- "Inception" chiếu tại "Cinema E"
 
 INSERT INTO Genre (GenreName) VALUES
 ('Action'),
@@ -96,6 +119,13 @@ INSERT INTO MovieGenre (MovieID, IdGenre) VALUES
 (4, 4),
 (5, 5);
 
+INSERT INTO MovieGenre (MovieID, IdGenre) VALUES
+(1, 2),  -- Avengers: Endgame có thể loại Comedy
+(2, 3),  -- The Hangover có thể loại Drama
+(3, 4),  -- The Godfather có thể loại Horror
+(4, 5),  -- It có thể loại Sci-Fi
+(5, 1);  -- Inception có thể loại Action
+
 INSERT INTO Rate (MovieID, UserId, Content, Rating) VALUES
 (1, 1, 'Amazing movie! Must watch.', 9.5),
 (2, 2, 'Hilarious from start to finish.', 8.0),
@@ -103,6 +133,13 @@ INSERT INTO Rate (MovieID, UserId, Content, Rating) VALUES
 (4, 4, 'Scary and well-made.', 7.5),
 (5, 4, 'Mind-bending and thought-provoking.', 9.0);
 
+-- Cập nhật thêm người đánh giá
+INSERT INTO Rate (MovieID, UserId, Content, Rating) VALUES
+(1, 2, 'Epic conclusion to the Avengers series!', 9.0),
+(2, 3, 'A fun comedy with great moments.', 8.5),
+(3, 4, 'An unforgettable classic, highly recommend.', 9.7),
+(4, 1, 'Not as scary as expected, but still good.', 7.8),
+(5, 2, 'A mind-bending experience, worth watching.', 9.3);
 
 INSERT INTO Language (LanguageName, Subtitle) VALUES
 ('English', 1),
@@ -181,3 +218,37 @@ CREATE TABLE Messages (
     FOREIGN KEY (ReceiverId) REFERENCES Users(UserId) ON DELETE NO ACTION,
     FOREIGN KEY (ConversationId) REFERENCES Conversations(Id) ON DELETE CASCADE
 );
+
+SELECT 
+    m.MovieID,
+    m.Title,
+    m.Description,
+    m.Duration,
+    m.ReleaseDate,
+    m.PosterUrl,
+    m.TrailerUrl,
+    l.LanguageName,
+    STRING_AGG(g.GenreName, ', ') AS Genres, -- Kết hợp các thể loại thành một chuỗi
+    c.CinemaName,
+    c.Address AS CinemaAddress,
+    STRING_AGG(r.Content, ' | ') AS ReviewContents, -- Kết hợp các đánh giá thành một chuỗi
+    AVG(r.Rating) AS AverageRating, -- Tính điểm đánh giá trung bình
+    COUNT(r.IdRate) AS ReviewCount -- Đếm số lượng đánh giá
+FROM 
+    Movies m
+LEFT JOIN 
+    Language l ON m.IdLanguage = l.IdLanguage
+LEFT JOIN 
+    MovieGenre mg ON m.MovieID = mg.MovieID
+LEFT JOIN 
+    Genre g ON mg.IdGenre = g.IdGenre
+LEFT JOIN 
+    Cinemas c ON m.CinemaID = c.CinemaID
+LEFT JOIN 
+    Rate r ON m.MovieID = r.MovieID
+LEFT JOIN 
+    Users u ON r.UserId = u.UserId
+GROUP BY 
+    m.MovieID, m.Title, m.Description, m.Duration, m.ReleaseDate, 
+    m.PosterUrl, m.TrailerUrl, l.LanguageName, c.CinemaName, 
+    c.Address;
