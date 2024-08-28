@@ -146,7 +146,7 @@ INSERT INTO Language (LanguageName, Subtitle) VALUES
 ('French', 1),
 ('Spanish', 0),
 ('German', 1),
-('Japanese', 0);
+('Japanese', 1);
 
 
 INSERT INTO MovieLanguage (MovieID, IdLanguage) VALUES
