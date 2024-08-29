@@ -16,8 +16,12 @@ class ApiService {
   Future<void> _initBaseUrl() async {
     final info = NetworkInfo();
     // String? ip = await info.getWifiIP(); // 192.168.1.43
-    // wifi trọ:
-    baseUrl = 'http://192.168.1.12:8081';
+    // wifi trọ tuan anh:
+    // baseUrl = 'http://192.168.1.12:8081';
+
+    // wifi trọ của đức:
+    baseUrl = 'http://192.168.100.24:8081';
+
     // wifi cty
     // baseUrl = 'http://192.168.1.27:8081';
 
@@ -194,8 +198,14 @@ class ApiService {
 
     if (response.statusCode == 200) {
       // Nếu server trả về một response thành công
-      // Chuyển đổi JSON thành đối tượng MovieDetails
-      return MovieDetails.fromJson(jsonDecode(response.body)['movie']);
+      final Map<String, dynamic> jsonData = jsonDecode(response.body);
+      // Trích xuất phần movie
+      final Map<String, dynamic> movieData = jsonData['movie'];
+      final MovieDetails movieDetails = MovieDetails.fromJson(movieData);
+
+      print('Thông tin phim: $movieData');
+      print('đã nhận data : ${response.body}');
+      return movieDetails;
     } else {
       // Nếu server trả về một lỗi
       throw Exception('Failed to findByViewMovieID');
