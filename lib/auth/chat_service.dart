@@ -10,7 +10,7 @@ class ChatService {
   }
 
   Future<void> _initBaseUrl() async {
-    baseUrl = 'http://192.168.100.24:8081'; // Cập nhật URL nếu cần
+    baseUrl = 'http://192.168.1.12:8081'; // Cập nhật URL nếu cần
     print(baseUrl);
   }
 

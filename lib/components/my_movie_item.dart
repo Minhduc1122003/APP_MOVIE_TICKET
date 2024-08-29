@@ -4,6 +4,7 @@ import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/film_select_all/film_information.dart';
 
 class MyListViewCardItem extends StatelessWidget {
+  final int movieId;
   final String title;
   final String rating;
   final String ratingCount;
@@ -15,6 +16,7 @@ class MyListViewCardItem extends StatelessWidget {
 
   const MyListViewCardItem({
     Key? key,
+    required this.movieId,
     required this.title,
     required this.rating,
     required this.ratingCount,
@@ -130,10 +132,11 @@ class MyListViewCardItem extends StatelessWidget {
                               paddingText: 8.0,
                               fontsize: 14.0,
                               onTap: () {
+                                print("MovieId From my movie $movieId");
                                 Navigator.push(
                                   context,
                                   SlideFromRightPageRoute(
-                                      page: FilmInformation()),
+                                      page: FilmInformation(movieId: movieId)),
                                 );
                               },
                             ),

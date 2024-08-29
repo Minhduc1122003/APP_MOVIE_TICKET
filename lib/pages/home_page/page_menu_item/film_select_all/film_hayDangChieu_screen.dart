@@ -180,6 +180,7 @@ class _FilmHaydangchieuScreenState extends State<FilmHaydangchieuScreen> {
                               itemBuilder: (context, index) {
                                 final movie = movies[index];
                                 return MyListViewCardItem(
+                                  movieId: movie.movieId,
                                   title: movie.title,
                                   rating: movie.averageRating
                                       .toString(), // Chuyển đổi sang chuỗi nếu cần
