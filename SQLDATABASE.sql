@@ -90,11 +90,7 @@ INSERT INTO Cinemas (CinemaName, Address) VALUES
 ('Cinema D', '101 Maple Ave, City D'),
 ('Cinema E', '202 Pine Rd, City E');
 
-UPDATE Movies SET CinemaID = 1 WHERE MovieID = 1;  -- Ví dụ: "Avengers: Endgame" chiếu tại "Cinema A"
-UPDATE Movies SET CinemaID = 2 WHERE MovieID = 2;  -- "The Hangover" chiếu tại "Cinema B"
-UPDATE Movies SET CinemaID = 3 WHERE MovieID = 3;  -- "The Godfather" chiếu tại "Cinema C"
-UPDATE Movies SET CinemaID = 4 WHERE MovieID = 4;  -- "It" chiếu tại "Cinema D"
-UPDATE Movies SET CinemaID = 5 WHERE MovieID = 5;  -- "Inception" chiếu tại "Cinema E"
+
 
 INSERT INTO Genre (GenreName) VALUES
 ('Action'),
@@ -111,6 +107,11 @@ INSERT INTO Movies (Title, IdGenre, Description, Duration, ReleaseDate, PosterUr
 ('It', 4, 'A horror story about a killer clown.', 135, '2017-09-08', 'it.jpg', 'it_trailer.mp4', 4, 16),
 ('Inception', 5, 'A thief who enters people''s dreams.', 148, '2010-07-16', 'inception.jpg', 'inception_trailer.mp4', 1, 13);
 
+UPDATE Movies SET CinemaID = 1 WHERE MovieID = 1;  -- Ví dụ: "Avengers: Endgame" chiếu tại "Cinema A"
+UPDATE Movies SET CinemaID = 2 WHERE MovieID = 2;  -- "The Hangover" chiếu tại "Cinema B"
+UPDATE Movies SET CinemaID = 3 WHERE MovieID = 3;  -- "The Godfather" chiếu tại "Cinema C"
+UPDATE Movies SET CinemaID = 4 WHERE MovieID = 4;  -- "It" chiếu tại "Cinema D"
+UPDATE Movies SET CinemaID = 5 WHERE MovieID = 5;  -- "Inception" chiếu tại "Cinema E"
 
 INSERT INTO MovieGenre (MovieID, IdGenre) VALUES
 (1, 1),
@@ -125,21 +126,27 @@ INSERT INTO MovieGenre (MovieID, IdGenre) VALUES
 (3, 4),  -- The Godfather có thể loại Horror
 (4, 5),  -- It có thể loại Sci-Fi
 (5, 1);  -- Inception có thể loại Action
+INSERT INTO Users (UserName, Password, Email, FullName, PhoneNumber, Photo, Role)
+VALUES 
+('tuananh', '123', 'john.doe@example.com', 'John Doe', '1234567890', 'john_photo.jpg', 1),
+('jane_smith', 'securePass!', 'jane.smith@example.com', 'Jane Smith', '1234567890', 'jane_photo.jpg', 0),
+('mike_jones', 'mike123!', 'mike.jones@example.com', 'Mike Jones', '1234567890', 'mike_photo.jpg', 1),
+('lisa_brown', 'lisaSecure', 'lisa.brown@example.com', 'Lisa Brown', '1234567890', 'lisa_photo.jpg', 0),
+('tom_clark', 'tomPassword!', 'tom.clark@example.com', 'Tom Clark', '1234567890', 'tom_photo.jpg', 1);
+
 
 INSERT INTO Rate (MovieID, UserId, Content, Rating) VALUES
-(1, 1, 'Amazing movie! Must watch.', 9.5),
-(2, 2, 'Hilarious from start to finish.', 8.0),
 (3, 3, 'A masterpiece of storytelling.', 10.0),
 (4, 4, 'Scary and well-made.', 7.5),
 (5, 4, 'Mind-bending and thought-provoking.', 9.0);
 
+
 -- Cập nhật thêm người đánh giá
 INSERT INTO Rate (MovieID, UserId, Content, Rating) VALUES
-(1, 2, 'Epic conclusion to the Avengers series!', 9.0),
 (2, 3, 'A fun comedy with great moments.', 8.5),
 (3, 4, 'An unforgettable classic, highly recommend.', 9.7),
-(4, 1, 'Not as scary as expected, but still good.', 7.8),
-(5, 2, 'A mind-bending experience, worth watching.', 9.2);
+(4, 5, 'Not as scary as expected, but still good.', 7.8),
+(5, 6, 'A mind-bending experience, worth watching.', 9.2);
 
 INSERT INTO Language (LanguageName, Subtitle) VALUES
 ('English', 1),
@@ -158,8 +165,7 @@ INSERT INTO MovieLanguage (MovieID, IdLanguage) VALUES
 
 
 INSERT INTO Favourite (MovieID, UserId) VALUES
-(1, 1),
-(2, 2),
+
 (3, 3),
 (4, 4),
 (5, 5);
