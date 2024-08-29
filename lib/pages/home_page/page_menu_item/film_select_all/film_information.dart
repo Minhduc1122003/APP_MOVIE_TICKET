@@ -167,9 +167,9 @@ class MovieHeader extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: Colors.black,
-                          side: BorderSide(color: Colors.grey),
+                          side: const BorderSide(color: Colors.grey),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.movie, size: 16), // Icon 'Trailer'
