@@ -17,7 +17,7 @@ class ApiService {
     final info = NetworkInfo();
     // String? ip = await info.getWifiIP(); // 192.168.1.43
     // wifi trọ:
-    baseUrl = 'http://192.168.100.24:8081';
+    baseUrl = 'http://192.168.1.12:8081';
     // wifi cty
     // baseUrl = 'http://192.168.1.27:8081';
 
@@ -175,6 +175,30 @@ class ApiService {
     } catch (e) {
       print('Error: $e');
       throw Exception('Failed to get conversations');
+    }
+  }
+
+  Future<MovieDetails> findByViewMovieID(int movieId) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    //final String movieIdString = movieId.toString();
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/findByViewMovieID'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'movieId': "1", // hoặc giá trị động tùy theo ngữ cảnh
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Nếu server trả về một response thành công
+      // Chuyển đổi JSON thành đối tượng MovieDetails
+      return MovieDetails.fromJson(jsonDecode(response.body)['movie']);
+    } else {
+      // Nếu server trả về một lỗi
+      throw Exception('Failed to findByViewMovieID');
     }
   }
 }

@@ -1,20 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
+import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 class FilmInformation extends StatefulWidget {
-  const FilmInformation({super.key});
+  final int movieId;
+  const FilmInformation({super.key, required this.movieId});
 
   @override
   State<FilmInformation> createState() => _FilmInformationState();
 }
 
 class _FilmInformationState extends State<FilmInformation> {
+  late Future<MovieDetails> _moviesFuture; // Biến để lưu trữ dữ liệu phim
+  late ApiService _APIService;
+  @override
+  void initState() {
+    super.initState();
+
+    _APIService = ApiService(); // Khởi tạo ChatService
+
+    _moviesFuture = _APIService.findByViewMovieID(widget.movieId);
+
+    // Thực hiện các thao tác khởi tạo khác ở đây
+    print('Movie ID: ${widget.movieId}');
+  }
+
   @override
   Widget build(BuildContext context) {
     double statusBarHeight = MediaQuery.of(context).padding.top;
+    print("_moviesFuture : $_moviesFuture");
 
     return Scaffold(
       backgroundColor: Colors.white,
