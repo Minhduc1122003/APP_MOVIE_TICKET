@@ -12,8 +12,8 @@ class MovieDetails {
   final String genres;
   final String cinemaName;
   final String cinemaAddress;
-  final String reviewContents;
-  final double averageRating;
+  final String? reviewContents; // Cho phép null
+  final double? averageRating; // Cho phép null
   final int reviewCount;
 
   MovieDetails({
@@ -28,8 +28,8 @@ class MovieDetails {
     required this.genres,
     required this.cinemaName,
     required this.cinemaAddress,
-    required this.reviewContents,
-    required this.averageRating,
+    this.reviewContents, // Không required, có thể null
+    this.averageRating, // Không required, có thể null
     required this.reviewCount,
   });
 
@@ -47,8 +47,10 @@ class MovieDetails {
       genres: json['Genres'],
       cinemaName: json['CinemaName'],
       cinemaAddress: json['CinemaAddress'],
-      reviewContents: json['ReviewContents'],
-      averageRating: json['AverageRating'].toDouble(),
+      reviewContents: json['ReviewContents'], // Có thể null
+      averageRating: json['AverageRating'] != null
+          ? json['AverageRating'].toDouble()
+          : null, // Có thể null
       reviewCount: json['ReviewCount'],
     );
   }
@@ -67,8 +69,8 @@ class MovieDetails {
       'Genres': genres,
       'CinemaName': cinemaName,
       'CinemaAddress': cinemaAddress,
-      'ReviewContents': reviewContents,
-      'AverageRating': averageRating,
+      'ReviewContents': reviewContents, // Có thể null
+      'AverageRating': averageRating, // Có thể null
       'ReviewCount': reviewCount,
     };
   }
