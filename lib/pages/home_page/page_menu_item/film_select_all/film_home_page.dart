@@ -579,7 +579,7 @@ class _FilmCarouselState extends State<FilmCarousel> {
                               top: 10,
                               left: 10,
                               child: Container(
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: Color(0XFFffd700),
@@ -587,7 +587,7 @@ class _FilmCarouselState extends State<FilmCarousel> {
                                 ),
                                 child: Text(
                                   'TOP ${filmIndex + 1}',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,

@@ -96,7 +96,7 @@ class _FilmHaydangchieuScreenState extends State<FilmHaydangchieuScreen> {
         },
         child: Stack(
           children: [
-            Positioned.fill(
+            const Positioned.fill(
               child: ColorFiltered(
                 colorFilter: ColorFilter.mode(
                   Colors.white,
@@ -117,7 +117,7 @@ class _FilmHaydangchieuScreenState extends State<FilmHaydangchieuScreen> {
                       onTap: () {
                         Navigator.of(context).pop();
                       },
-                      child: Row(
+                      child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
@@ -236,7 +236,7 @@ class SearchBarWithIcon extends StatelessWidget {
                 ),
               ],
             ),
-            child: Row(
+            child: const Row(
               children: [
                 Icon(Icons.search, color: Colors.grey),
                 SizedBox(width: 10),
