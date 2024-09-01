@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
-import 'package:flutter_app_chat/pages/home_page/page_menu_item/film_select_all/film_information.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/film_select_all/fim_info/film_information.dart';
 
 class MyListViewCardItem extends StatelessWidget {
   final int movieId;
@@ -55,7 +55,7 @@ class MyListViewCardItem extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.asset(
-                        imageUrl,
+                        'assets/images/$imageUrl',
                         width: 80,
                         height: 120,
                         fit: BoxFit.cover,

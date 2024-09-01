@@ -16,7 +16,7 @@ class FilmHaydangchieuScreen extends StatefulWidget {
 }
 
 class _FilmHaydangchieuScreenState extends State<FilmHaydangchieuScreen> {
-  late Future<List<MovieDetails>> _moviesFuture; // Biến để lưu trữ dữ liệu phim
+  late Future<List<MovieDetails>> _moviesFuture;
   late ApiService _APIService;
 
   @override
@@ -27,56 +27,6 @@ class _FilmHaydangchieuScreenState extends State<FilmHaydangchieuScreen> {
     // Gọi hàm getAllMovies và lưu trữ kết quả vào biến _moviesFuture
     _moviesFuture = _APIService.getAllMovies();
   }
-
-  // Mẫu danh sách phim
-  // final List<Map<String, String>> movies = [
-  //   {
-  //     "title": "Shin cậu bé bút chì: Nhật ký khủng long của chúng mình",
-  //     "rating": "9.2/10 (87 đánh giá)",
-  //     "genre": "Hài, Hoạt hình, Phiêu lưu, Gia đình",
-  //     "cinema": "PANTHERS Tô Ký",
-  //     "duration": "97p",
-  //     "releaseDate": "23/08/2024",
-  //     "imageUrl": "assets/images/postermada.jpg",
-  //   },
-  //   {
-  //     "title": "MA DA",
-  //     "rating": "9.2/10 (87 đánh giá)",
-  //     "genre": "Kinh dị",
-  //     "cinema": "PANTHERS Tô Ký",
-  //     "duration": "95p",
-  //     "releaseDate": "16/08/2024",
-  //     "imageUrl": "assets/images/postermada.jpg",
-  //   },
-  //   {
-  //     "title": "MA DA",
-  //     "rating": "9.2/10 (87 đánh giá)",
-  //     "genre": "Kinh dị",
-  //     "cinema": "PANTHERS Tô Ký",
-  //     "duration": "95p",
-  //     "releaseDate": "16/08/2024",
-  //     "imageUrl": "assets/images/postermada.jpg",
-  //   },
-  //   {
-  //     "title": "MA DA",
-  //     "rating": "9.2/10 (87 đánh giá)",
-  //     "genre": "Kinh dị",
-  //     "cinema": "PANTHERS Tô Ký",
-  //     "duration": "95p",
-  //     "releaseDate": "16/08/2024",
-  //     "imageUrl": "assets/images/postermada.jpg",
-  //   },
-  //   {
-  //     "title": "MA DA",
-  //     "rating": "9.2/10 (87 đánh giá)",
-  //     "genre": "Kinh dị",
-  //     "cinema": "PANTHERS Tô Ký",
-  //     "duration": "95p",
-  //     "releaseDate": "16/08/2024",
-  //     "imageUrl": "assets/images/postermada.jpg",
-  //   },
-  //   // Thêm các phim khác vào danh sách movies
-  // ];
 
   @override
   Widget build(BuildContext context) {

@@ -149,6 +149,38 @@ class ApiService {
     }
   }
 
+  Future<MovieDetails?> findByViewMovieID(int movieId) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/findByViewMovieID'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, int>{
+          'movieId': movieId, // Sử dụng giá trị movieId động
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // Nếu server trả về một response thành công
+        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        if (jsonResponse.containsKey('movie')) {
+          return MovieDetails.fromJson(jsonResponse['movie']);
+        } else {
+          print('Movie not found');
+          return null;
+        }
+      } else {
+        print('Failed to load movie. Status code: ${response.statusCode}');
+        return null;
+      }
+    } catch (error) {
+      print('Error occurred: $error');
+      return null;
+    }
+  }
+
   // --------------------------------- SOCKET IO --------------------------
   Future<List<ChatItem>> getConversations(int userId) async {
     await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
@@ -179,36 +211,6 @@ class ApiService {
     } catch (e) {
       print('Error: $e');
       throw Exception('Failed to get conversations');
-    }
-  }
-
-  Future<MovieDetails> findByViewMovieID(int movieId) async {
-    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
-    //final String movieIdString = movieId.toString();
-
-    final response = await http.post(
-      Uri.parse('$baseUrl/findByViewMovieID'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'movieId': "1", // hoặc giá trị động tùy theo ngữ cảnh
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      // Nếu server trả về một response thành công
-      final Map<String, dynamic> jsonData = jsonDecode(response.body);
-      // Trích xuất phần movie
-      final Map<String, dynamic> movieData = jsonData['movie'];
-      final MovieDetails movieDetails = MovieDetails.fromJson(movieData);
-
-      print('Thông tin phim: $movieData');
-      print('đã nhận data : ${response.body}');
-      return movieDetails;
-    } else {
-      // Nếu server trả về một lỗi
-      throw Exception('Failed to findByViewMovieID');
     }
   }
 }

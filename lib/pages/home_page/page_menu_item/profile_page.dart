@@ -22,7 +22,6 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePage extends State<ProfilePage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
-  String codeIs = "1"; // Khai báo biến để lưu mã code
   ValueNotifier<bool> isCodeNotifier =
       ValueNotifier(false); // Khai báo ValueNotifier
   late ChatService _chatService;
@@ -33,21 +32,13 @@ class _ProfilePage extends State<ProfilePage> {
     _chatService = ChatService(); // Khởi tạo ChatService
 
     // Lắng nghe sự thay đổi của _codeController
-    _codeController.addListener(_checkCode);
   }
 
   @override
   void dispose() {
-    _codeController.removeListener(_checkCode);
     _codeController.dispose();
     isCodeNotifier.dispose();
     super.dispose();
-  }
-
-  void _checkCode() {
-    print('_codeController đã thay đổi: ${_codeController.text}');
-    isCodeNotifier.value = (_codeController.text == codeIs) ? true : false;
-    print('value đã thay đổi: ${isCodeNotifier.value}');
   }
 
   @override
@@ -66,10 +57,7 @@ class _ProfilePage extends State<ProfilePage> {
             EasyLoading.show(status: 'Loading...');
           } else if (state is SendCodeSuccess) {
             final codeIS = state.code;
-            setState(() {
-              codeIs = codeIS!; // Gán giá trị của mã code cho biến codeIs
-              _checkCode(); // Cập nhật giá trị isCodeNotifier
-            });
+            setState(() {});
             EasyLoading.showSuccess(
                 "Đã gửi mã đến địa chỉ ${_emailController?.text}!");
             print('Mã code: $codeIS');

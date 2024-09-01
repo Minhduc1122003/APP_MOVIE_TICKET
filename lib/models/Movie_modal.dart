@@ -9,12 +9,14 @@ class MovieDetails {
   final String posterUrl;
   final String trailerUrl;
   final String languageName;
+  final bool subTitle;
   final String genres;
   final String cinemaName;
   final String cinemaAddress;
-  final String? reviewContents; // Cho phép null
-  final double? averageRating; // Cho phép null
+  final String? reviewContents; // Có thể null
+  final double? averageRating; // Có thể null
   final int reviewCount;
+  final int age;
 
   MovieDetails({
     required this.movieId,
@@ -25,12 +27,14 @@ class MovieDetails {
     required this.posterUrl,
     required this.trailerUrl,
     required this.languageName,
+    required this.subTitle,
     required this.genres,
     required this.cinemaName,
     required this.cinemaAddress,
-    this.reviewContents, // Không required, có thể null
-    this.averageRating, // Không required, có thể null
+    this.reviewContents, // Có thể null
+    this.averageRating, // Có thể null
     required this.reviewCount,
+    required this.age,
   });
 
   // Hàm khởi tạo từ JSON
@@ -43,13 +47,15 @@ class MovieDetails {
       releaseDate: DateTime.parse(json['ReleaseDate']),
       posterUrl: json['PosterUrl'],
       trailerUrl: json['TrailerUrl'],
+      age: json['Age'],
       languageName: json['LanguageName'],
+      subTitle: json['Subtitle'],
       genres: json['Genres'],
       cinemaName: json['CinemaName'],
       cinemaAddress: json['CinemaAddress'],
       reviewContents: json['ReviewContents'], // Có thể null
       averageRating: json['AverageRating'] != null
-          ? json['AverageRating'].toDouble()
+          ? (json['AverageRating'] as num).toDouble()
           : null, // Có thể null
       reviewCount: json['ReviewCount'],
     );
@@ -62,10 +68,13 @@ class MovieDetails {
       'Title': title,
       'Description': description,
       'Duration': duration,
-      'ReleaseDate': DateFormat('dd/MM/yyyy').format(releaseDate),
+      'ReleaseDate':
+          formatDate(releaseDate.toIso8601String()), // Sử dụng hàm formatDate
       'PosterUrl': posterUrl,
       'TrailerUrl': trailerUrl,
+      'Age': age,
       'LanguageName': languageName,
+      'Subtitle': subTitle,
       'Genres': genres,
       'CinemaName': cinemaName,
       'CinemaAddress': cinemaAddress,
@@ -73,5 +82,18 @@ class MovieDetails {
       'AverageRating': averageRating, // Có thể null
       'ReviewCount': reviewCount,
     };
+  }
+
+  // Hàm helper để định dạng ngày tháng
+  String formatDate(String dateString) {
+    try {
+      // Phân tích chuỗi ngày tháng từ định dạng ISO 8601
+      DateTime date = DateTime.parse(dateString);
+      // Định dạng ngày tháng theo định dạng 'dd/MM/yyyy'
+      return DateFormat('dd/MM/yyyy').format(date);
+    } catch (e) {
+      // Nếu có lỗi trong phân tích chuỗi, trả về chuỗi rỗng hoặc thông báo lỗi
+      return 'Ngày không hợp lệ';
+    }
   }
 }
