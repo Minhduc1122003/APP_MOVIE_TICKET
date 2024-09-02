@@ -10,9 +10,10 @@ sealed class FilmInfoBlocEvent extends Equatable {
 class LoadData extends FilmInfoBlocEvent {
   final MovieDetails? movieDetails;
 
-  const LoadData(
-    this.movieDetails,
-  );
+  const LoadData(this.movieDetails);
+
+  @override
+  List<Object?> get prop => [movieDetails];
 }
 
 class ClickFavourite extends FilmInfoBlocEvent {

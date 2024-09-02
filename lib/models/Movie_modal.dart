@@ -18,6 +18,11 @@ class MovieDetails {
   final int reviewCount;
   final int age;
   final bool? favourite; // Không sử dụng late
+  final int rating9_10;
+  final int rating7_8;
+  final int rating5_6;
+  final int rating3_4;
+  final int rating1_2;
 
   MovieDetails({
     required this.movieId,
@@ -37,8 +42,12 @@ class MovieDetails {
     required this.reviewCount,
     required this.age,
     this.favourite,
+    required this.rating9_10,
+    required this.rating7_8,
+    required this.rating5_6,
+    required this.rating3_4,
+    required this.rating1_2,
   });
-
   // Hàm khởi tạo từ JSON
   factory MovieDetails.fromJson(Map<String, dynamic> json) {
     final DateFormat formatter = DateFormat('dd/MM/yyyy');
@@ -65,12 +74,17 @@ class MovieDetails {
           : null, // Có thể null
       reviewCount: json['ReviewCount'],
       favourite: json['IsFavourite'],
+      rating9_10: json['Rating_9_10'] ?? 0,
+      rating7_8: json['Rating_7_8'] ?? 0,
+      rating5_6: json['Rating_5_6'] ?? 0,
+      rating3_4: json['Rating_3_4'] ?? 0,
+      rating1_2: json['Rating_1_2'] ?? 0,
     );
   }
 
   // Hàm chuyển đổi thành JSON
   Map<String, dynamic> toJson() {
-    final DateFormat formatter = DateFormat('dd/MM/yyyy');
+    final DateFormat formatter = DateFormat('yyyy-MM-ddTHH:mm:ss.SSSZ');
     return {
       'MovieID': movieId,
       'Title': title,
@@ -89,10 +103,14 @@ class MovieDetails {
       'AverageRating': averageRating, // Có thể null
       'ReviewCount': reviewCount,
       'IsFavourite': favourite,
+      'Rating_9_10': rating9_10,
+      'Rating_7_8': rating7_8,
+      'Rating_5_6': rating5_6,
+      'Rating_3_4': rating3_4,
+      'Rating_1_2': rating1_2,
     };
   }
 
-  // Hàm copyWith để sao chép đối tượng với giá trị thay đổi
   MovieDetails copyWith({
     int? movieId,
     String? title,
@@ -111,6 +129,11 @@ class MovieDetails {
     int? reviewCount,
     int? age,
     bool? favourite,
+    int? rating9_10,
+    int? rating7_8,
+    int? rating5_6,
+    int? rating3_4,
+    int? rating1_2,
   }) {
     return MovieDetails(
       movieId: movieId ?? this.movieId,
@@ -130,6 +153,11 @@ class MovieDetails {
       reviewCount: reviewCount ?? this.reviewCount,
       age: age ?? this.age,
       favourite: favourite ?? this.favourite,
+      rating9_10: rating9_10 ?? this.rating9_10,
+      rating7_8: rating7_8 ?? this.rating7_8,
+      rating5_6: rating5_6 ?? this.rating5_6,
+      rating3_4: rating3_4 ?? this.rating3_4,
+      rating1_2: rating1_2 ?? this.rating1_2,
     );
   }
 }

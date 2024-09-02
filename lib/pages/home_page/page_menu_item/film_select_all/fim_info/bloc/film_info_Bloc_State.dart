@@ -2,16 +2,28 @@ part of 'film_info_Bloc.dart';
 
 class FilmInfoBlocState extends Equatable {
   final MovieDetails? movieDetails;
+  final bool favouriteLoading;
 
   const FilmInfoBlocState({
     this.movieDetails,
+    this.favouriteLoading = false,
   });
 
+  FilmInfoBlocState copyWith({
+    MovieDetails? movieDetails,
+    bool? favouriteLoading,
+  }) {
+    return FilmInfoBlocState(
+      movieDetails: movieDetails ?? this.movieDetails,
+      favouriteLoading: favouriteLoading ?? this.favouriteLoading,
+    );
+  }
+
   @override
-  List<Object?> get props => [movieDetails];
+  List<Object?> get props => [movieDetails, favouriteLoading];
 }
 
-class FilmFavouriteInittial extends FilmInfoBlocState {}
+class FilmFavouriteInitial extends FilmInfoBlocState {}
 
 class FilmFavouriteLoading extends FilmInfoBlocState {}
 

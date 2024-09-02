@@ -1,10 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
+import 'package:flutter_app_chat/components/animation_page.dart';
+import 'package:flutter_app_chat/components/content_film_infomation.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/film_select_all/fim_info/bloc/film_info_Bloc.dart';
+import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -18,7 +21,8 @@ class FilmInformation extends StatefulWidget {
   State<FilmInformation> createState() => _FilmInformationState();
 }
 
-class _FilmInformationState extends State<FilmInformation> {
+class _FilmInformationState extends State<FilmInformation>
+    with AutomaticKeepAliveClientMixin<FilmInformation> {
   late ApiService _APIService;
 
   @override
@@ -29,12 +33,12 @@ class _FilmInformationState extends State<FilmInformation> {
 
   Future<MovieDetails?> _loadMovieDetails() async {
     return await _APIService.findByViewMovieID(
-        widget.movieId, UserManager.instance.user!.userId ?? 0);
+        widget.movieId, UserManager.instance.user?.userId ?? 0);
   }
 
   @override
   Widget build(BuildContext context) {
-    double statusBarHeight = MediaQuery.of(context).padding.top;
+    super.build(context); // Quan trọng cho AutomaticKeepAliveClientMixin
     return FutureBuilder<MovieDetails?>(
       future: _loadMovieDetails(),
       builder: (context, snapshot) {
@@ -44,7 +48,6 @@ class _FilmInformationState extends State<FilmInformation> {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else if (snapshot.hasData) {
           final movie = snapshot.data;
-          print('Movie loaded: ${movie?.title}');
           return BlocProvider(
             create: (context) => FilmInfoBloc()..add(LoadData(movie)),
             child: Scaffold(
@@ -69,8 +72,6 @@ class _FilmInformationState extends State<FilmInformation> {
               backgroundColor: Colors.white,
               body: Stack(
                 children: [
-                  // Top Navigation Bar
-                  // Main Content
                   Positioned.fill(
                     child: Padding(
                       padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
@@ -89,7 +90,6 @@ class _FilmInformationState extends State<FilmInformation> {
                       ),
                     ),
                   ),
-                  // Buy Ticket Button at the bottom
                   Positioned(
                     bottom: 0,
                     left: 0,
@@ -106,6 +106,9 @@ class _FilmInformationState extends State<FilmInformation> {
       },
     );
   }
+
+  @override
+  bool get wantKeepAlive => true; // Giữ trạng thái của trang
 }
 
 class MovieHeader extends StatelessWidget {
@@ -113,157 +116,237 @@ class MovieHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius:
-                BorderRadius.circular(15), // Bo góc cho viền và hình ảnh
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                border: Border.all(
-                    color: Colors.black, width: 10), // Viền cho hình ảnh
-                borderRadius: BorderRadius.circular(15), // Bo góc cho viền
-              ),
-              child: Image.asset(
-                context.read<FilmInfoBloc>().state.movieDetails?.posterUrl ??
-                    'assets/images/default_poster.png', // Thêm fallback cho URL poster
-                width: 130,
-                height: 200,
-                fit: BoxFit.cover, // Điều chỉnh ảnh cho phù hợp với khung
-              ),
-            ),
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  context.read<FilmInfoBloc>().state.movieDetails?.title ??
-                      'Title Not Available', // Thêm fallback cho title
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  context.read<FilmInfoBloc>().state.movieDetails?.genres ??
-                      'Genres Not Available', // Thêm fallback cho genres
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
-                ),
-                SizedBox(height: 8),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      child: BlocBuilder<FilmInfoBloc, FilmInfoBlocState>(
+        builder: (context, state) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius:
+                    BorderRadius.circular(15), // Bo góc cho viền và hình ảnh
+                child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: Colors.orange,
-                    borderRadius: BorderRadius.all(Radius.circular(4)),
+                    border: Border.all(
+                        color: Colors.black, width: 10), // Viền cho hình ảnh
+                    borderRadius: BorderRadius.circular(15), // Bo góc cho viền
                   ),
-                  child: Text(
-                    '${context.read<FilmInfoBloc>().state.movieDetails?.age ?? 'N/A'}+',
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  child: Image.asset(
+                    'assets/images/${state.movieDetails?.posterUrl}',
+                    // Thêm fallback cho URL poster
+                    width: 130,
+                    height: 200,
+                    fit: BoxFit.cover, // Điều chỉnh ảnh cho phù hợp với khung
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
-                  'Phim được phổ biến đến người xem từ đủ ${context.read<FilmInfoBloc>().state.movieDetails?.age ?? 'N/A'} tuổi trở lên',
-                  style: TextStyle(fontSize: 12),
-                ),
-                SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Center(
-                        child: FavouriteButton(),
+                    Text(
+                      '${state.movieDetails?.title}',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      '${state.movieDetails?.genres} ',
+                      style: TextStyle(color: Colors.grey, fontSize: 14),
+                    ),
+                    SizedBox(height: 8),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.all(Radius.circular(4)),
+                      ),
+                      child: Text(
+                        '${state.movieDetails?.age}+',
+                        style: TextStyle(color: Colors.white, fontSize: 12),
                       ),
                     ),
-                    SizedBox(width: 8), // Khoảng cách giữa 2 nút
-                    Expanded(
-                      child: Center(
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.black,
-                            side: const BorderSide(color: Colors.grey),
-                            padding: const EdgeInsets.only(
-                                top: 0, left: 5, right: 5, bottom: 0),
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.movie, size: 14),
-                              SizedBox(width: 3),
-                              Text(
-                                'Trailer',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Phim được phổ biến đến người xem từ đủ ${state.movieDetails?.age} tuổi trở lên',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Center(
+                            child: ElevatedButton(
+                              onPressed: state.favouriteLoading
+                                  ? null
+                                  : () {
+                                      if (UserManager.instance.user?.userId ==
+                                          null) {
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              title: const Text(
+                                                  'Bạn chưa đăng nhập!'),
+                                              content: RichText(
+                                                text: TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'Bạn cần ',
+                                                      style:
+                                                          DefaultTextStyle.of(
+                                                                  context)
+                                                              .style,
+                                                    ),
+                                                    TextSpan(
+                                                      text: 'đăng nhập',
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color:
+                                                            Color(0XFF6F3CD7),
+                                                      ),
+                                                    ),
+                                                    TextSpan(
+                                                      text:
+                                                          ' để sử dụng tính năng này, bạn có muốn đăng nhập?',
+                                                      style:
+                                                          DefaultTextStyle.of(
+                                                                  context)
+                                                              .style,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              actions: <Widget>[
+                                                TextButton(
+                                                  onPressed: () {
+                                                    // Hành động khi người dùng nhấn "Không"
+
+                                                    Navigator.of(context)
+                                                        .pop(); // Đóng hộp thoại
+                                                  },
+                                                  child: const Text(
+                                                    'Hủy',
+                                                    style: TextStyle(
+                                                        color: Colors.black),
+                                                  ),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () async {
+                                                    EasyLoading.show();
+                                                    await Future.delayed(
+                                                        const Duration(
+                                                            milliseconds: 200));
+                                                    EasyLoading.dismiss();
+                                                    Navigator.of(context).pop();
+                                                    Navigator.push(
+                                                        context,
+                                                        SlideFromLeftPageRoute(
+                                                            page: LoginPage()));
+                                                  },
+                                                  child: const Text(
+                                                    'Đăng Nhập',
+                                                    style: TextStyle(
+                                                        color: Color(
+                                                          0XFF6F3CD7,
+                                                        ),
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                      } else {
+                                        context.read<FilmInfoBloc>().add(
+                                            ClickFavourite(
+                                                state.movieDetails,
+                                                state.movieDetails!.movieId,
+                                                UserManager
+                                                    .instance.user!.userId));
+                                      }
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: Colors.black,
+                                side: const BorderSide(color: Colors.grey),
+                                padding: const EdgeInsets.only(
+                                    top: 0, left: 5, right: 5, bottom: 0),
                               ),
-                            ],
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    state.movieDetails?.favourite == true
+                                        ? Icons.favorite_outlined
+                                        : Icons.favorite_border_sharp,
+                                    size: 14,
+                                    color: state.movieDetails?.favourite == true
+                                        ? Color(0XFF6F3CD7)
+                                        : Colors.black,
+                                  ),
+                                  const SizedBox(
+                                    width: 3, // Khoảng cách giữa icon và text
+                                  ),
+                                  Text(
+                                    state.movieDetails?.favourite == true
+                                        ? 'Đã thích'
+                                        : 'Thích',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                      color:
+                                          state.movieDetails?.favourite == true
+                                              ? Color(0XFF6F3CD7)
+                                              : Colors.black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        SizedBox(width: 8), // Khoảng cách giữa 2 nút
+                        Expanded(
+                          child: Center(
+                            child: ElevatedButton(
+                              onPressed: () {},
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: Colors.black,
+                                side: const BorderSide(color: Colors.grey),
+                                padding: const EdgeInsets.only(
+                                    top: 0, left: 5, right: 5, bottom: 0),
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.movie, size: 14),
+                                  SizedBox(width: 3),
+                                  Text(
+                                    'Trailer',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class FavouriteButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<FilmInfoBloc, FilmInfoBlocState>(
-      builder: (context, state) {
-        return ElevatedButton(
-          onPressed: () {
-            context.read<FilmInfoBloc>().add(ClickFavourite(
-                state.movieDetails,
-                state.movieDetails!.movieId,
-                UserManager.instance.user!.userId));
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
-            side: const BorderSide(color: Colors.grey),
-            padding:
-                const EdgeInsets.only(top: 0, left: 5, right: 5, bottom: 0),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                state.movieDetails?.favourite == true
-                    ? Icons.favorite_outlined
-                    : Icons.favorite_border_sharp,
-                size: 14,
-                color: state.movieDetails?.favourite == true
-                    ? Color(0XFF6F3CD7)
-                    : Colors.black,
-              ),
-              const SizedBox(
-                width: 3, // Khoảng cách giữa icon và text
-              ),
-              Text(
-                state.movieDetails?.favourite == true ? 'Đã thích' : 'Thích',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                  color: state.movieDetails?.favourite == true
-                      ? Color(0XFF6F3CD7)
-                      : Colors.black,
-                ),
               ),
             ],
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
@@ -338,81 +421,106 @@ class RatingSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Card(
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Row(
-                children: [
-                  // Phần tử chiếm 40% chiều rộng
-                  const Expanded(
-                    flex: 4,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+      child: BlocBuilder<FilmInfoBloc, FilmInfoBlocState>(
+        builder: (context, state) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Card(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 10, 10, 10),
+                  child: Row(
+                    children: [
+                      // Phần tử chiếm 40% chiều rộng
+                      Expanded(
+                        flex: 4,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Icon(Icons.star, color: Colors.orange, size: 30),
-                            Text('7',
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.star,
+                                    color: Colors.orange, size: 30),
+                                Text('${state.movieDetails?.averageRating}',
+                                    style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.orange)),
+                                Text(' /10',
+                                    style: TextStyle(
+                                        color: Colors.black, fontSize: 16)),
+                              ],
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                                '(${state.movieDetails?.reviewCount} đánh giá)',
                                 style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black)),
-                            Text('/10',
-                                style: TextStyle(
-                                    color: Colors.black, fontSize: 16)),
+                                    color: Colors.black, fontSize: 12)),
                           ],
                         ),
-                        SizedBox(height: 8),
-                        Text('(3 đánh giá)',
-                            style:
-                                TextStyle(color: Colors.black, fontSize: 12)),
-                      ],
-                    ),
+                      ),
+                      // Phần tử chiếm 60% chiều rộng
+                      Expanded(
+                        flex: 6,
+                        child:
+                            _buildRatingBar(), // Thay thế bằng widget của bạn
+                      ),
+                    ],
                   ),
-                  // Phần tử chiếm 60% chiều rộng
-                  Expanded(
-                    flex: 6,
-                    child: _buildRatingBar(), // Thay thế bằng widget của bạn
-                  ),
-                ],
-              ),
-            ),
-          )
-        ],
+                ),
+              )
+            ],
+          );
+        },
       ),
     );
   }
 
   Widget _buildRatingBar() {
-    return Column(
-      children: [
-        _buildRatingRow('9-10', 0),
-        _buildRatingRow('7-8', 0),
-        _buildRatingRow('5-6', 0),
-        _buildRatingRow('3-4', 0),
-        _buildRatingRow('1-2', 1),
-      ],
+    return BlocBuilder<FilmInfoBloc, FilmInfoBlocState>(
+      builder: (context, state) {
+        final movieDetails = state.movieDetails;
+        if (movieDetails == null) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        int totalReviews = movieDetails.reviewCount;
+        if (totalReviews == 0) {
+          // Handle the case where there are no reviews
+          return Center(child: Text('No reviews yet.'));
+        }
+
+        return Column(
+          children: [
+            _buildRatingRow('9-10', movieDetails.rating9_10, totalReviews),
+            _buildRatingRow('7-8', movieDetails.rating7_8, totalReviews),
+            _buildRatingRow('5-6', movieDetails.rating5_6, totalReviews),
+            _buildRatingRow('3-4', movieDetails.rating3_4, totalReviews),
+            _buildRatingRow('1-2', movieDetails.rating1_2, totalReviews),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildRatingRow(String label, int value) {
+  Widget _buildRatingRow(String label, int count, int totalReviews) {
+    double percentage = totalReviews > 0 ? count / totalReviews : 0;
+
     return Row(
       children: [
         SizedBox(
-            width: 40,
-            child: Text(label,
-                style: TextStyle(fontSize: 12, color: Colors.black))),
+          width: 40,
+          child:
+              Text(label, style: TextStyle(fontSize: 12, color: Colors.black)),
+        ),
         Expanded(
           child: LinearProgressIndicator(
-            value: value / 10,
+            value: percentage,
             backgroundColor: Colors.grey[300],
             valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
           ),
@@ -426,22 +534,22 @@ class PlotSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Nội dung phim',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          SizedBox(height: 8),
-          Text(
-            'Cuộc chiến mạn (rợ) nhất từ đủa con của địa ngục. Sẵn sàng bước vào cuộc chiến tàn khốc, Hellboy đối đầu với The Crooked Man - một ác quỷ đầy quyền năng và thù ác. Phần phim điều tra viên bán quỷ vào trận chiến nguy hiểm nhất từ trước đến nay, nó...',
-            style: TextStyle(fontSize: 14),
-          ),
-          TextButton(
-            onPressed: () {},
-            child: Text('Xem thêm', style: TextStyle(color: Colors.pink)),
-          ),
-        ],
+      child: BlocBuilder<FilmInfoBloc, FilmInfoBlocState>(
+        builder: (context, state) {
+          if (state.movieDetails == null) {
+            return Center(child: CircularProgressIndicator());
+          }
+
+          final description = state.movieDetails!.description;
+          final title = 'Nội dung phim'; // Title for the card
+
+          return ExpandableInfoCard(
+            title: title,
+            content: description,
+            isExpandedInitially:
+                false, // You can set this to false if you want the card to be collapsed initially
+          );
+        },
       ),
     );
   }
