@@ -17,6 +17,15 @@ class HistoryPage extends StatelessWidget {
     ];
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color(0XFF6F3CD7),
+        automaticallyImplyLeading: false,
+        title: Text(
+          'Lịch sử giao dịch',
+          style: TextStyle(color: Colors.white, fontSize: 20),
+        ),
+        centerTitle: true,
+      ),
       backgroundColor: Colors.white,
       body: BlocListener<SendCodeBloc, SendCodeState>(
         listener: (context, state) async {
@@ -45,53 +54,11 @@ class HistoryPage extends StatelessWidget {
               ),
             ),
             // Positioned widget for header
-            Positioned(
-              top: statusBarHeight,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
-                child: Row(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          SlideFromLeftPageRoute(page: LoginPage()),
-                        );
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[],
-                      ),
-                    ),
-                    const Expanded(
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(0, 0, 40, 0),
-                          child: Text(
-                            'Lịch sử giao dịch',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+
             // TabBar and TabBarView
             Positioned.fill(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(0, 90, 0, 0),
+                padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
                 child: DefaultTabController(
                   length: tabTitles.length,
                   child: Column(

@@ -47,6 +47,15 @@ class _ProfilePage extends State<ProfilePage> {
     double statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color(0XFF6F3CD7),
+        automaticallyImplyLeading: false,
+        title: Text(
+          'Trang cá nhân',
+          style: TextStyle(color: Colors.white, fontSize: 20),
+        ),
+        centerTitle: true,
+      ),
       backgroundColor: Colors.white,
       body: BlocListener<SendCodeBloc, SendCodeState>(
         listener: (context, state) async {
@@ -81,39 +90,10 @@ class _ProfilePage extends State<ProfilePage> {
               ),
             ),
             // Positioned widget for header
-            Positioned(
-              top: statusBarHeight,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
-                child: const Row(
-                  children: [
-                    Expanded(
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Padding(
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            'Trang cá nhân',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w500),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
             // Main content
             Positioned.fill(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(0, 90, 0, 0),
+                padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[

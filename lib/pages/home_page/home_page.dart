@@ -44,7 +44,7 @@ class _HomePage extends State<HomePage> {
       children: [
         Icon(
           icon,
-          size: isSelected ? 25 : 20, // Thay đổi kích thước của biểu tượng
+          size: isSelected ? 20 : 18, // Giảm kích thước của biểu tượng
           color: isSelected
               ? Color(0XFF6F3CD7)
               : Colors.black, // Thay đổi màu sắc của biểu tượng
@@ -53,7 +53,7 @@ class _HomePage extends State<HomePage> {
           label,
           style: TextStyle(
             fontWeight: FontWeight.w500,
-            fontSize: isSelected ? 12 : 10, // Thay đổi kích thước chữ
+            fontSize: isSelected ? 10 : 8, // Giảm kích thước chữ
             color: isSelected
                 ? Color(0XFF6F3CD7)
                 : Colors.black, // Thay đổi màu chữ

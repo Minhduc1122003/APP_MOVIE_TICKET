@@ -5,7 +5,7 @@ class MovieDetails {
   final String title;
   final String description;
   final int duration;
-  final DateTime releaseDate;
+  final String releaseDate;
   final String posterUrl;
   final String trailerUrl;
   final String languageName;
@@ -17,6 +17,7 @@ class MovieDetails {
   final double? averageRating; // Có thể null
   final int reviewCount;
   final int age;
+  final bool? favourite; // Không sử dụng late
 
   MovieDetails({
     required this.movieId,
@@ -35,16 +36,21 @@ class MovieDetails {
     this.averageRating, // Có thể null
     required this.reviewCount,
     required this.age,
+    this.favourite,
   });
 
   // Hàm khởi tạo từ JSON
   factory MovieDetails.fromJson(Map<String, dynamic> json) {
+    final DateFormat formatter = DateFormat('dd/MM/yyyy');
+    final DateTime? parsedDate = json['ReleaseDate'] != null
+        ? DateTime.tryParse(json['ReleaseDate'])
+        : null;
     return MovieDetails(
       movieId: json['MovieID'],
       title: json['Title'],
       description: json['Description'],
       duration: json['Duration'],
-      releaseDate: DateTime.parse(json['ReleaseDate']),
+      releaseDate: parsedDate != null ? formatter.format(parsedDate) : '',
       posterUrl: json['PosterUrl'],
       trailerUrl: json['TrailerUrl'],
       age: json['Age'],
@@ -58,18 +64,19 @@ class MovieDetails {
           ? (json['AverageRating'] as num).toDouble()
           : null, // Có thể null
       reviewCount: json['ReviewCount'],
+      favourite: json['IsFavourite'],
     );
   }
 
   // Hàm chuyển đổi thành JSON
   Map<String, dynamic> toJson() {
+    final DateFormat formatter = DateFormat('dd/MM/yyyy');
     return {
       'MovieID': movieId,
       'Title': title,
       'Description': description,
       'Duration': duration,
-      'ReleaseDate':
-          formatDate(releaseDate.toIso8601String()), // Sử dụng hàm formatDate
+      'ReleaseDate': releaseDate, // Định dạng ngày tháng
       'PosterUrl': posterUrl,
       'TrailerUrl': trailerUrl,
       'Age': age,
@@ -81,19 +88,48 @@ class MovieDetails {
       'ReviewContents': reviewContents, // Có thể null
       'AverageRating': averageRating, // Có thể null
       'ReviewCount': reviewCount,
+      'IsFavourite': favourite,
     };
   }
 
-  // Hàm helper để định dạng ngày tháng
-  String formatDate(String dateString) {
-    try {
-      // Phân tích chuỗi ngày tháng từ định dạng ISO 8601
-      DateTime date = DateTime.parse(dateString);
-      // Định dạng ngày tháng theo định dạng 'dd/MM/yyyy'
-      return DateFormat('dd/MM/yyyy').format(date);
-    } catch (e) {
-      // Nếu có lỗi trong phân tích chuỗi, trả về chuỗi rỗng hoặc thông báo lỗi
-      return 'Ngày không hợp lệ';
-    }
+  // Hàm copyWith để sao chép đối tượng với giá trị thay đổi
+  MovieDetails copyWith({
+    int? movieId,
+    String? title,
+    String? description,
+    int? duration,
+    String? releaseDate,
+    String? posterUrl,
+    String? trailerUrl,
+    String? languageName,
+    bool? subTitle,
+    String? genres,
+    String? cinemaName,
+    String? cinemaAddress,
+    String? reviewContents,
+    double? averageRating,
+    int? reviewCount,
+    int? age,
+    bool? favourite,
+  }) {
+    return MovieDetails(
+      movieId: movieId ?? this.movieId,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      duration: duration ?? this.duration,
+      releaseDate: releaseDate ?? this.releaseDate,
+      posterUrl: posterUrl ?? this.posterUrl,
+      trailerUrl: trailerUrl ?? this.trailerUrl,
+      languageName: languageName ?? this.languageName,
+      subTitle: subTitle ?? this.subTitle,
+      genres: genres ?? this.genres,
+      cinemaName: cinemaName ?? this.cinemaName,
+      cinemaAddress: cinemaAddress ?? this.cinemaAddress,
+      reviewContents: reviewContents ?? this.reviewContents,
+      averageRating: averageRating ?? this.averageRating,
+      reviewCount: reviewCount ?? this.reviewCount,
+      age: age ?? this.age,
+      favourite: favourite ?? this.favourite,
+    );
   }
 }

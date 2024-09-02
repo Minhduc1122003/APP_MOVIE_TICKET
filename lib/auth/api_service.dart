@@ -20,10 +20,13 @@ class ApiService {
     // baseUrl = 'http://192.168.1.12:8081';
 
     // wifi trọ của đức:
-    baseUrl = 'http://192.168.100.24:8081';
+    // baseUrl = 'http://192.168.100.24:8081';
 
     // wifi cty
     // baseUrl = 'http://192.168.1.27:8081';
+
+    // wifi cf24/24
+    baseUrl = 'http://192.168.1.146:8081';
 
     print(baseUrl);
   }
@@ -149,7 +152,7 @@ class ApiService {
     }
   }
 
-  Future<MovieDetails?> findByViewMovieID(int movieId) async {
+  Future<MovieDetails?> findByViewMovieID(int movieId, int userID) async {
     await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
     try {
       final response = await http.post(
@@ -159,6 +162,7 @@ class ApiService {
         },
         body: jsonEncode(<String, int>{
           'movieId': movieId, // Sử dụng giá trị movieId động
+          'userId': userID, // Sử dụng giá trị movieId động
         }),
       );
 
@@ -166,6 +170,8 @@ class ApiService {
         // Nếu server trả về một response thành công
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         if (jsonResponse.containsKey('movie')) {
+          MovieDetails details = MovieDetails.fromJson(jsonResponse['movie']);
+
           return MovieDetails.fromJson(jsonResponse['movie']);
         } else {
           print('Movie not found');
@@ -178,6 +184,50 @@ class ApiService {
     } catch (error) {
       print('Error occurred: $error');
       return null;
+    }
+  }
+
+  Future<Map<String, dynamic>> addFavourite(int movieID, int userID) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    final response = await http.post(
+      Uri.parse('$baseUrl/addFavourire'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, int>{
+        'movieId': movieID,
+        'userId': userID,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Nếu server trả về một response thành công
+      return jsonDecode(response.body);
+    } else {
+      // Nếu server trả về một lỗi
+      throw Exception('Failed to login');
+    }
+  }
+
+  Future<Map<String, dynamic>> removeFavourite(int movieID, int userID) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    final response = await http.post(
+      Uri.parse('$baseUrl/removeFavourire'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, int>{
+        'movieId': movieID,
+        'userId': userID,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Nếu server trả về một response thành công
+      return jsonDecode(response.body);
+    } else {
+      // Nếu server trả về một lỗi
+      throw Exception('Failed to login');
     }
   }
 

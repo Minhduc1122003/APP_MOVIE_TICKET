@@ -159,8 +159,8 @@ class MyListViewCardItem extends StatelessWidget {
             ),
             Container(
               width: double.infinity,
-              height: 3,
-              color: Colors.grey, // Màu sắc của đường viền
+              height: 2,
+              color: Colors.grey.withOpacity(0.1), // Màu sắc của đường viền
             ),
           ],
         ),

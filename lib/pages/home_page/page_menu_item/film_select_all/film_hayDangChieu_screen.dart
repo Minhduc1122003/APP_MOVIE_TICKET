@@ -32,6 +32,36 @@ class _FilmHaydangchieuScreenState extends State<FilmHaydangchieuScreen> {
   Widget build(BuildContext context) {
     double statusBarHeight = MediaQuery.of(context).padding.top;
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color(0XFF6F3CD7),
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new_outlined,
+            color: Colors.white,
+            size: 16,
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        title: Text(
+          'Phim hay đang chiếu',
+          style: TextStyle(color: Colors.white, fontSize: 20),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.search,
+              color: Colors.white,
+              size: 20, // Kích thước icon search
+            ),
+            onPressed: () {
+              // Xử lý khi nhấn vào icon search
+            },
+          ),
+        ],
+      ),
       backgroundColor: Colors.white,
       body: BlocListener<SendCodeBloc, SendCodeState>(
         listener: (context, state) async {
@@ -54,60 +84,11 @@ class _FilmHaydangchieuScreenState extends State<FilmHaydangchieuScreen> {
                 ),
               ),
             ),
-            Positioned(
-              top: statusBarHeight,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
-                child: Row(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Icon(Icons.keyboard_arrow_left,
-                              size: 25, color: Colors.black),
-                        ],
-                      ),
-                    ),
-                    const Expanded(
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(0, 0, 40, 0),
-                          child: Text(
-                            'Phim hay đang chiếu',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
             Positioned.fill(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(0, 90, 0, 0),
+                padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
                 child: Column(
                   children: <Widget>[
-                    // Thêm SearchBarWithIcon ở đây
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: SearchBarWithIcon(),
-                    ),
-                    SizedBox(height: 10),
                     Expanded(
                       child: FutureBuilder<List<MovieDetails>>(
                         future: _moviesFuture,
@@ -129,6 +110,7 @@ class _FilmHaydangchieuScreenState extends State<FilmHaydangchieuScreen> {
                               itemCount: movies.length,
                               itemBuilder: (context, index) {
                                 final movie = movies[index];
+
                                 return MyListViewCardItem(
                                   movieId: movie.movieId,
                                   title: movie.title,
@@ -141,7 +123,6 @@ class _FilmHaydangchieuScreenState extends State<FilmHaydangchieuScreen> {
                                   duration: movie.duration
                                       .toString(), // Chuyển đổi thời gian thành chuỗi nếu cần
                                   releaseDate: movie.releaseDate
-                                      .toLocal()
                                       .toString(), // Chuyển đổi ngày tháng thành chuỗi
                                   imageUrl: movie.posterUrl,
                                 );
@@ -164,69 +145,4 @@ class _FilmHaydangchieuScreenState extends State<FilmHaydangchieuScreen> {
 
 extension on String {
   join(String s) {}
-}
-
-class SearchBarWithIcon extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            height: 50,
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(25),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
-                  spreadRadius: 1,
-                  blurRadius: 8,
-                  offset: Offset(0, 2), // changes position of shadow
-                ),
-              ],
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.search, color: Colors.grey),
-                SizedBox(width: 10),
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Tìm tên phim',
-                      border: InputBorder.none,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        SizedBox(width: 10),
-        Container(
-          height: 50,
-          width: 50,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
-                spreadRadius: 1,
-                blurRadius: 8,
-                offset: Offset(0, 2), // changes position of shadow
-              ),
-            ],
-          ),
-          child: IconButton(
-            icon: Icon(Icons.filter_list, color: Colors.black),
-            onPressed: () {
-              // Xử lý khi nhấn vào icon filter
-            },
-          ),
-        ),
-      ],
-    );
-  }
 }

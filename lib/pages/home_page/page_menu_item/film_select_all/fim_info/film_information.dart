@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
+import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/film_select_all/fim_info/bloc/film_info_Bloc.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,7 +28,8 @@ class _FilmInformationState extends State<FilmInformation> {
   }
 
   Future<MovieDetails?> _loadMovieDetails() async {
-    return await _APIService.findByViewMovieID(widget.movieId);
+    return await _APIService.findByViewMovieID(
+        widget.movieId, UserManager.instance.user!.userId ?? 0);
   }
 
   @override
@@ -45,47 +48,32 @@ class _FilmInformationState extends State<FilmInformation> {
           return BlocProvider(
             create: (context) => FilmInfoBloc()..add(LoadData(movie)),
             child: Scaffold(
+              appBar: AppBar(
+                backgroundColor: Color(0XFF6F3CD7),
+                leading: IconButton(
+                  icon: Icon(
+                    Icons.arrow_back_ios_new_outlined,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                title: Text(
+                  'Chi tiết phim',
+                  style: TextStyle(color: Colors.white, fontSize: 20),
+                ),
+                centerTitle: true,
+              ),
               backgroundColor: Colors.white,
               body: Stack(
                 children: [
                   // Top Navigation Bar
-                  Positioned(
-                    top: statusBarHeight,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 10),
-                      child: Row(
-                        children: [
-                          InkWell(
-                            onTap: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Icon(Icons.arrow_back_ios,
-                                size: 20, color: Colors.black),
-                          ),
-                          const Expanded(
-                            child: Text(
-                              'Chi tiết phim',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                              width: 24), // To balance the back button
-                        ],
-                      ),
-                    ),
-                  ),
                   // Main Content
                   Positioned.fill(
                     child: Padding(
-                      padding: EdgeInsets.fromLTRB(0, 90, 0, 0),
+                      padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
                       child: SingleChildScrollView(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,103 +113,157 @@ class MovieHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16),
-      child: BlocBuilder<FilmInfoBloc, FilmInfoBlocState>(
-        builder: (context, state) {
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: Image.asset(
-                    'assets/images/${state.movieDetails?.posterUrl}',
-                    width: 130,
-                    height: 200),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius:
+                BorderRadius.circular(15), // Bo góc cho viền và hình ảnh
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(
+                    color: Colors.black, width: 10), // Viền cho hình ảnh
+                borderRadius: BorderRadius.circular(15), // Bo góc cho viền
               ),
-              SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              child: Image.asset(
+                context.read<FilmInfoBloc>().state.movieDetails?.posterUrl ??
+                    'assets/images/default_poster.png', // Thêm fallback cho URL poster
+                width: 130,
+                height: 200,
+                fit: BoxFit.cover, // Điều chỉnh ảnh cho phù hợp với khung
+              ),
+            ),
+          ),
+          SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.read<FilmInfoBloc>().state.movieDetails?.title ??
+                      'Title Not Available', // Thêm fallback cho title
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  context.read<FilmInfoBloc>().state.movieDetails?.genres ??
+                      'Genres Not Available', // Thêm fallback cho genres
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                ),
+                SizedBox(height: 8),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.orange,
+                    borderRadius: BorderRadius.all(Radius.circular(4)),
+                  ),
+                  child: Text(
+                    '${context.read<FilmInfoBloc>().state.movieDetails?.age ?? 'N/A'}+',
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Phim được phổ biến đến người xem từ đủ ${context.read<FilmInfoBloc>().state.movieDetails?.age ?? 'N/A'} tuổi trở lên',
+                  style: TextStyle(fontSize: 12),
+                ),
+                SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      '${state.movieDetails?.title}',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 4),
-                    Text('${state.movieDetails?.genres}',
-                        style: TextStyle(color: Colors.grey, fontSize: 14)),
-                    SizedBox(height: 8),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.all(Radius.circular(4)),
-                      ),
-                      child: Text(
-                        '${state.movieDetails?.age}+',
-                        style: TextStyle(color: Colors.white, fontSize: 12),
+                    Expanded(
+                      child: Center(
+                        child: FavouriteButton(),
                       ),
                     ),
-                    SizedBox(height: 8),
-                    Text(
-                        'Phim được phổ biến đến người xem từ đủ ${state.movieDetails?.age} tuổi trở lên',
-                        style: TextStyle(fontSize: 12)),
-                    SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              side: BorderSide(color: Colors.grey),
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.favorite_border_sharp,
-                                    size: 16), // Icon 'Thích'
-                                SizedBox(
-                                    width: 8), // Khoảng cách giữa icon và text
-                                Text(
-                                  'Thích',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                    SizedBox(width: 8), // Khoảng cách giữa 2 nút
+                    Expanded(
+                      child: Center(
+                        child: ElevatedButton(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            side: const BorderSide(color: Colors.grey),
+                            padding: const EdgeInsets.only(
+                                top: 0, left: 5, right: 5, bottom: 0),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.movie, size: 14),
+                              SizedBox(width: 3),
+                              Text(
+                                'Trailer',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
-                        SizedBox(width: 8), // Khoảng cách giữa 2 nút
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: Colors.black,
-                              side: const BorderSide(color: Colors.grey),
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.movie, size: 16), // Icon 'Trailer'
-                                SizedBox(
-                                    width: 8), // Khoảng cách giữa icon và text
-                                Text(
-                                  'Trailer',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class FavouriteButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<FilmInfoBloc, FilmInfoBlocState>(
+      builder: (context, state) {
+        return ElevatedButton(
+          onPressed: () {
+            context.read<FilmInfoBloc>().add(ClickFavourite(
+                state.movieDetails,
+                state.movieDetails!.movieId,
+                UserManager.instance.user!.userId));
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black,
+            side: const BorderSide(color: Colors.grey),
+            padding:
+                const EdgeInsets.only(top: 0, left: 5, right: 5, bottom: 0),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                state.movieDetails?.favourite == true
+                    ? Icons.favorite_outlined
+                    : Icons.favorite_border_sharp,
+                size: 14,
+                color: state.movieDetails?.favourite == true
+                    ? Color(0XFF6F3CD7)
+                    : Colors.black,
+              ),
+              const SizedBox(
+                width: 3, // Khoảng cách giữa icon và text
+              ),
+              Text(
+                state.movieDetails?.favourite == true ? 'Đã thích' : 'Thích',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                  color: state.movieDetails?.favourite == true
+                      ? Color(0XFF6F3CD7)
+                      : Colors.black,
+                ),
               ),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -230,7 +272,7 @@ class MovieInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.only(top: 10, bottom: 10, left: 15, right: 15),
       child: BlocBuilder<FilmInfoBloc, FilmInfoBlocState>(
         builder: (context, state) {
           return Row(

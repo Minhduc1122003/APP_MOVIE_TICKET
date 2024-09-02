@@ -37,11 +37,6 @@ class _MyAppState extends State<MyApp> {
         debugShowCheckedModeBanner: false,
         builder: EasyLoading.init(),
         home: HomePage(),
-        routes: {
-          '/login': (context) => LoginPage(),
-          '/home': (context) => HomePage(),
-          // Other routes...
-        },
       ),
     );
   }

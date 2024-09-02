@@ -66,11 +66,6 @@ class _UtilitySectionState extends State<UtilitySection> {
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
-                height: _showAllButtons
-                    ? null
-                    : (widget.buttons.length > 5
-                        ? 5 * 48.0 // Chiều cao của 5 nút
-                        : widget.buttons.length * 60.0),
                 child: Column(
                   children: visibleButtons.asMap().entries.map((entry) {
                     final index = entry.key;

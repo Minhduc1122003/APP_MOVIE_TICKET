@@ -14,3 +14,14 @@ class LoadData extends FilmInfoBlocEvent {
     this.movieDetails,
   );
 }
+
+class ClickFavourite extends FilmInfoBlocEvent {
+  final MovieDetails? movieDetails;
+  final int movieId;
+  final int userId;
+
+  const ClickFavourite(this.movieDetails, this.movieId, this.userId);
+
+  @override
+  List<Object?> get props1 => [movieDetails, movieId, userId];
+}
