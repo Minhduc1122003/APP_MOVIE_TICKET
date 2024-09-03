@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
@@ -30,35 +31,40 @@ class MyListViewCardItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+      padding: const EdgeInsets.fromLTRB(5, 0, 10, 5),
       child: Card(
         elevation: 2,
+        color: Colors.white, // Thêm màu nền trắng ở đây
+
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize:
-              MainAxisSize.min, // Đảm bảo card không mở rộng toàn bộ chiều rộng
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                  padding: const EdgeInsets.fromLTRB(5, 10, 0, 5),
                   child: Container(
-                    width: 80,
-                    height: 120,
+                    width: 100,
+                    height: 150,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(
-                        'assets/images/$imageUrl',
-                        width: 80,
-                        height: 120,
-                        fit: BoxFit.cover,
+                    child: Align(
+                      alignment: Alignment
+                          .center, // Căn giữa theo chiều dọc và chiều ngang
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.asset(
+                          'assets/images/$imageUrl',
+                          width: 100,
+                          height: 150,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ),
@@ -69,31 +75,37 @@ class MyListViewCardItem extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        AutoSizeText(
                           title,
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
+                          maxLines: 2, // Giới hạn số dòng hiển thị là 2
+                          overflow: TextOverflow
+                              .ellipsis, // Hiển thị "..." khi văn bản quá dài
+                          minFontSize:
+                              16, // Kích thước font tối thiểu khi tự động điều chỉnh
                         ),
-                        SizedBox(height: 4),
+                        SizedBox(
+                          height: 4,
+                        ),
                         Row(
                           children: [
                             Icon(Icons.star, color: Colors.orange, size: 16),
-                            SizedBox(width: 4),
                             RichText(
                               text: TextSpan(
                                 text: '$rating',
                                 style: TextStyle(
                                   color: Colors.orange,
-                                  fontSize: 14,
+                                  fontSize: 12,
                                 ),
-                                children: <TextSpan>[
+                                children: const <TextSpan>[
                                   TextSpan(
                                     text: '/10',
                                     style: TextStyle(
                                       color: Colors.black,
-                                      fontSize: 14,
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ],
@@ -112,44 +124,86 @@ class MyListViewCardItem extends StatelessWidget {
                           ],
                         ),
                         SizedBox(height: 4),
-                        Divider(thickness: 1, color: Colors.grey[300]),
-                        Text("Thể loại: $genre",
-                            style: TextStyle(fontSize: 14)),
+                        Text(
+                          "$genre",
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
                         SizedBox(height: 4),
-                        Text('Rạp phim: $cinema',
-                            style: TextStyle(fontSize: 14)),
-                        SizedBox(height: 4),
-                        Text('Thời lượng: $duration',
-                            style: TextStyle(fontSize: 14)),
-                        SizedBox(height: 4),
-                        Text('Khởi chiếu: $releaseDate',
-                            style: TextStyle(fontSize: 14)),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: <Widget>[
-                            MyButton(
-                              text: 'Chi tiết',
-                              paddingText: 8.0,
-                              fontsize: 14.0,
-                              onTap: () {
-                                print("MovieId From my movie $movieId");
-                                Navigator.push(
-                                  context,
-                                  SlideFromRightPageRoute(
-                                      page: FilmInformation(movieId: movieId)),
-                                );
-                              },
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.access_time, size: 16),
+                                const SizedBox(width: 4),
+                                Text(
+                                  "$duration'",
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              ],
                             ),
-                            SizedBox(width: 10),
-                            MyButton(
-                              text: 'Mua vé',
-                              paddingText: 8.0,
-                              fontsize: 14.0,
-                              onTap: () {
-                                // Xử lý khi nhấn nút 'Mua vé'
-                              },
+                            const SizedBox(width: 8),
+                            const Text(
+                              '|',
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.grey),
+                            ),
+                            const SizedBox(width: 8),
+                            Row(
+                              children: [
+                                const Icon(Icons.calendar_today, size: 16),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$releaseDate',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              ],
                             ),
                           ],
+                        ),
+                        SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              top: 0), // Khoảng cách dưới cùng
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              Expanded(
+                                child: Center(
+                                  child: MyButton(
+                                    color: Colors.white.withOpacity(0.5),
+                                    border: true,
+                                    text: 'Chi tiết',
+                                    paddingText: 8.0,
+                                    fontsize: 14.0,
+                                    colorText: Colors.black,
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        SlideFromRightPageRoute(
+                                          page:
+                                              FilmInformation(movieId: movieId),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: Center(
+                                  child: MyButton(
+                                    text: 'Mua vé',
+                                    paddingText: 8.0,
+                                    fontsize: 14.0,
+                                    onTap: () {
+                                      // Xử lý khi nhấn nút 'Mua vé'
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -157,6 +211,8 @@ class MyListViewCardItem extends StatelessWidget {
                 ),
               ],
             ),
+            // Phần chứa các nút nằm ở dưới cùng của card
+
             Container(
               width: double.infinity,
               height: 2,

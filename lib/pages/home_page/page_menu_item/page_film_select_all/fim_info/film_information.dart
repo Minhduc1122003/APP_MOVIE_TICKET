@@ -12,6 +12,7 @@ import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
+import 'package:auto_size_text/auto_size_text.dart'; // Import package
 
 class FilmInformation extends StatefulWidget {
   final int movieId;
@@ -115,7 +116,7 @@ class MovieHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.all(10),
       child: BlocBuilder<FilmInfoBloc, FilmInfoBlocState>(
         builder: (context, state) {
           return Row(
@@ -144,10 +145,17 @@ class MovieHeader extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    AutoSizeText(
                       '${state.movieDetails?.title}',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 2, // Giới hạn số dòng hiển thị là 2
+                      overflow: TextOverflow
+                          .ellipsis, // Hiển thị "..." khi văn bản quá dài
+                      minFontSize:
+                          18, // Kích thước font tối thiểu khi tự động điều chỉnh
                     ),
                     SizedBox(height: 4),
                     Text(
@@ -199,7 +207,7 @@ class MovieHeader extends StatelessWidget {
                                                                   context)
                                                               .style,
                                                     ),
-                                                    TextSpan(
+                                                    const TextSpan(
                                                       text: 'đăng nhập',
                                                       style: TextStyle(
                                                         fontWeight:
@@ -355,7 +363,7 @@ class MovieInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: 10, bottom: 10, left: 15, right: 15),
+      padding: EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10),
       child: BlocBuilder<FilmInfoBloc, FilmInfoBlocState>(
         builder: (context, state) {
           return Row(
@@ -420,7 +428,7 @@ class RatingSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.all(10),
       child: BlocBuilder<FilmInfoBloc, FilmInfoBlocState>(
         builder: (context, state) {
           return Column(
@@ -559,7 +567,7 @@ class CastAndCrew extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.all(10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

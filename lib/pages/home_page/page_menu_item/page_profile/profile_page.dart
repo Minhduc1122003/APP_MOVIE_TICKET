@@ -130,37 +130,110 @@ class _ProfilePage extends State<ProfilePage> {
                               ],
                             ),
                             UtilitySection(
+                              title: 'Quản trị',
+                              buttons: UserManager.instance.user?.role == true
+                                  ? [
+                                      UtilityButton(
+                                        color: Colors.pink,
+                                        title: 'Quản lý người dùng',
+                                        icon: Icons.help_center,
+                                        onPressed: () {},
+                                      ),
+                                      UtilityButton(
+                                        color: Colors.pink,
+                                        title: 'Quản lý phim',
+                                        icon: Icons.help_center,
+                                        onPressed: () {},
+                                      ),
+                                      UtilityButton(
+                                        color: Colors.pink,
+                                        title: 'Quản lý phòng chiếu',
+                                        icon: Icons.help_center,
+                                        onPressed: () {},
+                                      ),
+                                      UtilityButton(
+                                        color: Colors.pink,
+                                        title: 'Quản lý đồ ăn',
+                                        icon: Icons.help_center,
+                                        onPressed: () {},
+                                      ),
+                                      UtilityButton(
+                                        color: Colors.pink,
+                                        title: 'Thống kê & doanh thu',
+                                        icon: Icons.help_center,
+                                        onPressed: () {},
+                                      ),
+                                    ]
+                                  : [
+                                      UtilityButton(
+                                        color: Colors.pink,
+                                        title: 'Trung tâm trợ giúp',
+                                        icon: Icons.help_center,
+                                        onPressed: () {},
+                                      ),
+                                      UtilityButton(
+                                        color: Colors.pink,
+                                        title: 'Hộp thư trợ',
+                                        icon: Icons.mail,
+                                        onPressed: () {},
+                                      ),
+                                      UtilityButton(
+                                        color: Colors.pink,
+                                        title: 'Báo cáo sự cố',
+                                        icon: Icons.report_problem,
+                                        onPressed: () {},
+                                      ),
+                                      UtilityButton(
+                                        color: Colors.pink,
+                                        title: 'Điều khoản & chính sách',
+                                        icon: Icons.policy,
+                                        onPressed: () {},
+                                      ),
+                                    ],
+                            ),
+                            UtilitySection(
                               title: 'Trợ giúp & hỗ trợ',
-                              buttons: [
-                                UtilityButton(
-                                  color: Colors.pink,
-                                  title: 'Trung tâm trợ giúp',
-                                  icon: Icons
-                                      .help_center, // Thay đổi icon để phù hợp với "Trung tâm trợ giúp"
-                                  onPressed: () {},
-                                ),
-                                UtilityButton(
-                                  color: Colors.pink,
-                                  title: 'Hộp thư trợ',
-                                  icon: Icons
-                                      .mail, // Thay đổi icon để phù hợp với "Hộp thư trợ"
-                                  onPressed: () {},
-                                ),
-                                UtilityButton(
-                                  color: Colors.pink,
-                                  title: 'Báo cáo sự cố',
-                                  icon: Icons
-                                      .report_problem, // Thay đổi icon để phù hợp với "Báo cáo sự cố"
-                                  onPressed: () {},
-                                ),
-                                UtilityButton(
-                                  color: Colors.pink,
-                                  title: 'Điều khoản & chính sách',
-                                  icon: Icons
-                                      .policy, // Thay đổi icon để phù hợp với "Điều khoản & chính sách"
-                                  onPressed: () {},
-                                ),
-                              ],
+                              buttons: UserManager.instance.user?.role == true
+                                  ? [
+                                      UtilityButton(
+                                        color: Colors.pink,
+                                        title: 'Tiếp nhận hỗ trợ',
+                                        icon: Icons.help_center,
+                                        onPressed: () {},
+                                      ),
+                                      UtilityButton(
+                                        color: Colors.pink,
+                                        title: 'Tiếp nhận sự cố',
+                                        icon: Icons.help_center,
+                                        onPressed: () {},
+                                      )
+                                    ]
+                                  : [
+                                      UtilityButton(
+                                        color: Colors.pink,
+                                        title: 'Trung tâm trợ giúp',
+                                        icon: Icons.help_center,
+                                        onPressed: () {},
+                                      ),
+                                      UtilityButton(
+                                        color: Colors.pink,
+                                        title: 'Hộp thư trợ',
+                                        icon: Icons.mail,
+                                        onPressed: () {},
+                                      ),
+                                      UtilityButton(
+                                        color: Colors.pink,
+                                        title: 'Báo cáo sự cố',
+                                        icon: Icons.report_problem,
+                                        onPressed: () {},
+                                      ),
+                                      UtilityButton(
+                                        color: Colors.pink,
+                                        title: 'Điều khoản & chính sách',
+                                        icon: Icons.policy,
+                                        onPressed: () {},
+                                      ),
+                                    ],
                             ),
                             UtilitySection(
                               title: 'Cài đặt & quyền riêng tư',
@@ -312,16 +385,40 @@ class _ProfilePage extends State<ProfilePage> {
                   ),
           ),
           const SizedBox(height: 8),
-          Text(
-            '${UserManager.instance.user?.fullName}',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Column(
+            mainAxisAlignment:
+                MainAxisAlignment.center, // Căn giữa các phần tử trong cột
+            crossAxisAlignment:
+                CrossAxisAlignment.center, // Căn giữa các phần tử trong hàng
+            children: [
+              Text(
+                '${UserManager.instance.user?.fullName}',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 5), // Khoảng cách giữa fullName và Container
+              Visibility(
+                visible: UserManager.instance.user?.role ==
+                    true, // Kiểm tra điều kiện
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.all(Radius.circular(4)),
+                  ),
+                  child: Text(
+                    'Quản trị viên', // Hiển thị "Quản trị viên" khi điều kiện là true
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 4),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                formatPhoneNumber(UserManager.instance.user?.phoneNumber),
+                UserManager.instance.user!.email,
                 style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
             ],
