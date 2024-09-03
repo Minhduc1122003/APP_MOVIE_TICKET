@@ -10,7 +10,7 @@ import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
-import '../../../components/my_InfoCard.dart';
+import '../../../../components/my_InfoCard.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});

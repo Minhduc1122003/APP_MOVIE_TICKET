@@ -96,26 +96,31 @@ class _MyTextfieldState extends State<MyTextfield> {
                     )
                   : widget.sendCode
                       ? Padding(
-                          padding: const EdgeInsets.only(
-                              right: 10.0,
-                              top:
-                                  15), // Adjust padding to not overlap the text field
-                          child: MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: GestureDetector(
-                              onTap: () {
-                                final title = 'Your Email Subject';
-                                final content = 'Content of the email';
-                                final recipient = widget.controller?.text ?? '';
+                          padding: const EdgeInsets.only(right: 10.0),
+                          child: SizedBox(
+                            width:
+                                60, // Đặt kích thước cố định để tránh lỗi hit-test
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    final title = 'Your Email Subject';
+                                    final content = 'Content of the email';
+                                    final recipient =
+                                        widget.controller?.text ?? '';
 
-                                context.read<SendCodeBloc>().add(
-                                      SendCode(title, content, recipient),
-                                    );
-                              },
-                              child: const Text(
-                                'Gửi mã',
-                                style: TextStyle(
-                                  color: Color(0XFF6F3CD7),
+                                    context.read<SendCodeBloc>().add(
+                                          SendCode(title, content, recipient),
+                                        );
+                                  },
+                                  child: const Text(
+                                    'Gửi mã',
+                                    style: TextStyle(
+                                      color: Color(0XFF6F3CD7),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -126,8 +131,7 @@ class _MyTextfieldState extends State<MyTextfield> {
                               padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
                               child: Icon(
                                 Icons.check_circle,
-                                color:
-                                    Colors.green, // Tích xanh cho giá trị true
+                                color: Colors.green,
                               ),
                             )
                           : widget.isCode == false
@@ -135,11 +139,12 @@ class _MyTextfieldState extends State<MyTextfield> {
                                   padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
                                   child: Icon(
                                     Icons.cancel,
-                                    color: Colors
-                                        .red, // Dấu x đỏ cho giá trị false
+                                    color: Colors.red,
                                   ),
                                 )
-                              : null, // Không hiển thị gì nếu isCode là null
+                              : null,
+
+              // Không hiển thị gì nếu isCode là null
             ),
           ),
         ],

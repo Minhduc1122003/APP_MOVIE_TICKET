@@ -45,6 +45,24 @@ class _LoginPageState extends State<LoginPage> {
     double statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color(0XFF6F3CD7),
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new_outlined,
+            color: Colors.white,
+            size: 16,
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        title: Text(
+          'Đăng nhập',
+          style: TextStyle(color: Colors.white, fontSize: 20),
+        ),
+        centerTitle: true,
+      ),
       backgroundColor: Colors.white,
       body: BlocListener<LoginBloc, LoginState>(
         listener: (context, state) async {
@@ -56,11 +74,10 @@ class _LoginPageState extends State<LoginPage> {
           } else if (state is LoginSuccess) {
             EasyLoading.dismiss();
             await Future.delayed(Duration(milliseconds: 150));
-            Navigator.pushReplacement(
+            Navigator.pushAndRemoveUntil(
               context,
-              ZoomPageRoute(
-                page: HomePage(),
-              ),
+              ZoomPageRoute(page: HomePage()),
+              (Route<dynamic> route) => false, // Xóa tất cả các route trước đó
             );
           }
         },
@@ -79,61 +96,14 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
-            Positioned(
-              top: statusBarHeight,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
-                child: Row(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          CustomIconButton(
-                            icon: Icons.keyboard_arrow_left,
-                            size: 25,
-                            color: Colors.black,
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Expanded(
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(0, 0, 40, 0),
-                          child: Text(
-                            'Đăng nhập',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+
             // Positioned widget for header
 
             // Main content
             Positioned.fill(
               child: Padding(
                 padding:
-                    EdgeInsets.fromLTRB(20, 90, 20, 10), // Padding cho nội dung
+                    EdgeInsets.fromLTRB(20, 0, 20, 10), // Padding cho nội dung
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
