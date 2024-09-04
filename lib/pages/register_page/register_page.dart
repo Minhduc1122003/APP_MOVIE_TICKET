@@ -52,6 +52,7 @@ class _RegisterPageState extends State<RegisterPage> {
     double statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Color(0XFF6F3CD7),
         leading: IconButton(

@@ -45,6 +45,7 @@ class _LoginPageState extends State<LoginPage> {
     double statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: Color(0XFF6F3CD7),
         leading: IconButton(
@@ -96,14 +97,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ),
-
-            // Positioned widget for header
-
-            // Main content
             Positioned.fill(
               child: Padding(
-                padding:
-                    EdgeInsets.fromLTRB(20, 0, 20, 10), // Padding cho nội dung
+                padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
@@ -120,7 +116,6 @@ class _LoginPageState extends State<LoginPage> {
                               size: 100,
                               color: Theme.of(context).colorScheme.primary,
                             ),
-                            // Welcome message
                             Text(
                               'Welcome back',
                               style: TextStyle(
@@ -128,7 +123,7 @@ class _LoginPageState extends State<LoginPage> {
                                 fontSize: 16,
                               ),
                             ),
-                            const SizedBox(height: 80),
+                            const SizedBox(height: 40),
 
                             // Email textfield
                             MyTextfield(
@@ -136,6 +131,7 @@ class _LoginPageState extends State<LoginPage> {
                               controller: _emailController,
                             ),
                             const SizedBox(height: 20),
+
                             // Password textfield
                             MyTextfield(
                               isPassword: true,
@@ -150,7 +146,7 @@ class _LoginPageState extends State<LoginPage> {
                               text: 'ĐĂNG NHẬP',
                               onTap: () => _onLoginButtonPressed(context),
                             ),
-                            const SizedBox(height: 40),
+                            const SizedBox(height: 20),
 
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -183,52 +179,53 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ],
                             ),
+                            Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Column(
+                                children: [
+                                  const Divider(
+                                    height: 20,
+                                    thickness: 1,
+                                    indent: 20,
+                                    endIndent: 20,
+                                    color: Colors.black,
+                                  ),
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Text('Chưa có tài khoản?'),
+                                        SizedBox(width: 5),
+                                        InkWell(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              SlideFromRightPageRoute(
+                                                  page: RegisterPage()),
+                                            );
+                                          },
+                                          child: const Padding(
+                                            padding: EdgeInsets.all(4.0),
+                                            child: Text(
+                                              'Đăng ký',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Color(0XFF6F3CD7)),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                    ),
-                    // Social Media Buttons
-
-                    // Các phần tử cố định ở cuối màn hình
-                    Column(
-                      children: [
-                        const Divider(
-                          height: 20,
-                          thickness: 1,
-                          indent: 20,
-                          endIndent: 20,
-                          color: Colors.black,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 0), // Padding dọc cho Row
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text('Chưa có tài khoản?'),
-                              SizedBox(width: 5),
-                              InkWell(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    SlideFromRightPageRoute(
-                                        page: RegisterPage()),
-                                  );
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.all(4.0),
-                                  child: Text(
-                                    'Đăng ký',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0XFF6F3CD7)),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),

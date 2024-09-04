@@ -23,10 +23,10 @@ class ApiService {
     // baseUrl = 'http://192.168.100.24:8081';
 
     // wifi cty
-    // baseUrl = 'http://192.168.1.27:8081';
+    baseUrl = 'http://192.168.1.22:8081';
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.1.79:8081';
+    // baseUrl = 'http://192.168.1.79:8081';
 
     print(baseUrl);
   }

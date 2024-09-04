@@ -599,7 +599,7 @@ class _FilmCarouselState extends State<FilmCarousel> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(0.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment
                               .center, // Căn giữa các phần tử trong cột
