@@ -3,6 +3,7 @@ import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/bloc/film_info_Bloc.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/bloc/buyTicket_Bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class BuyTicketPage extends StatefulWidget {
@@ -14,83 +15,55 @@ class BuyTicketPage extends StatefulWidget {
   _BuyTicketPageState createState() => _BuyTicketPageState();
 }
 
-class _BuyTicketPageState extends State<BuyTicketPage>
-    with AutomaticKeepAliveClientMixin {
-  late ApiService _APIService;
-
-  @override
-  void initState() {
-    super.initState();
-    _APIService = ApiService();
-  }
-
-  Future<MovieDetails?> _loadMovieDetails() async {
-    return await _APIService.findByViewMovieID(
-        widget.movieId, UserManager.instance.user?.userId ?? 0);
-  }
-
+class _BuyTicketPageState extends State<BuyTicketPage> {
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-    return FutureBuilder<MovieDetails?>(
-      future: _loadMovieDetails(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else if (snapshot.hasData) {
-          final movie = snapshot.data;
-          return BlocProvider(
-            create: (context) => FilmInfoBloc()..add(LoadData(movie)),
-            child: Scaffold(
-              appBar: AppBar(
-                backgroundColor: Color(0XFF6F3CD7),
-                leading: IconButton(
-                  icon: Icon(
-                    Icons.arrow_back_ios_new_outlined,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
+    return BlocProvider(
+      create: (context) =>
+          BuyticketBloc()..add(LoadData1(today: '1', thu_today: '2')),
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Color(0XFF6F3CD7),
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new_outlined,
+              color: Colors.white,
+              size: 16,
+            ),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          title: Text(
+            'Mua vé phim',
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          centerTitle: true,
+        ),
+        backgroundColor: Colors.white,
+        body: CustomScrollView(
+          slivers: [
+            SliverPersistentHeader(
+              delegate: _PersistentHeaderDelegate(
+                child: Column(
+                  children: [
+                    DateSelector(),
+                    TimeSelector(),
+                  ],
                 ),
-                title: Text(
-                  'Mua vé phim',
-                  style: TextStyle(color: Colors.white, fontSize: 20),
-                ),
-                centerTitle: true,
               ),
-              backgroundColor: Colors.white,
-              body: CustomScrollView(
-                slivers: [
-                  SliverPersistentHeader(
-                    delegate: _PersistentHeaderDelegate(
-                      child: Column(
-                        children: [
-                          DateSelector(),
-                          TimeSelector(),
-                        ],
-                      ),
-                    ),
-                    pinned: true, // Giữ phần header cố định khi cuộn
-                  ),
-                  SliverList(
-                    delegate: SliverChildListDelegate(
-                      [
-                        CinemaList(),
-                      ],
-                    ),
-                  ),
+              pinned: true, // Giữ phần header cố định khi cuộn
+            ),
+            SliverList(
+              delegate: SliverChildListDelegate(
+                [
+                  CinemaList(),
                 ],
               ),
             ),
-          );
-        } else {
-          return Center(child: Text('No data available'));
-        }
-      },
+          ],
+        ),
+      ),
     );
   }
 
@@ -141,25 +114,29 @@ class DateSelector extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 20, horizontal: 30),
       color: Colors.white,
-      child: Row(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Wrap(
-                spacing: 8, // Khoảng cách ngang giữa các button
-                runSpacing: 8, // Khoảng cách dọc giữa các hàng của button
-                children: List.generate(30, (index) {
-                  // Giả sử bạn có 30 button để hiển thị
-                  return _buildDateItem('29', 'T3', isSelected: index == 0,
-                      onTap: () {
-                    // Update selected date logic here
-                  });
-                }).take(8).toList(), // Chỉ lấy tối đa 8 button
+      child: BlocBuilder<BuyticketBloc, BuyticketBlocState>(
+        builder: (context, state) {
+          return Row(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Wrap(
+                    spacing: 8, // Khoảng cách ngang giữa các button
+                    runSpacing: 8, // Khoảng cách dọc giữa các hàng của button
+                    children: List.generate(30, (index) {
+                      // Giả sử bạn có 30 button để hiển thị
+                      return _buildDateItem(state.today, state.thu_today,
+                          isSelected: index == 0, onTap: () {
+                        // Update selected date logic here
+                      });
+                    }).take(8).toList(), // Chỉ lấy tối đa 8 button
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
