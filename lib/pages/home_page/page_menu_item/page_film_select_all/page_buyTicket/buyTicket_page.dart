@@ -1,29 +1,21 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
-import 'package:flutter_app_chat/components/animation_page.dart';
-import 'package:flutter_app_chat/components/content_film_infomation.dart';
-import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/bloc/film_info_Bloc.dart';
-import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/buyTicket_page.dart';
-import 'package:flutter_app_chat/pages/login_page/login_page.dart';
-import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:intl/intl.dart';
-import 'package:auto_size_text/auto_size_text.dart'; // Import package
 
 class BuyTicketPage extends StatefulWidget {
   final int movieId;
 
   const BuyTicketPage({super.key, required this.movieId});
+
   @override
   _BuyTicketPageState createState() => _BuyTicketPageState();
 }
 
-class _BuyTicketPageState extends State<BuyTicketPage> {
+class _BuyTicketPageState extends State<BuyTicketPage>
+    with AutomaticKeepAliveClientMixin {
   late ApiService _APIService;
 
   @override
@@ -39,6 +31,7 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return FutureBuilder<MovieDetails?>(
       future: _loadMovieDetails(),
       builder: (context, snapshot) {
@@ -70,21 +63,24 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
                 centerTitle: true,
               ),
               backgroundColor: Colors.white,
-              body: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            DateSelector(),
-                            TimeSelector(),
-                            CinemaList(),
-                          ],
-                        ),
+              body: CustomScrollView(
+                slivers: [
+                  SliverPersistentHeader(
+                    delegate: _PersistentHeaderDelegate(
+                      child: Column(
+                        children: [
+                          DateSelector(),
+                          TimeSelector(),
+                        ],
                       ),
+                    ),
+                    pinned: true, // Giữ phần header cố định khi cuộn
+                  ),
+                  SliverList(
+                    delegate: SliverChildListDelegate(
+                      [
+                        CinemaList(),
+                      ],
                     ),
                   ),
                 ],
@@ -100,6 +96,43 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
 
   @override
   bool get wantKeepAlive => true; // Giữ trạng thái của trang
+}
+
+class _PersistentHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+
+  _PersistentHeaderDelegate({required this.child});
+
+  @override
+  double get minExtent => _getHeight(child);
+
+  @override
+  double get maxExtent => _getHeight(child);
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(child: child);
+  }
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
+    return true; // Luôn tái xây dựng
+  }
+
+  double _getHeight(Widget widget) {
+    // Tính chiều cao của widget bằng cách sử dụng GlobalKey
+    final key = GlobalKey();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final renderBox = key.currentContext?.findRenderObject() as RenderBox?;
+      if (renderBox != null) {
+        final height = renderBox.size.height;
+        // Cập nhật kích thước nếu cần
+      }
+    });
+    // Giá trị mặc định
+    return 180.0; // Thay đổi thành chiều cao của widget
+  }
 }
 
 class DateSelector extends StatelessWidget {
