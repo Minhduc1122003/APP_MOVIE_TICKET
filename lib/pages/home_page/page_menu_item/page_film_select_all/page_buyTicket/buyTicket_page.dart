@@ -19,8 +19,7 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) =>
-          BuyticketBloc()..add(LoadData1(today: '1', thu_today: '2')),
+      create: (context) => BuyticketBloc()..add(LoadData1([])),
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Color(0XFF6F3CD7),
@@ -124,13 +123,23 @@ class DateSelector extends StatelessWidget {
                   child: Wrap(
                     spacing: 8, // Khoảng cách ngang giữa các button
                     runSpacing: 8, // Khoảng cách dọc giữa các hàng của button
-                    children: List.generate(30, (index) {
-                      // Giả sử bạn có 30 button để hiển thị
-                      return _buildDateItem(state.today, state.thu_today,
-                          isSelected: index == 0, onTap: () {
-                        // Update selected date logic here
-                      });
-                    }).take(8).toList(), // Chỉ lấy tối đa 8 button
+                    children: state.daysList
+                        .take(
+                            state.daysList.length) // Chỉ hiển thị tối đa 8 ngày
+                        .map((dayInfo) {
+                      int index = state.daysList.indexOf(dayInfo);
+                      bool isSelected = index == 0; // Ví dụ: chọn ngày đầu tiên
+
+                      return _buildDateItem(
+                        dayInfo['dayMonth'] ?? '',
+                        dayInfo['dayOfWeek'] ?? '',
+                        isSelected: isSelected,
+                        onTap: () {
+                          // Cập nhật logic chọn ngày ở đây
+                          print("Chọn ngày: ${dayInfo['dayMonth']}");
+                        },
+                      );
+                    }).toList(),
                   ),
                 ),
               ),
@@ -146,8 +155,7 @@ class DateSelector extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 60, // Điều chỉnh chiều rộng của button
-        padding: EdgeInsets.all(8),
+        padding: EdgeInsets.all(5), // Padding 10
         decoration: BoxDecoration(
           color: isSelected ? Color(0XFF6F3CD7) : Colors.white,
           borderRadius: BorderRadius.circular(10),
@@ -155,13 +163,20 @@ class DateSelector extends StatelessWidget {
             color: isSelected ? Colors.transparent : Colors.grey,
           ),
         ),
+        // Sử dụng constraints để bọc nội dung
+        constraints: BoxConstraints(
+          minWidth: 50, // Đặt minWidth để tạo kích thước tối thiểu
+          minHeight: 50, // Đặt minHeight để tạo kích thước tối thiểu
+        ),
         child: Column(
+          mainAxisSize: MainAxisSize.min, // Để cột bọc chặt nội dung
           mainAxisAlignment: MainAxisAlignment.center, // Căn giữa các text
           children: [
             Text(day,
                 style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 14,
                     color: isSelected ? Colors.white : Colors.black)),
+            SizedBox(height: 4), // Khoảng cách giữa các dòng text
             Text(weekday,
                 style: TextStyle(
                     fontSize: 14,
@@ -231,8 +246,6 @@ class CinemaList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       shrinkWrap: true,
-      physics:
-          NeverScrollableScrollPhysics(), // Ngăn chặn cuộn của ListView bên trong SingleChildScrollView
       children: [
         _buildCinemaItem(
             'Cinema A', '12 km', ['9:00', '11:00', '13:30', '15:30', '17:30']),

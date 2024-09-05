@@ -8,10 +8,10 @@ sealed class BuyticketBlocEvent extends Equatable {
 }
 
 class LoadData1 extends BuyticketBlocEvent {
-  final String today;
-  final String thu_today;
-  const LoadData1({required this.today, required this.thu_today});
+  final List<Map<String, String>> daysList;
+
+  const LoadData1(this.daysList);
 
   @override
-  List<Object?> get prop => [today, thu_today];
+  List<Object> get props => [daysList];
 }

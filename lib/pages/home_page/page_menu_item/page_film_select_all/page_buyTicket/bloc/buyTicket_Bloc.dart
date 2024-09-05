@@ -1,32 +1,64 @@
-import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:equatable/equatable.dart';
 import 'package:intl/intl.dart';
-
+import 'package:intl/date_symbol_data_local.dart';
 // Phần định nghĩa của state
 part 'buyTicket_Bloc_event.dart';
 // Phần định nghĩa của event
 part 'buyTicket_Bloc_State.dart';
 
 class BuyticketBloc extends Bloc<BuyticketBlocEvent, BuyticketBlocState> {
-  BuyticketBloc() : super(BuyticketBlocState(today: '', thu_today: '')) {
+  BuyticketBloc() : super(BuyticketBlocState(daysList: [])) {
     on<LoadData1>(_onLoadData);
   }
 
-  void _onLoadData(LoadData1 event, Emitter<BuyticketBlocState> emit) {
+  void _onLoadData(LoadData1 event, Emitter<BuyticketBlocState> emit) async {
+    print("Đã vào BloC");
+    await initializeDateFormatting('vi_VN', null);
+
     // Lấy ngày hiện tại
     final now = DateTime.now();
 
-    // Định dạng thứ trong tuần (vi_VN là ngôn ngữ Tiếng Việt)
-    final dayOfWeek = DateFormat('EEEE', 'vi_VN').format(now);
-    print("Bloc: $dayOfWeek");
+    // Tạo danh sách chứa ngày và thứ trong tuần
+    List<Map<String, String>> daysList = [];
 
-    // Định dạng ngày tháng theo kiểu dd/MM/yyyy (hoặc có thể dùng kiểu khác như d/M)
-    final dayMonth = DateFormat('dd/MM/yyyy').format(now);
-    print(dayMonth);
+    // Bản đồ rút gọn tên thứ
+    final Map<String, String> shortDayMap = {
+      'Thứ Hai': 'T2',
+      'Thứ Ba': 'T3',
+      'Thứ Tư': 'T4',
+      'Thứ Năm': 'T5',
+      'Thứ Sáu': 'T6',
+      'Thứ Bảy': 'T7',
+      'Chủ Nhật': 'CN',
+    };
 
-    // Cập nhật thông tin phim mà không thay đổi trạng thái loading
-    emit(BuyticketBlocState(today: dayMonth, thu_today: dayOfWeek));
+    for (int i = 0; i < 15; i++) {
+      // Tính ngày tiếp theo
+      final date = now.add(Duration(days: i));
+
+      // Định dạng thứ trong tuần (vi_VN là ngôn ngữ Tiếng Việt)
+      final dayOfWeek = DateFormat('EEEE', 'vi_VN').format(date);
+
+      // Rút gọn tên thứ bằng cách sử dụng shortDayMap
+      final shortDayOfWeek = shortDayMap[dayOfWeek] ?? dayOfWeek;
+
+      // Định dạng ngày tháng theo kiểu d/M
+      final dayMonth = DateFormat('d/M').format(date);
+
+      // Thêm vào danh sách
+      daysList.add({
+        'dayOfWeek': shortDayOfWeek,
+        'dayMonth': dayMonth,
+      });
+    }
+
+    // In ra danh sách các ngày và thứ trong tuần
+    daysList.forEach((day) {
+      print("Thứ: ${day['dayOfWeek']}, Ngày: ${day['dayMonth']}");
+    });
+
+    // Cập nhật trạng thái với danh sách ngày và thứ trong tuần
+    emit(BuyticketBlocState(daysList: daysList));
   }
 }
