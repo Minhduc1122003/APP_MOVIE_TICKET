@@ -33,7 +33,7 @@ class BuyticketBloc extends Bloc<BuyticketBlocEvent, BuyticketBlocState> {
       'Chủ Nhật': 'CN',
     };
 
-    for (int i = 0; i < 15; i++) {
+    for (int i = 0; i < 8; i++) {
       // Tính ngày tiếp theo
       final date = now.add(Duration(days: i));
 
