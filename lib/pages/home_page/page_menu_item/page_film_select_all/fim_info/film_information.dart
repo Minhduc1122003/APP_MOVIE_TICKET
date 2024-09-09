@@ -13,7 +13,8 @@ import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
-import 'package:auto_size_text/auto_size_text.dart'; // Import package
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:lottie/lottie.dart'; // Import package
 
 class FilmInformation extends StatefulWidget {
   final int movieId;
@@ -24,7 +25,9 @@ class FilmInformation extends StatefulWidget {
 }
 
 class _FilmInformationState extends State<FilmInformation>
-    with AutomaticKeepAliveClientMixin<FilmInformation> {
+    with
+        AutomaticKeepAliveClientMixin<FilmInformation>,
+        SingleTickerProviderStateMixin<FilmInformation> {
   late ApiService _APIService;
 
   @override
@@ -113,13 +116,40 @@ class _FilmInformationState extends State<FilmInformation>
   bool get wantKeepAlive => true; // Giữ trạng thái của trang
 }
 
-class MovieHeader extends StatelessWidget {
+class MovieHeader extends StatefulWidget {
+  @override
+  _MovieHeaderState createState() => _MovieHeaderState();
+}
+
+class _MovieHeaderState extends State<MovieHeader>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  bool isFavourite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 500));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(10),
       child: BlocBuilder<FilmInfoBloc, FilmInfoBlocState>(
         builder: (context, state) {
+          if (state.movieDetails?.favourite == true) {
+            _controller.forward(); // Hiển thị animation đầy đủ nếu đã thích
+          } else {
+            _controller.reverse();
+          }
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -231,16 +261,12 @@ class MovieHeader extends StatelessWidget {
                                               actions: <Widget>[
                                                 TextButton(
                                                   onPressed: () {
-                                                    // Hành động khi người dùng nhấn "Không"
-
                                                     Navigator.of(context)
                                                         .pop(); // Đóng hộp thoại
                                                   },
-                                                  child: const Text(
-                                                    'Hủy',
-                                                    style: TextStyle(
-                                                        color: Colors.black),
-                                                  ),
+                                                  child: const Text('Hủy',
+                                                      style: TextStyle(
+                                                          color: Colors.black)),
                                                 ),
                                                 TextButton(
                                                   onPressed: () async {
@@ -258,11 +284,10 @@ class MovieHeader extends StatelessWidget {
                                                   child: const Text(
                                                     'Đăng Nhập',
                                                     style: TextStyle(
-                                                        color: Color(
-                                                          0XFF6F3CD7,
-                                                        ),
-                                                        fontWeight:
-                                                            FontWeight.bold),
+                                                      color: Color(0XFF6F3CD7),
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
                                                   ),
                                                 ),
                                               ],
@@ -270,6 +295,15 @@ class MovieHeader extends StatelessWidget {
                                           },
                                         );
                                       } else {
+                                        setState(() {
+                                          isFavourite = !isFavourite;
+                                          if (isFavourite) {
+                                            _controller.forward();
+                                          } else {
+                                            _controller.reverse();
+                                          }
+                                        });
+
                                         context.read<FilmInfoBloc>().add(
                                             ClickFavourite(
                                                 state.movieDetails,
@@ -288,30 +322,32 @@ class MovieHeader extends StatelessWidget {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(
-                                    state.movieDetails?.favourite == true
-                                        ? Icons.favorite_outlined
-                                        : Icons.favorite_border_sharp,
-                                    size: 14,
-                                    color: state.movieDetails?.favourite == true
-                                        ? Color(0XFF6F3CD7)
-                                        : Colors.black,
-                                  ),
-                                  const SizedBox(
-                                    width: 3, // Khoảng cách giữa icon và text
-                                  ),
-                                  Text(
-                                    state.movieDetails?.favourite == true
-                                        ? 'Đã thích'
-                                        : 'Thích',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                      color:
-                                          state.movieDetails?.favourite == true
-                                              ? Color(0XFF6F3CD7)
-                                              : Colors.black,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Lottie.network(
+                                        'https://lottie.host/e5a06743-9f9a-413a-a927-c7995c78aead/RX9Sv0FDU8.json',
+                                        width:
+                                            30, // Điều chỉnh kích thước Lottie vừa với nội dung
+                                        height: 30,
+                                        fit: BoxFit
+                                            .cover, // Đảm bảo Lottie vừa khít với kích thước đã đặt
+                                        controller: _controller,
+                                      ),
+                                      Text(
+                                        state.movieDetails?.favourite == true
+                                            ? 'Đã thích'
+                                            : 'Thích',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                          color:
+                                              state.movieDetails?.favourite ==
+                                                      true
+                                                  ? Color(0XFF6F3CD7)
+                                                  : Colors.black,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),

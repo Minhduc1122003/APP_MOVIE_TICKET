@@ -121,6 +121,38 @@ class ApiService {
     }
   }
 
+  Future<List<User>?> getAllUserData(String username) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/getAllUserData'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          'username': username, // Gửi username để server loại trừ user này
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // Nếu server trả về một response thành công
+        final List<dynamic> jsonResponse = jsonDecode(response.body);
+
+        // Chuyển đổi response thành danh sách User objects
+        List<User> users =
+            jsonResponse.map((data) => User.fromJson(data)).toList();
+
+        return users;
+      } else {
+        print('Failed to load users. Status code: ${response.statusCode}');
+        return null;
+      }
+    } catch (error) {
+      print('Error occurred: $error');
+      return null;
+    }
+  }
+
   // Giả sử bạn đã có sẵn model MovieDetails
   Future<List<MovieDetails>> getAllMovies() async {
     await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
