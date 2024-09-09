@@ -1,7 +1,9 @@
 ﻿CREATE DATABASE APP_MOVIE_TICKET;
-USE APP_MOVIE_TICKET;
+go
 
+USE APP_MOVIE_TICKET;
 GO
+
 CREATE TABLE Users (
     UserId INT PRIMARY KEY IDENTITY(1,1), -- Thiết lập UserId tự động tăng
     UserName VARCHAR(50) NOT NULL,
@@ -12,9 +14,18 @@ CREATE TABLE Users (
     Photo VARCHAR(50),
     Role BIT NOT NULL
 );
+go
+
+CREATE TABLE Cinemas (
+    CinemaID INT PRIMARY KEY IDENTITY(1,1),  -- Mã rạp, tự động tăng
+    CinemaName NVARCHAR(100) NOT NULL,       -- Tên rạp
+    Address NVARCHAR(255) NOT NULL           -- Địa chỉ của rạp
+);
+go
 
 CREATE TABLE Movies (
     MovieID INT PRIMARY KEY IDENTITY(1,1),
+	CinemaID INT,
     Title NVARCHAR(255) NOT NULL,
     IdGenre INT NOT NULL,
     Description NVARCHAR(MAX) NOT NULL,
@@ -23,12 +34,16 @@ CREATE TABLE Movies (
     PosterUrl VARCHAR(255),
     TrailerUrl VARCHAR(255),
     IdLanguage INT NOT NULL,
-    Age INT NOT NULL
+    Age INT NOT NULL,
+	CONSTRAINT FK_CinemaID FOREIGN KEY (CinemaID) REFERENCES Cinemas (CinemaID)
 );
+go
+
 CREATE TABLE Genre (
     IdGenre INT PRIMARY KEY IDENTITY(1,1),
     GenreName NVARCHAR(100) NOT NULL
 );
+go
 
 CREATE TABLE MovieGenre (
     MovieID INT NOT NULL,
@@ -37,6 +52,7 @@ CREATE TABLE MovieGenre (
     FOREIGN KEY (MovieID) REFERENCES Movies(MovieID),
     FOREIGN KEY (IdGenre) REFERENCES Genre(IdGenre)
 );
+go
 
 CREATE TABLE Rate (
     IdRate INT PRIMARY KEY IDENTITY(1,1),
@@ -47,12 +63,14 @@ CREATE TABLE Rate (
     FOREIGN KEY (MovieID) REFERENCES Movies(MovieID),
     FOREIGN KEY (UserId) REFERENCES Users(UserId)
 );
+go
 
 CREATE TABLE Language (
     IdLanguage INT PRIMARY KEY IDENTITY(1,1),
     LanguageName NVARCHAR(100) NOT NULL,
     Subtitle BIT NOT NULL
 );
+go
 
 CREATE TABLE MovieLanguage (
     MovieID INT NOT NULL,
@@ -61,6 +79,7 @@ CREATE TABLE MovieLanguage (
     FOREIGN KEY (MovieID) REFERENCES Movies(MovieID),
     FOREIGN KEY (IdLanguage) REFERENCES Language(IdLanguage)
 );
+go
 
 CREATE TABLE Favourite (
     IdFavourite INT PRIMARY KEY IDENTITY(1,1),
@@ -69,19 +88,7 @@ CREATE TABLE Favourite (
     FOREIGN KEY (MovieID) REFERENCES Movies(MovieID),
     FOREIGN KEY (UserId) REFERENCES Users(UserId)
 );
-
-CREATE TABLE Cinemas (
-    CinemaID INT PRIMARY KEY IDENTITY(1,1),  -- Mã rạp, tự động tăng
-    CinemaName NVARCHAR(100) NOT NULL,       -- Tên rạp
-    Address NVARCHAR(255) NOT NULL           -- Địa chỉ của rạp
-);
-ALTER TABLE Movies
-ADD CinemaID INT;
-
-ALTER TABLE Movies
-ADD CONSTRAINT FK_CinemaID FOREIGN KEY (CinemaID)
-REFERENCES Cinemas (CinemaID);
-
+go
 
 INSERT INTO Cinemas (CinemaName, Address) VALUES
 ('Cinema A', '123 Main St, City A'),
@@ -89,7 +96,7 @@ INSERT INTO Cinemas (CinemaName, Address) VALUES
 ('Cinema C', '789 Oak St, City C'),
 ('Cinema D', '101 Maple Ave, City D'),
 ('Cinema E', '202 Pine Rd, City E');
-
+go
 
 
 INSERT INTO Genre (GenreName) VALUES
@@ -98,7 +105,7 @@ INSERT INTO Genre (GenreName) VALUES
 ('Drama'),
 ('Horror'),
 ('Sci-Fi');
-
+go
 
 INSERT INTO Movies (Title, IdGenre, Description, Duration, ReleaseDate, PosterUrl, TrailerUrl, IdLanguage, Age) VALUES
 ('Avengers: Endgame', 1, 'The Avengers fight their last battle.', 181, '2019-04-26', 'endgame.jpg', 'endgame_trailer.mp4', 1, 13),
@@ -106,12 +113,7 @@ INSERT INTO Movies (Title, IdGenre, Description, Duration, ReleaseDate, PosterUr
 ('The Godfather', 3, 'A story about a crime family.', 175, '1972-03-24', 'godfather.jpg', 'godfather_trailer.mp4', 3, 18),
 ('It', 4, 'A horror story about a killer clown.', 135, '2017-09-08', 'it.jpg', 'it_trailer.mp4', 4, 16),
 ('Inception', 5, 'A thief who enters people''s dreams.', 148, '2010-07-16', 'inception.jpg', 'inception_trailer.mp4', 1, 13);
-
-UPDATE Movies SET CinemaID = 1 WHERE MovieID = 1;  -- Ví dụ: "Avengers: Endgame" chiếu tại "Cinema A"
-UPDATE Movies SET CinemaID = 2 WHERE MovieID = 2;  -- "The Hangover" chiếu tại "Cinema B"
-UPDATE Movies SET CinemaID = 3 WHERE MovieID = 3;  -- "The Godfather" chiếu tại "Cinema C"
-UPDATE Movies SET CinemaID = 4 WHERE MovieID = 4;  -- "It" chiếu tại "Cinema D"
-UPDATE Movies SET CinemaID = 5 WHERE MovieID = 5;  -- "Inception" chiếu tại "Cinema E"
+go
 
 INSERT INTO MovieGenre (MovieID, IdGenre) VALUES
 (1, 1),
@@ -119,6 +121,7 @@ INSERT INTO MovieGenre (MovieID, IdGenre) VALUES
 (3, 3),
 (4, 4),
 (5, 5);
+go
 
 INSERT INTO MovieGenre (MovieID, IdGenre) VALUES
 (1, 2),  -- Avengers: Endgame có thể loại Comedy
@@ -126,27 +129,27 @@ INSERT INTO MovieGenre (MovieID, IdGenre) VALUES
 (3, 4),  -- The Godfather có thể loại Horror
 (4, 5),  -- It có thể loại Sci-Fi
 (5, 1);  -- Inception có thể loại Action
+go
+
 INSERT INTO Users (UserName, Password, Email, FullName, PhoneNumber, Photo, Role)
 VALUES 
 ('tuananh', '123', 'john.doe@example.com', 'John Doe', '1234567890', 'john_photo.jpg', 1),
 ('jane_smith', 'securePass!', 'jane.smith@example.com', 'Jane Smith', '1234567890', 'jane_photo.jpg', 0),
 ('mike_jones', 'mike123!', 'mike.jones@example.com', 'Mike Jones', '1234567890', 'mike_photo.jpg', 1),
 ('lisa_brown', 'lisaSecure', 'lisa.brown@example.com', 'Lisa Brown', '1234567890', 'lisa_photo.jpg', 0),
-('tom_clark', 'tomPassword!', 'tom.clark@example.com', 'Tom Clark', '1234567890', 'tom_photo.jpg', 1);
-
+('tom_clark', 'tomPassword!', 'tom.clark@example.com', 'Tom Clark', '1234567890', 'tom_photo.jpg', 1),
+('Phat Do', '456', 'dtpphat2003@gmail.com', 'Do Tan Phat', '0777555816', 'phat_photo.jpg', 1);
+go
 
 INSERT INTO Rate (MovieID, UserId, Content, Rating) VALUES
 (3, 3, 'A masterpiece of storytelling.', 10.0),
 (4, 4, 'Scary and well-made.', 7.5),
-(5, 4, 'Mind-bending and thought-provoking.', 9.0);
-
-
--- Cập nhật thêm người đánh giá
-INSERT INTO Rate (MovieID, UserId, Content, Rating) VALUES
+(5, 4, 'Mind-bending and thought-provoking.', 9.0),
 (2, 3, 'A fun comedy with great moments.', 8.5),
 (3, 4, 'An unforgettable classic, highly recommend.', 9.7),
 (4, 5, 'Not as scary as expected, but still good.', 7.8),
 (5, 6, 'A mind-bending experience, worth watching.', 9.2);
+go
 
 INSERT INTO Language (LanguageName, Subtitle) VALUES
 ('English', 1),
@@ -154,7 +157,7 @@ INSERT INTO Language (LanguageName, Subtitle) VALUES
 ('Spanish', 0),
 ('German', 1),
 ('Japanese', 1);
-
+go
 
 INSERT INTO MovieLanguage (MovieID, IdLanguage) VALUES
 (1, 1),
@@ -162,46 +165,13 @@ INSERT INTO MovieLanguage (MovieID, IdLanguage) VALUES
 (3, 2),
 (4, 3),
 (5, 4);
-
+go
 
 INSERT INTO Favourite (MovieID, UserId) VALUES
-
 (3, 3),
 (4, 4),
 (5, 5);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+go
 
 CREATE TABLE Conversations (
     Id INT PRIMARY KEY IDENTITY(1,1),
@@ -211,7 +181,7 @@ CREATE TABLE Conversations (
     FOREIGN KEY (User1Id) REFERENCES Users(UserId) ON DELETE NO ACTION,
     FOREIGN KEY (User2Id) REFERENCES Users(UserId) ON DELETE NO ACTION
 );
-
+go
 
 CREATE TABLE Messages (
     Id INT PRIMARY KEY IDENTITY(1,1),
@@ -224,8 +194,9 @@ CREATE TABLE Messages (
     FOREIGN KEY (ReceiverId) REFERENCES Users(UserId) ON DELETE NO ACTION,
     FOREIGN KEY (ConversationId) REFERENCES Conversations(Id) ON DELETE CASCADE
 );
+go
 
-SELECT 
+/* SELECT 
     m.MovieID,
     m.Title,
     m.Description,
@@ -258,3 +229,4 @@ GROUP BY
     m.MovieID, m.Title, m.Description, m.Duration, m.ReleaseDate, 
     m.PosterUrl, m.TrailerUrl, l.LanguageName, c.CinemaName, 
     c.Address;
+*/
