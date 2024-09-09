@@ -1,7 +1,7 @@
-﻿CREATE DATABASE APP_MOVIE_TICKET;
+﻿CREATE DATABASE APP_MOVIE_TICKET2;
 go
 
-USE APP_MOVIE_TICKET;
+USE APP_MOVIE_TICKET2;
 GO
 
 CREATE TABLE Users (
@@ -12,17 +12,44 @@ CREATE TABLE Users (
     FullName NVARCHAR(155) NOT NULL,
     PhoneNumber INT NOT NULL,
     Photo VARCHAR(50),
-    Role BIT NOT NULL
+    Role BIT NOT NULL,
+	CreateDate Datetime not null,
+	UpdateDate Datetime not null,
+	UpdateBy VARCHAR(50)not null,
+	Status VARCHAR(20) not null, 
 );
 go
+-- BẢNG Users CHUẨN
+-- + 1 bảng lịch sử hoạt động của users
+-- + 1 bảng lịch sử hoạt động của admin
 
-CREATE TABLE Cinemas (
+
+
+CREATE TABLE Cinemas(
     CinemaID INT PRIMARY KEY IDENTITY(1,1),  -- Mã rạp, tự động tăng
     CinemaName NVARCHAR(100) NOT NULL,       -- Tên rạp
     Address NVARCHAR(255) NOT NULL           -- Địa chỉ của rạp
 );
 go
+CREATE TABLE CinemaRoom (
+	CinemaRoomID INT PRIMARY KEY,
+    CinemaID INT,  -- Mã rạp
+	FOREIGN KEY (CinemaID) REFERENCES Cinemas(CinemaID)
 
+);
+go
+-- BẢNG Cinemas CHUẨN
+
+CREATE TABLE Genre (
+    IdGenre INT PRIMARY KEY IDENTITY(1,1),
+    GenreName NVARCHAR(100) NOT NULL
+);
+go
+CREATE TABLE Age (
+    AgeID INT PRIMARY KEY IDENTITY(1,1),
+    Value NVARCHAR(10),
+);
+go
 CREATE TABLE Movies (
     MovieID INT PRIMARY KEY IDENTITY(1,1),
 	CinemaID INT,
@@ -33,15 +60,12 @@ CREATE TABLE Movies (
     ReleaseDate DATE NOT NULL,
     PosterUrl VARCHAR(255),
     TrailerUrl VARCHAR(255),
-    IdLanguage INT NOT NULL,
-    Age INT NOT NULL,
-	CONSTRAINT FK_CinemaID FOREIGN KEY (CinemaID) REFERENCES Cinemas (CinemaID)
-);
-go
-
-CREATE TABLE Genre (
-    IdGenre INT PRIMARY KEY IDENTITY(1,1),
-    GenreName NVARCHAR(100) NOT NULL
+    AgeID Int  NOT NULL,
+	SubTitle BIT,
+	Voiceover BIT,
+	CONSTRAINT FK_CinemaID FOREIGN KEY (CinemaID) REFERENCES Cinemas (CinemaID),
+	CONSTRAINT FK_IdGenre FOREIGN KEY (IdGenre) REFERENCES Genre(IdGenre),
+	CONSTRAINT FK_AgeID FOREIGN KEY (AgeID) REFERENCES Age(AgeID)
 );
 go
 
@@ -54,6 +78,7 @@ CREATE TABLE MovieGenre (
 );
 go
 
+
 CREATE TABLE Rate (
     IdRate INT PRIMARY KEY IDENTITY(1,1),
     MovieID INT NOT NULL,
@@ -65,21 +90,7 @@ CREATE TABLE Rate (
 );
 go
 
-CREATE TABLE Language (
-    IdLanguage INT PRIMARY KEY IDENTITY(1,1),
-    LanguageName NVARCHAR(100) NOT NULL,
-    Subtitle BIT NOT NULL
-);
-go
 
-CREATE TABLE MovieLanguage (
-    MovieID INT NOT NULL,
-    IdLanguage INT NOT NULL,
-    PRIMARY KEY (MovieID, IdLanguage),
-    FOREIGN KEY (MovieID) REFERENCES Movies(MovieID),
-    FOREIGN KEY (IdLanguage) REFERENCES Language(IdLanguage)
-);
-go
 
 CREATE TABLE Favourite (
     IdFavourite INT PRIMARY KEY IDENTITY(1,1),
@@ -90,89 +101,183 @@ CREATE TABLE Favourite (
 );
 go
 
-INSERT INTO Cinemas (CinemaName, Address) VALUES
-('Cinema A', '123 Main St, City A'),
-('Cinema B', '456 Elm St, City B'),
-('Cinema C', '789 Oak St, City C'),
-('Cinema D', '101 Maple Ave, City D'),
-('Cinema E', '202 Pine Rd, City E');
+CREATE TABLE BuyTicket (
+    BuyTicketId INT PRIMARY KEY IDENTITY(1,1),
+	UserId INT NOT NULL,
+    MovieID INT NOT NULL,
+    FOREIGN KEY (MovieID) REFERENCES Movies(MovieID),
+    FOREIGN KEY (UserId) REFERENCES Users(UserId)
+);
+go
+CREATE TABLE BuyTicketInfo (
+    BuyTicketInfoId INT PRIMARY KEY IDENTITY(1,1),
+	BuyTicketId INT NOT NULL,
+	Quantity int NOT NULL,
+	CreateDate Datetime NOT NULL,
+	TotalPrice float NOT NULL,
+	ComboID int,
+    FOREIGN KEY (BuyTicketId) REFERENCES BuyTicket(BuyTicketId),
+);
+
+go
+CREATE TABLE ComBo (
+    ComboID INT PRIMARY KEY IDENTITY(1,1),
+	BuyTicketInfoId INT NOT NULL,
+	Quantity int NOT NULL,
+	Price float NOT NULL,
+    FOREIGN KEY (BuyTicketInfoId) REFERENCES BuyTicketInfo(BuyTicketInfoId),
+);
+
+go
+CREATE TABLE Ticket(
+	BuyTicketId INT NOT NULL,
+	Price float NOT NULL,
+	ChairCode Nvarchar(10),
+	CinemaRoomID INT PRIMARY KEY,
+	FOREIGN KEY (CinemaRoomID) REFERENCES CinemaRoom(CinemaRoomID),
+    FOREIGN KEY (BuyTicketId) REFERENCES BuyTicket(BuyTicketId),
+);
 go
 
 
-INSERT INTO Genre (GenreName) VALUES
-('Action'),
-('Comedy'),
-('Drama'),
-('Horror'),
-('Sci-Fi');
-go
+---- INSERT DATA
+-- Insert dữ liệu cho bảng Users
+INSERT INTO Users (UserName, Password, Email, FullName, PhoneNumber, Photo, Role, CreateDate, UpdateDate, UpdateBy, Status)
+VALUES 
+('user1', 'password1', 'user1@example.com', N'Nguyễn Văn A', 123456789, 'photo1.jpg', 1, GETDATE(), GETDATE(), 'admin', 'Active'),
+('user2', 'password2', 'user2@example.com', N'Nguyễn Văn B', 987654321, 'photo2.jpg', 0, GETDATE(), GETDATE(), 'admin', 'Active'),
+('user3', 'password3', 'user3@example.com', N'Nguyễn Văn C', 456789123, 'photo3.jpg', 1, GETDATE(), GETDATE(), 'admin', 'Inactive'),
+('user4', 'password4', 'user4@example.com', N'Nguyễn Văn D', 789123456, 'photo4.jpg', 0, GETDATE(), GETDATE(), 'admin', 'Active'),
+('user5', 'password5', 'user5@example.com', N'Nguyễn Văn E', 321654987, 'photo5.jpg', 1, GETDATE(), GETDATE(), 'admin', 'Inactive');
 
-INSERT INTO Movies (Title, IdGenre, Description, Duration, ReleaseDate, PosterUrl, TrailerUrl, IdLanguage, Age) VALUES
-('Avengers: Endgame', 1, 'The Avengers fight their last battle.', 181, '2019-04-26', 'endgame.jpg', 'endgame_trailer.mp4', 1, 13),
-('The Hangover', 2, 'Three friends lose their groom.', 100, '2009-06-05', 'hangover.jpg', 'hangover_trailer.mp4', 2, 18),
-('The Godfather', 3, 'A story about a crime family.', 175, '1972-03-24', 'godfather.jpg', 'godfather_trailer.mp4', 3, 18),
-('It', 4, 'A horror story about a killer clown.', 135, '2017-09-08', 'it.jpg', 'it_trailer.mp4', 4, 16),
-('Inception', 5, 'A thief who enters people''s dreams.', 148, '2010-07-16', 'inception.jpg', 'inception_trailer.mp4', 1, 13);
-go
+-- Insert dữ liệu cho bảng Cinemas
+INSERT INTO Cinemas (CinemaName, Address)
+VALUES 
+(N'Rạp Chiếu Phim 1', N'123 Đường A, Thành phố X'),
+(N'Rạp Chiếu Phim 2', N'456 Đường B, Thành phố Y'),
+(N'Rạp Chiếu Phim 3', N'789 Đường C, Thành phố Z'),
+(N'Rạp Chiếu Phim 4', N'111 Đường D, Thành phố M'),
+(N'Rạp Chiếu Phim 5', N'222 Đường E, Thành phố N');
 
-INSERT INTO MovieGenre (MovieID, IdGenre) VALUES
+-- Insert dữ liệu cho bảng CinemaRoom
+INSERT INTO CinemaRoom (CinemaID,CinemaRoomID)
+VALUES 
+(1,1),
+(1,2),
+(1,3),
+(1,4),
+(1,5);
+
+-- Insert dữ liệu cho bảng Genre
+INSERT INTO Genre (GenreName)
+VALUES 
+(N'Action'),
+(N'Comedy'),
+(N'Drama'),
+(N'Horror'),
+(N'Sci-Fi');
+
+-- Insert dữ liệu cho bảng Age
+INSERT INTO Age (Value)
+VALUES 
+(N'C13'),
+(N'C16'),
+(N'C18'),
+(N'P'),
+(N'C21');
+
+-- Insert dữ liệu cho bảng Movies
+INSERT INTO Movies (CinemaID, Title, IdGenre, Description, Duration, ReleaseDate, PosterUrl, TrailerUrl, AgeID, SubTitle, Voiceover)
+VALUES 
+(1, N'Movie 1', 1, N'This is an action movie.', 120, '2023-01-01', 'poster1.jpg', 'trailer1.mp4', 1, 1, 0),
+(2, N'Movie 2', 2, N'This is a comedy movie.', 90, '2023-02-01', 'poster2.jpg', 'trailer2.mp4', 2, 1, 1),
+(3, N'Movie 3', 3, N'This is a drama movie.', 150, '2023-03-01', 'poster3.jpg', 'trailer3.mp4', 3, 0, 1),
+(4, N'Movie 4', 4, N'This is a horror movie.', 110, '2023-04-01', 'poster4.jpg', 'trailer4.mp4', 4, 1, 0),
+(5, N'Movie 5', 5, N'This is a sci-fi movie.', 130, '2023-05-01', 'poster5.jpg', 'trailer5.mp4', 5, 0, 1);
+
+-- Insert dữ liệu cho bảng MovieGenre
+INSERT INTO MovieGenre (MovieID, IdGenre)
+VALUES 
 (1, 1),
 (2, 2),
 (3, 3),
 (4, 4),
 (5, 5);
-go
 
-INSERT INTO MovieGenre (MovieID, IdGenre) VALUES
-(1, 2),  -- Avengers: Endgame có thể loại Comedy
-(2, 3),  -- The Hangover có thể loại Drama
-(3, 4),  -- The Godfather có thể loại Horror
-(4, 5),  -- It có thể loại Sci-Fi
-(5, 1);  -- Inception có thể loại Action
-go
-
-INSERT INTO Users (UserName, Password, Email, FullName, PhoneNumber, Photo, Role)
+-- Insert dữ liệu cho bảng Rate
+INSERT INTO Rate (MovieID, UserId, Content, Rating)
 VALUES 
-('tuananh', '123', 'john.doe@example.com', 'John Doe', '1234567890', 'john_photo.jpg', 1),
-('jane_smith', 'securePass!', 'jane.smith@example.com', 'Jane Smith', '1234567890', 'jane_photo.jpg', 0),
-('mike_jones', 'mike123!', 'mike.jones@example.com', 'Mike Jones', '1234567890', 'mike_photo.jpg', 1),
-('lisa_brown', 'lisaSecure', 'lisa.brown@example.com', 'Lisa Brown', '1234567890', 'lisa_photo.jpg', 0),
-('tom_clark', 'tomPassword!', 'tom.clark@example.com', 'Tom Clark', '1234567890', 'tom_photo.jpg', 1),
-('Phat Do', '456', 'dtpphat2003@gmail.com', 'Do Tan Phat', '0777555816', 'phat_photo.jpg', 1);
-go
+(1, 1, N'Great movie!', 4.5),
+(2, 2, N'Hilarious!', 4.0),
+(3, 3, N'So touching.', 5.0),
+(4, 4, N'Too scary!', 3.5),
+(5, 5, N'Out of this world!', 4.8);
 
-INSERT INTO Rate (MovieID, UserId, Content, Rating) VALUES
-(3, 3, 'A masterpiece of storytelling.', 10.0),
-(4, 4, 'Scary and well-made.', 7.5),
-(5, 4, 'Mind-bending and thought-provoking.', 9.0),
-(2, 3, 'A fun comedy with great moments.', 8.5),
-(3, 4, 'An unforgettable classic, highly recommend.', 9.7),
-(4, 5, 'Not as scary as expected, but still good.', 7.8),
-(5, 6, 'A mind-bending experience, worth watching.', 9.2);
-go
-
-INSERT INTO Language (LanguageName, Subtitle) VALUES
-('English', 1),
-('French', 1),
-('Spanish', 0),
-('German', 1),
-('Japanese', 1);
-go
-
-INSERT INTO MovieLanguage (MovieID, IdLanguage) VALUES
+-- Insert dữ liệu cho bảng Favourite
+INSERT INTO Favourite (MovieID, UserId)
+VALUES 
 (1, 1),
-(2, 1),
-(3, 2),
-(4, 3),
-(5, 4);
-go
-
-INSERT INTO Favourite (MovieID, UserId) VALUES
+(2, 2),
 (3, 3),
 (4, 4),
 (5, 5);
-go
 
+-- Insert dữ liệu cho bảng BuyTicket
+INSERT INTO BuyTicket (UserId, MovieID)
+VALUES 
+(1, 1),
+(2, 2),
+(3, 3),
+(4, 4),
+(5, 5);
+
+-- Insert dữ liệu cho bảng BuyTicketInfo
+INSERT INTO BuyTicketInfo (BuyTicketId, Quantity, CreateDate, TotalPrice, ComboID)
+VALUES 
+(1, 2, GETDATE(), 200.00, NULL),
+(2, 3, GETDATE(), 300.00, NULL),
+(3, 1, GETDATE(), 100.00, NULL),
+(4, 4, GETDATE(), 400.00, NULL),
+(5, 5, GETDATE(), 500.00, NULL);
+
+-- Insert dữ liệu cho bảng ComBo
+INSERT INTO ComBo (BuyTicketInfoId, Quantity, Price)
+VALUES 
+(1, 1, 50.00),
+(2, 2, 100.00),
+(3, 1, 50.00),
+(4, 2, 100.00),
+(5, 3, 150.00);
+
+-- Insert dữ liệu cho bảng Ticket
+INSERT INTO Ticket (BuyTicketId, Price, ChairCode, CinemaRoomID)
+VALUES 
+(1, 100.00, N'A1', 1),
+(2, 200.00, N'B2', 2),
+(3, 150.00, N'C3', 3),
+(4, 180.00, N'D4', 4),
+(5, 220.00, N'E5', 5);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-------------- SOCKET IO ---------------------
 CREATE TABLE Conversations (
     Id INT PRIMARY KEY IDENTITY(1,1),
     User1Id INT NOT NULL,
