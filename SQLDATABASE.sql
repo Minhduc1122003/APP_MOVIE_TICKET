@@ -150,6 +150,7 @@ VALUES
 ('user4', 'password4', 'user4@example.com', N'Nguyễn Văn D', 789123456, 'photo4.jpg', 0, GETDATE(), GETDATE(), 'admin', 'Active'),
 ('user5', 'password5', 'user5@example.com', N'Nguyễn Văn E', 321654987, 'photo5.jpg', 1, GETDATE(), GETDATE(), 'admin', 'Inactive');
 
+
 -- Insert dữ liệu cho bảng Cinemas
 INSERT INTO Cinemas (CinemaName, Address)
 VALUES 
