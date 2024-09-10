@@ -4,6 +4,7 @@ import 'package:flutter_app_chat/auth/chat_service.dart';
 import 'package:flutter_app_chat/components/my_customIcon_keyboad_left.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_chat/chat_online_page.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_profile/admin_user_manager/admin_user_manager_page.dart';
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
@@ -137,7 +138,13 @@ class _ProfilePage extends State<ProfilePage> {
                                         color: Colors.pink,
                                         title: 'Quản lý người dùng',
                                         icon: Icons.help_center,
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          Navigator.push(
+                                              context,
+                                              SlideFromRightPageRoute(
+                                                  page:
+                                                      AdminUserManagerPage()));
+                                        },
                                       ),
                                       UtilityButton(
                                         color: Colors.pink,
