@@ -8,15 +8,15 @@ class MovieDetails {
   final String releaseDate;
   final String posterUrl;
   final String trailerUrl;
-  final String languageName;
-  final bool subTitle;
+  final bool subTitle; // Đã thêm SubTitle
+  final bool voiceover; // Đã thêm Voiceover
+  final String age; // Thay thế LanguageName bằng Age
   final String genres;
   final String cinemaName;
   final String cinemaAddress;
   final String? reviewContents; // Có thể null
   final double? averageRating; // Có thể null
   final int reviewCount;
-  final int age;
   final bool? favourite; // Không sử dụng late
   final int rating9_10;
   final int rating7_8;
@@ -32,8 +32,8 @@ class MovieDetails {
     required this.releaseDate,
     required this.posterUrl,
     required this.trailerUrl,
-    required this.languageName,
     required this.subTitle,
+    required this.voiceover,
     required this.genres,
     required this.cinemaName,
     required this.cinemaAddress,
@@ -63,8 +63,8 @@ class MovieDetails {
       posterUrl: json['PosterUrl'],
       trailerUrl: json['TrailerUrl'],
       age: json['Age'],
-      languageName: json['LanguageName'],
-      subTitle: json['Subtitle'],
+      subTitle: json['SubTitle'],
+      voiceover: json['Voiceover'],
       genres: json['Genres'],
       cinemaName: json['CinemaName'],
       cinemaAddress: json['CinemaAddress'],
@@ -93,9 +93,10 @@ class MovieDetails {
       'ReleaseDate': releaseDate, // Định dạng ngày tháng
       'PosterUrl': posterUrl,
       'TrailerUrl': trailerUrl,
-      'Age': age,
-      'LanguageName': languageName,
       'Subtitle': subTitle,
+      'Voiceover': voiceover,
+      'Age': age,
+
       'Genres': genres,
       'CinemaName': cinemaName,
       'CinemaAddress': cinemaAddress,
@@ -119,15 +120,15 @@ class MovieDetails {
     String? releaseDate,
     String? posterUrl,
     String? trailerUrl,
-    String? languageName,
     bool? subTitle,
+    bool? voiceover,
+    String? age,
     String? genres,
     String? cinemaName,
     String? cinemaAddress,
     String? reviewContents,
     double? averageRating,
     int? reviewCount,
-    int? age,
     bool? favourite,
     int? rating9_10,
     int? rating7_8,
@@ -143,8 +144,8 @@ class MovieDetails {
       releaseDate: releaseDate ?? this.releaseDate,
       posterUrl: posterUrl ?? this.posterUrl,
       trailerUrl: trailerUrl ?? this.trailerUrl,
-      languageName: languageName ?? this.languageName,
       subTitle: subTitle ?? this.subTitle,
+      voiceover: voiceover ?? this.voiceover,
       genres: genres ?? this.genres,
       cinemaName: cinemaName ?? this.cinemaName,
       cinemaAddress: cinemaAddress ?? this.cinemaAddress,

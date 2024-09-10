@@ -438,8 +438,10 @@ class MovieInfo extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildInfoItem('Ngôn ngữ',
-                        '${state.movieDetails?.languageName}${state.movieDetails?.subTitle == true ? ', Phụ Đề' : ''}'),
+                    _buildInfoItem(
+                        'Ngôn ngữ',
+                        '${state.movieDetails?.voiceover == true ? 'Lồng tiếng' : ''}',
+                        '${state.movieDetails?.subTitle == true ? 'Phụ Đề' : ''}'),
                   ],
                 ),
               ),
@@ -450,13 +452,35 @@ class MovieInfo extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoItem(String title, String value) {
+  Widget _buildInfoItem(String title, [String? value, String? value3]) {
     return Column(
+      crossAxisAlignment:
+          CrossAxisAlignment.center, // Căn giữa theo chiều ngang cho Column
       children: [
-        Text(title, style: TextStyle(color: Colors.grey, fontSize: 12)),
-        SizedBox(height: 4),
-        Text(value,
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        Align(
+          alignment: Alignment.center, // Cố định vị trí của title
+          child: Text(
+            title,
+            style: TextStyle(color: Colors.grey, fontSize: 12),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        SizedBox(height: 5),
+        if (value != null &&
+            value.isNotEmpty) // Kiểm tra giá trị value có tồn tại và không rỗng
+          Text(
+            value,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+        if (value3 != null &&
+            value3
+                .isNotEmpty) // Kiểm tra giá trị value3 có tồn tại và không rỗng
+          Text(
+            value3,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
       ],
     );
   }
