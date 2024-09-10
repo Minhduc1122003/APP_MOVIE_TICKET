@@ -7,6 +7,10 @@ class User {
   final int phoneNumber; // Đảm bảo phoneNumber là int
   final String photo;
   final bool role;
+  final DateTime createDate;
+  final DateTime updateDate;
+  final String updateBy;
+  final String status;
   User({
     required this.userId,
     required this.userName,
@@ -16,8 +20,13 @@ class User {
     required this.phoneNumber,
     required this.photo,
     required this.role,
+    required this.createDate,
+    required this.updateDate,
+    required this.updateBy,
+    required this.status,
   });
 
+  // Factory constructor to create a User instance from JSON
   // Factory constructor to create a User instance from JSON
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
@@ -31,6 +40,27 @@ class User {
           : int.tryParse(json['PhoneNumber'].toString()) ?? 0,
       photo: json['Photo'] as String,
       role: json['Role'] as bool,
+      createDate: DateTime.parse(json['CreateDate'] as String),
+      updateDate: DateTime.parse(json['UpdateDate'] as String),
+      updateBy: json['UpdateBy'] as String,
+      status: json['Status'] as String,
     );
   }
+
+  // Map<String, dynamic> toJson() {
+  //   return {
+  //     'UserId': userId,
+  //     'UserName': userName,
+  //     'Password': password,
+  //     'Email': email,
+  //     'FullName': fullName,
+  //     'PhoneNumber': phoneNumber.toString(),
+  //     'Photo': photo,
+  //     'Role': role,
+  //     'CreateDate': createDate.toIso8601String(),
+  //     'UpdateDate': updateDate.toIso8601String(),
+  //     'UpdateBy': updateBy,
+  //     'Status': status,
+  //   };
+  // }
 }
