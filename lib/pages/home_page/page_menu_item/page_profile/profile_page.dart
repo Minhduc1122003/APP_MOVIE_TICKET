@@ -130,74 +130,20 @@ class _ProfilePage extends State<ProfilePage> {
                                 ),
                               ],
                             ),
-                            UtilitySection(
-                              title: 'Quản trị',
-                              buttons: UserManager.instance.user?.role == true
-                                  ? [
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Quản lý người dùng',
-                                        icon: Icons.help_center,
-                                        onPressed: () {
-                                          Navigator.push(
-                                              context,
-                                              SlideFromRightPageRoute(
-                                                  page:
-                                                      AdminUserManagerPage()));
-                                        },
-                                      ),
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Quản lý phim',
-                                        icon: Icons.help_center,
-                                        onPressed: () {},
-                                      ),
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Quản lý phòng chiếu',
-                                        icon: Icons.help_center,
-                                        onPressed: () {},
-                                      ),
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Quản lý đồ ăn',
-                                        icon: Icons.help_center,
-                                        onPressed: () {},
-                                      ),
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Thống kê & doanh thu',
-                                        icon: Icons.help_center,
-                                        onPressed: () {},
-                                      ),
-                                    ]
-                                  : [
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Trung tâm trợ giúp',
-                                        icon: Icons.help_center,
-                                        onPressed: () {},
-                                      ),
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Hộp thư trợ',
-                                        icon: Icons.mail,
-                                        onPressed: () {},
-                                      ),
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Báo cáo sự cố',
-                                        icon: Icons.report_problem,
-                                        onPressed: () {},
-                                      ),
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Điều khoản & chính sách',
-                                        icon: Icons.policy,
-                                        onPressed: () {},
-                                      ),
-                                    ],
-                            ),
+                            if (UserManager.instance.user?.role == true)
+                              UtilitySection(title: 'Quản trị', buttons: [
+                                UtilityButton(
+                                  color: Colors.pink,
+                                  title: 'Trung tâm quản lý',
+                                  icon: Icons.help_center,
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        SlideFromRightPageRoute(
+                                            page: AdminUserManagerPage()));
+                                  },
+                                ),
+                              ]),
                             UtilitySection(
                               title: 'Trợ giúp & hỗ trợ',
                               buttons: UserManager.instance.user?.role == true

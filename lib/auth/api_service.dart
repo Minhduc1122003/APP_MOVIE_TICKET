@@ -20,10 +20,10 @@ class ApiService {
     // baseUrl = 'http://192.168.1.12:8081';
 
     // wifi trọ của đức:
-    //baseUrl = 'http://192.168.100.24:8081';
+    baseUrl = 'http://192.168.100.24:8081';
 
-    // wifi cty minhduc
-    baseUrl = 'http://192.168.1.23:8081';
+    // wifi cty minhduc 
+    // baseUrl = 'http://192.168.1.23:8081';
 
     // wifi cf24/24
     //baseUrl = 'http://192.168.1.157:8081';

@@ -54,15 +54,16 @@ class _AdminUserManagerPageState extends State<AdminUserManagerPage> {
       searchQuery = query;
       _isSearchLoading = true;
 
-      // Filter the list of users based on the search query
       _displayedUsers = _allUsers.where((user) {
         final nameLower = user.fullName?.toLowerCase();
         final emailLower = user.email?.toLowerCase();
+        _isSearchLoading = false;
+
         return nameLower!.contains(lowerCaseQuery) ||
             emailLower!.contains(lowerCaseQuery);
       }).toList();
 
-      _isSearchLoading = false;
+      _isSearchLoading = false; // Đặt lại loading sau khi lọc xong
     });
   }
 
@@ -89,6 +90,7 @@ class _AdminUserManagerPageState extends State<AdminUserManagerPage> {
       });
       print('Error loading users: $e');
     }
+    _isLoading = false;
   }
 
   Future<void> _loadMore() async {
@@ -121,6 +123,7 @@ class _AdminUserManagerPageState extends State<AdminUserManagerPage> {
         });
       }
     }
+    _isLoading = false;
   }
 
   @override
@@ -178,7 +181,7 @@ class _AdminUserManagerPageState extends State<AdminUserManagerPage> {
               controller: _scrollController,
               itemCount: _displayedUsers.length + (_hasMore ? 1 : 0),
               itemBuilder: (context, index) {
-                if (index == _displayedUsers.length) {
+                if (index == _displayedUsers.length && _hasMore) {
                   return Center(child: CircularProgressIndicator());
                 }
 
