@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart'; // Import Lottie package
 
 class UtilitySection extends StatefulWidget {
   final String title;
@@ -16,32 +17,36 @@ class UtilitySection extends StatefulWidget {
 
 class _UtilitySectionState extends State<UtilitySection> {
   bool _showAllButtons = false;
-  // Map để lưu trạng thái toggle của các nút
   final Map<int, bool> _toggleStates = {};
+  final Map<int, bool> _expandStates = {};
 
   @override
   void initState() {
     super.initState();
-    // Khởi tạo trạng thái toggle cho từng nút
     for (int i = 0; i < widget.buttons.length; i++) {
       _toggleStates[i] = widget.buttons[i].isToggled;
+      _expandStates[i] = false;
     }
   }
 
   void _handleToggleChanged(int index, bool newState) {
     setState(() {
       _toggleStates[index] = newState;
-      // In giá trị của toggle khi thay đổi trạng thái
       if (widget.buttons[index].title == 'Ngôn ngữ') {
         print('Trạng thái toggle hiện tại của "Ngôn ngữ": $newState');
       }
     });
   }
 
+  void _handleExpand(int index) {
+    setState(() {
+      _expandStates[index] = !(_expandStates[index] ?? false);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final showMoreButton = widget.buttons.length > 5;
-
     final visibleButtons =
         _showAllButtons ? widget.buttons : widget.buttons.take(5).toList();
 
@@ -56,7 +61,7 @@ class _UtilitySectionState extends State<UtilitySection> {
           ),
         ),
         Card(
-          margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+          margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10.0),
           ),
@@ -70,16 +75,82 @@ class _UtilitySectionState extends State<UtilitySection> {
                   children: visibleButtons.asMap().entries.map((entry) {
                     final index = entry.key;
                     final button = entry.value;
-                    return UtilityButton(
-                      title: button.title,
-                      icon: button.icon,
-                      onPressed: button.onPressed,
-                      color: button.color,
-                      colorText: button.colorText,
-                      trailingIconType: button.trailingIconType,
-                      isToggled: _toggleStates[index] ?? false,
-                      onToggleChanged: (newState) =>
-                          _handleToggleChanged(index, newState),
+                    return Column(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: (_expandStates[index] ?? false)
+                                    ? Colors.pink.withOpacity(0.4)
+                                    : Colors.transparent,
+                                width: 2.0,
+                              ),
+                            ),
+                          ),
+                          child: UtilityButton(
+                            title: button.title,
+                            icon: button.icon,
+                            onPressed: () {
+                              if (button.isExpandable) {
+                                _handleExpand(index);
+                              } else {
+                                button.onPressed();
+                              }
+                            },
+                            color: button.color,
+                            colorText: button.colorText,
+                            trailingIconType: button.isExpandable
+                                ? (_expandStates[index] ?? false
+                                    ? TrailingIconType.expandLess
+                                    : TrailingIconType.expandMore)
+                                : button.trailingIconType,
+                            isToggled: _toggleStates[index] ?? false,
+                            onToggleChanged: (newState) =>
+                                _handleToggleChanged(index, newState),
+                            isExpandable: button.isExpandable,
+                            textStyle: button.textStyle,
+                          ),
+                        ),
+                        if (button.isExpandable)
+                          AnimatedSize(
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.easeInOut,
+                            child: ClipRect(
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 500),
+                                curve: Curves.easeInOut,
+                                height: (_expandStates[index] ?? false)
+                                    ? (button.expandedItems?.length ?? 0) * 56.0
+                                    : 0,
+                                child: SingleChildScrollView(
+                                  physics: NeverScrollableScrollPhysics(),
+                                  child: Column(
+                                    children: button.expandedItems
+                                            ?.map((item) => Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          left: 15.0,
+                                                          right: 20.0),
+                                                  child: UtilityButton(
+                                                    title: item.title,
+                                                    icon: item.icon,
+                                                    onPressed: item.onPressed,
+                                                    color: item.color,
+                                                    colorText: item.colorText,
+                                                    trailingIconType:
+                                                        item.trailingIconType,
+                                                    textStyle: item.textStyle,
+                                                  ),
+                                                ))
+                                            .toList() ??
+                                        [],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     );
                   }).toList(),
                 ),
@@ -109,9 +180,14 @@ class _UtilitySectionState extends State<UtilitySection> {
   }
 }
 
+// UtilityButton class remains unchanged
+
+// UtilityButton class remains unchanged
+
 class UtilityButton extends StatelessWidget {
   final String title;
-  final IconData icon;
+  final IconData? icon; // Change to IconData?
+  final Widget? lottieAnimation; // Add new property for Lottie animation
   final VoidCallback onPressed;
   final Color color;
   final Color toggleColor;
@@ -119,11 +195,15 @@ class UtilityButton extends StatelessWidget {
   final TrailingIconType trailingIconType;
   final bool isToggled;
   final void Function(bool)? onToggleChanged;
+  final bool isExpandable;
+  final List<UtilityButton>? expandedItems;
+  final TextStyle? textStyle;
 
   const UtilityButton({
     Key? key,
     required this.title,
-    required this.icon,
+    this.icon,
+    this.lottieAnimation, // Initialize the new property
     required this.onPressed,
     required this.color,
     this.colorText = Colors.black,
@@ -131,41 +211,68 @@ class UtilityButton extends StatelessWidget {
     this.trailingIconType = TrailingIconType.chevronRight,
     this.isToggled = false,
     this.onToggleChanged,
+    this.isExpandable = false,
+    this.expandedItems,
+    this.textStyle,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    Widget? leadingWidget;
+
+    if (lottieAnimation != null) {
+      leadingWidget = lottieAnimation;
+    } else if (icon != null) {
+      leadingWidget = Icon(icon, color: color, size: textStyle?.fontSize);
+    }
+
     Icon? trailingIcon;
     switch (trailingIconType) {
       case TrailingIconType.none:
         trailingIcon = null;
         break;
       case TrailingIconType.chevronRight:
-        trailingIcon = const Icon(Icons.chevron_right);
+        trailingIcon = Icon(Icons.chevron_right, size: textStyle?.fontSize);
         break;
       case TrailingIconType.toggle:
         trailingIcon = Icon(
           isToggled ? Icons.toggle_on : Icons.toggle_off,
           color: toggleColor,
+          size: textStyle?.fontSize,
+        );
+        break;
+      case TrailingIconType.expandMore:
+        trailingIcon = Icon(
+          Icons.expand_more,
+          size: textStyle?.fontSize,
+        );
+        break;
+      case TrailingIconType.expandLess:
+        trailingIcon = Icon(
+          Icons.expand_less,
+          size: textStyle?.fontSize,
+          color: Colors.pink,
         );
         break;
     }
 
     return ListTile(
-      leading: Icon(icon, color: color),
+      leading: leadingWidget,
       title: Text(
         title,
-        style: TextStyle(color: colorText),
+        style: textStyle ??
+            TextStyle(color: colorText, fontWeight: FontWeight.bold),
       ),
       trailing: trailingIcon,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
       onTap: () {
         if (trailingIconType == TrailingIconType.toggle) {
           bool newState = !isToggled;
           if (onToggleChanged != null) {
-            onToggleChanged!(newState); // Gọi callback với trạng thái mới
+            onToggleChanged!(newState);
           }
         }
-        onPressed(); // Gọi hàm onPressed bên ngoài
+        onPressed();
       },
     );
   }
@@ -175,4 +282,6 @@ enum TrailingIconType {
   none,
   chevronRight,
   toggle,
+  expandMore,
+  expandLess,
 }

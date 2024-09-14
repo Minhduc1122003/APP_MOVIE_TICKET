@@ -12,13 +12,19 @@ CREATE TABLE Users (
     FullName NVARCHAR(155) NOT NULL,
     PhoneNumber INT NOT NULL,
     Photo VARCHAR(50),
-    Role BIT NOT NULL,
+    Role TINYINT NOT NULL, -- Sử dụng TINYINT để lưu trữ nhiều giá trị, 0: khach hàng, 1: nhân viên, 2 admin
 	CreateDate Datetime not null,
 	UpdateDate Datetime not null,
 	UpdateBy VARCHAR(50)not null,
-	Status VARCHAR(20) not null, 
+	Status NVARCHAR(20) not null, 
+	IsDelete BIT not null, -- 0: false, 1: true;
 );
 go
+INSERT INTO Users (UserName, Password, Email, FullName, PhoneNumber, Photo, Role, CreateDate, UpdateDate, UpdateBy, Status,IsDelete)
+VALUES 
+('minhduc1122003', '123123', 'user1@example.com', N'Lê Minh Đức KH', 123456789, 'photo1.jpg', 1, GETDATE(), GETDATE(), 0, N'Đang hoạt động',0),
+('minhduc11220031', '123123', 'user1@example.com', N'Lê Minh Đức NV', 123456789, 'photo1.jpg', 1, GETDATE(), GETDATE(), 1, N'Đang hoạt động',0),
+('minhduc11220032', '123123', 'user1@example.com', N'Lê Minh Đức AD', 123456789, 'photo1.jpg', 1, GETDATE(), GETDATE(), 2, N'Đang hoạt động',0)
 -- BẢNG Users CHUẨN
 -- + 1 bảng lịch sử hoạt động của users
 -- + 1 bảng lịch sử hoạt động của admin
@@ -31,6 +37,11 @@ CREATE TABLE Cinemas(
     Address NVARCHAR(255) NOT NULL           -- Địa chỉ của rạp
 );
 go
+
+INSERT INTO Cinemas (CinemaName, Address)
+VALUES 
+(N'Panthers Cinemar', N'Nguyễn Văn Quá, Quận 12, TP.HCM')
+
 CREATE TABLE CinemaRoom (
 	CinemaRoomID INT PRIMARY KEY,
     CinemaID INT,  -- Mã rạp
@@ -38,6 +49,15 @@ CREATE TABLE CinemaRoom (
 
 );
 go
+-- Insert dữ liệu cho bảng CinemaRoom
+INSERT INTO CinemaRoom (CinemaID,CinemaRoomID)
+VALUES 
+(1,1),
+(1,2),
+(1,3),
+(1,4),
+(1,5);
+
 -- BẢNG Cinemas CHUẨN
 
 CREATE TABLE Genre (
@@ -45,11 +65,48 @@ CREATE TABLE Genre (
     GenreName NVARCHAR(100) NOT NULL
 );
 go
+
+-- Insert dữ liệu cho bảng Thể loại (Genre)
+INSERT INTO Genre (GenreName)
+VALUES 
+(N'Hành động'),
+(N'Phiêu lưu'),
+(N'Hài'),
+(N'Chính kịch'),
+(N'Tâm lý'),
+(N'Kinh dị'),
+(N'Tội phạm'),
+(N'Tình cảm'),
+(N'Khoa học viễn tưởng'),
+(N'Giả tưởng'),
+(N'Hoạt hình'),
+(N'Chiến tranh'),
+(N'Âm nhạc'),
+(N'Tài liệu'),
+(N'Gia đình'),
+(N'Thần thoại'),
+(N'Lịch sử'),
+(N'Hình sự'),
+(N'Bí ẩn'),
+(N'Võ thuật'),
+(N'Siêu anh hùng'),
+(N'Viễn Tây');
+
+
 CREATE TABLE Age (
     AgeID INT PRIMARY KEY IDENTITY(1,1),
     Value NVARCHAR(10),
 );
 go
+-- Insert dữ liệu cho bảng Tuổi(Age)
+INSERT INTO Age (Value)
+VALUES 
+(N'K'),
+(N'P'),
+(N'13+'),
+(N'16+'),
+(N'18+');
+
 CREATE TABLE Movies (
     MovieID INT PRIMARY KEY IDENTITY(1,1),
 	CinemaID INT,
@@ -63,11 +120,14 @@ CREATE TABLE Movies (
     AgeID Int  NOT NULL,
 	SubTitle BIT,
 	Voiceover BIT,
+	StatusMovie NVARCHAR (20) NOT NULL,
+	IsDelete BIT NOT NULL
 	CONSTRAINT FK_CinemaID FOREIGN KEY (CinemaID) REFERENCES Cinemas (CinemaID),
 	CONSTRAINT FK_IdGenre FOREIGN KEY (IdGenre) REFERENCES Genre(IdGenre),
 	CONSTRAINT FK_AgeID FOREIGN KEY (AgeID) REFERENCES Age(AgeID)
 );
 go
+
 
 CREATE TABLE MovieGenre (
     MovieID INT NOT NULL,
@@ -77,7 +137,18 @@ CREATE TABLE MovieGenre (
     FOREIGN KEY (IdGenre) REFERENCES Genre(IdGenre)
 );
 go
+INSERT INTO Movies (CinemaID, Title, IdGenre, Description, Duration, ReleaseDate, PosterUrl, TrailerUrl, AgeID, SubTitle, Voiceover,StatusMovie,IsDelete)
+VALUES 
+(1, N'Làm Giàu Với Ma', 1, N'Kể về Lanh (Tuấn Trần) - con trai của ông Đạo làm nghề mai táng (Hoài Linh), lâm vào đường cùng vì cờ bạc. Trong cơn túng quẫn, “duyên tình” đẩy đưa anh gặp một ma nữ (Diệp Bảo Ngọc) và cùng nhau thực hiện những “kèo thơm" để phục vụ mục đích của cả hai.', 120, '2024-08-30', 'lamgiauvoima.jpg', 'https://youtu.be/2DmOv-pM1bM', 4, 1, 0,N'Đang chiếu',0),
+(1, N'Tìm Kiếm Tài Năng Âm Phủ', 1, N'Newbie - một hồn ma mới, kinh hoàng nhận ra rằng cô chỉ còn 28 ngày nữa cho đến khi linh hồn của cô biến mất khỏi thế giới. Makoto, một đặc vụ quỷ tiếp cận Newbie với lời đề nghị cô kết hợp cùng ngôi sao quỷ Catherine để dựng lại câu chuyện kinh dị huyền thoại về khách sạn Wang Lai. Nếu câu chuyện đủ sức hù dọa người sống thì cái tên của cô sẽ trở thành huyền thoại và linh hồn của Newbie sẽ tiếp tục được sống dưới địa ngục.', 112, '2024-09-13', 'timkiemtainangamphu.jpg', 'https://youtu.be/KsnXHxMkf70', 4, 1, 0,N'Đang chiếu',0);
 
+
+INSERT INTO MovieGenre (MovieID, IdGenre)
+VALUES 
+(1, 1),
+(1, 2),
+(2, 1),
+(2, 2)
 
 CREATE TABLE Rate (
     IdRate INT PRIMARY KEY IDENTITY(1,1),
@@ -139,80 +210,18 @@ CREATE TABLE Ticket(
 );
 go
 
-
 ---- INSERT DATA
--- Insert dữ liệu cho bảng Users
-INSERT INTO Users (UserName, Password, Email, FullName, PhoneNumber, Photo, Role, CreateDate, UpdateDate, UpdateBy, Status)
-VALUES 
-('user1', 'password1', 'user1@example.com', N'Nguyễn Văn A', 123456789, 'photo1.jpg', 1, GETDATE(), GETDATE(), 'admin', 'Active'),
-('user2', 'password2', 'user2@example.com', N'Nguyễn Văn B', 987654321, 'photo2.jpg', 0, GETDATE(), GETDATE(), 'admin', 'Active'),
-('user3', 'password3', 'user3@example.com', N'Nguyễn Văn C', 456789123, 'photo3.jpg', 1, GETDATE(), GETDATE(), 'admin', 'Inactive'),
-('user4', 'password4', 'user4@example.com', N'Nguyễn Văn D', 789123456, 'photo4.jpg', 0, GETDATE(), GETDATE(), 'admin', 'Active'),
-('user5', 'password5', 'user5@example.com', N'Nguyễn Văn E', 321654987, 'photo5.jpg', 1, GETDATE(), GETDATE(), 'admin', 'Inactive');
 
 
--- Insert dữ liệu cho bảng Cinemas
-INSERT INTO Cinemas (CinemaName, Address)
-VALUES 
-(N'Rạp Chiếu Phim 1', N'123 Đường A, Thành phố X'),
-(N'Rạp Chiếu Phim 2', N'456 Đường B, Thành phố Y'),
-(N'Rạp Chiếu Phim 3', N'789 Đường C, Thành phố Z'),
-(N'Rạp Chiếu Phim 4', N'111 Đường D, Thành phố M'),
-(N'Rạp Chiếu Phim 5', N'222 Đường E, Thành phố N');
 
--- Insert dữ liệu cho bảng CinemaRoom
-INSERT INTO CinemaRoom (CinemaID,CinemaRoomID)
-VALUES 
-(1,1),
-(1,2),
-(1,3),
-(1,4),
-(1,5);
 
--- Insert dữ liệu cho bảng Genre
-INSERT INTO Genre (GenreName)
-VALUES 
-(N'Action'),
-(N'Comedy'),
-(N'Drama'),
-(N'Horror'),
-(N'Sci-Fi');
 
--- Insert dữ liệu cho bảng Age
-INSERT INTO Age (Value)
-VALUES 
-(N'C13'),
-(N'C16'),
-(N'C18'),
-(N'P'),
-(N'C21');
 
--- Insert dữ liệu cho bảng Movies
-INSERT INTO Movies (CinemaID, Title, IdGenre, Description, Duration, ReleaseDate, PosterUrl, TrailerUrl, AgeID, SubTitle, Voiceover)
-VALUES 
-(1, N'Movie 1', 1, N'This is an action movie.', 120, '2023-01-01', 'poster1.jpg', 'trailer1.mp4', 1, 1, 0),
-(2, N'Movie 2', 2, N'This is a comedy movie.', 90, '2023-02-01', 'poster2.jpg', 'trailer2.mp4', 2, 1, 1),
-(3, N'Movie 3', 3, N'This is a drama movie.', 150, '2023-03-01', 'poster3.jpg', 'trailer3.mp4', 3, 0, 1),
-(4, N'Movie 4', 4, N'This is a horror movie.', 110, '2023-04-01', 'poster4.jpg', 'trailer4.mp4', 4, 1, 0),
-(5, N'Movie 5', 5, N'This is a sci-fi movie.', 130, '2023-05-01', 'poster5.jpg', 'trailer5.mp4', 5, 0, 1);
--- Insert dữ liệu cho bảng MovieGenre
-INSERT INTO MovieGenre (MovieID, IdGenre)
-VALUES 
-(1, 1),
-(2, 2),
-(3, 3),
-(4, 4),
-(5, 5);
 
--- Insert dữ liệu cho bảng Rate
-INSERT INTO Rate (MovieID, UserId, Content, Rating)
-VALUES 
-(1, 1, N'Great movie!', 4.5),
-(2, 2, N'Hilarious!', 4.0),
-(3, 3, N'So touching.', 5.0),
-(4, 4, N'Too scary!', 3.5),
-(5, 5, N'Out of this world!', 4.8);
 
+
+
+/*
 -- Insert dữ liệu cho bảng Favourite
 INSERT INTO Favourite (MovieID, UserId)
 VALUES 
@@ -257,6 +266,7 @@ VALUES
 (3, 150.00, N'C3', 3),
 (4, 180.00, N'D4', 4),
 (5, 220.00, N'E5', 5);
+*/
 
 
 
@@ -273,8 +283,7 @@ VALUES
 
 
 
-
-
+/*
 
 
 -------------- SOCKET IO ---------------------
@@ -301,7 +310,7 @@ CREATE TABLE Messages (
 );
 go
 
-/* SELECT 
+ SELECT 
     m.MovieID,
     m.Title,
     m.Description,
@@ -326,3 +335,4 @@ LEFT JOIN
     Genre g ON mg.IdGenre = g.IdGenre
 LEFT JOIN 
     Cinemas c ON m.CinemaID = c.CinemaID
+	*/
