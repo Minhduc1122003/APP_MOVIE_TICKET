@@ -31,6 +31,7 @@ class _ProfilePage extends State<ProfilePage> {
   void initState() {
     super.initState();
     _chatService = ChatService(); // Khởi tạo ChatService
+    print(UserManager.instance.user?.role);
 
     // Lắng nghe sự thay đổi của _codeController
   }
@@ -131,7 +132,7 @@ class _ProfilePage extends State<ProfilePage> {
                                 ),
                               ],
                             ),
-                            if (UserManager.instance.user?.role == true)
+                            if (UserManager.instance.user?.role == 3)
                               UtilitySection(
                                 title: 'Quản trị',
                                 buttons: [
@@ -404,14 +405,10 @@ class _ProfilePage extends State<ProfilePage> {
           CircleAvatar(
             radius: 30,
             backgroundColor: Colors.blue,
-            child: (UserManager.instance.user?.photo != '')
-                ? Image.asset(
-                    'assets/images/${UserManager.instance.user?.photo}')
-                : const Icon(
-                    Icons.person, // Icon mặc định là biểu tượng avatar
-                    color: Colors.white,
-                    size: 30,
-                  ),
+            child: (UserManager.instance.user?.photo == null)
+                ? Image.asset('assets/images/avatar.jpg')
+                : Image.asset(
+                    'assets/images/${UserManager.instance.user?.photo}'),
           ),
           const SizedBox(height: 8),
           Column(

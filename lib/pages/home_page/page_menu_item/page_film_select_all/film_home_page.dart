@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_listViewCardIteam.dart';
+import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/film_hayDangChieu_screen.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/film_sapChieu_screen.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
@@ -20,11 +22,32 @@ class _FilmSelectionPageState extends State<FilmSelectionPage> {
   int _currentPage = 0;
   int _currentPage2 = 0;
   Timer? _timer;
+  late Future<List<MovieDetails>> _moviesFuture;
+  late Future<List<MovieDetails>> _moviesFuture2;
+  late ApiService _APIService;
+  List<MovieDetails> filmDangChieu = []; // Danh sách tất cả filmDangChieu
+  List<MovieDetails> filmSapChieu = []; // Danh sách phim sau filmSapChieu
 
   @override
   void initState() {
     super.initState();
+
     _startSlideshow();
+    _APIService = ApiService();
+
+    _moviesFuture = _APIService.getMoviesDangChieu();
+    _moviesFuture2 = _APIService.getMoviesSapChieu();
+
+    _moviesFuture.then((movies) {
+      setState(() {
+        filmDangChieu = movies; // Lưu toàn bộ phim filmDangChieu
+      });
+    });
+    _moviesFuture2.then((movies) {
+      setState(() {
+        filmSapChieu = movies; // Lưu toàn bộ phim filmSapChieu
+      });
+    });
   }
 
   void _startSlideshow() {
@@ -127,32 +150,17 @@ class _FilmSelectionPageState extends State<FilmSelectionPage> {
                             ),
                             SizedBox(height: 10),
                             FilmCarousel(
-                              filmList: const [
-                                {
-                                  'image': 'assets/images/slide1.png',
-                                  'title': 'Slide 1 Title',
-                                  'rating': 4.5,
-                                  'releaseDate': '2023-05-01',
-                                },
-                                {
-                                  'image': 'assets/images/slide2.jpg',
-                                  'title': 'Slide 2 Title',
-                                  'rating': 4.0,
-                                  'releaseDate': '2023-06-15',
-                                },
-                                {
-                                  'image': 'assets/images/slide3.jpg',
-                                  'title': 'Slide 3 Title',
-                                  'rating': 4.7,
-                                  'releaseDate': '2023-07-22',
-                                },
-                                {
-                                  'image': 'assets/images/postermada.jpg',
-                                  'title': 'Poster Mada',
-                                  'rating': 4.9,
-                                  'releaseDate': '2023-08-05',
-                                },
-                              ],
+                              filmList: filmDangChieu.map((movie) {
+                                return {
+                                  'image':
+                                      'assets/images/${movie.posterUrl}', // Sử dụng ảnh của phim
+                                  'title': movie.title, // Tiêu đề phim
+                                  'rating':
+                                      movie.averageRating, // Đánh giá phim
+                                  'releaseDate':
+                                      movie.releaseDate, // Ngày phát hành phim
+                                };
+                              }).toList(),
                             ),
                             SizedBox(height: 20),
                             const Divider(
@@ -214,52 +222,18 @@ class _FilmSelectionPageState extends State<FilmSelectionPage> {
                             ),
 
                             SizedBox(height: 10),
-
-                            const MyListviewcarditeam(
-                              filmList: [
-                                {
-                                  'image': 'assets/images/slide1.png',
-                                  'title': 'Slide 1 Title',
-                                  'rating': 4.5,
-                                  'releaseDate': '2023-05-01',
-                                },
-                                {
-                                  'image': 'assets/images/postermada.jpg',
-                                  'title': 'Poster Mada',
-                                  'rating': 4.9,
-                                  'releaseDate': '2023-08-05',
-                                },
-                                {
-                                  'image': 'assets/images/slide3.jpg',
-                                  'title': 'Slide 3 Title',
-                                  'rating': 4.7,
-                                  'releaseDate': '2023-07-22',
-                                },
-                                {
-                                  'image': 'assets/images/slide2.jpg',
-                                  'title': 'Slide 2 Title',
-                                  'rating': 4.0,
-                                  'releaseDate': '2023-06-15',
-                                },
-                                {
-                                  'image': 'assets/images/postermada.jpg',
-                                  'title': 'Poster Mada',
-                                  'rating': 4.9,
-                                  'releaseDate': '2023-08-05',
-                                },
-                                {
-                                  'image': 'assets/images/slide3.jpg',
-                                  'title': 'Slide 3 Title',
-                                  'rating': 4.7,
-                                  'releaseDate': '2023-07-22',
-                                },
-                                {
-                                  'image': 'assets/images/postermada.jpg',
-                                  'title': 'Poster Mada',
-                                  'rating': 4.9,
-                                  'releaseDate': '2023-08-05',
-                                },
-                              ],
+                            // phim hay dang chieu
+                            MyListviewcarditeam(
+                              filmList: filmDangChieu.map((movie) {
+                                return {
+                                  'image':
+                                      'assets/images/${movie.posterUrl}', // Sử dụng ảnh của phim
+                                  'title': movie.title, // Tiêu đề phim
+                                  'rating':
+                                      movie.averageRating, // Đánh giá phim
+                                  'genre': movie.genres, // Ngày phát hành phim
+                                };
+                              }).toList(),
                             ),
                             SizedBox(height: 20),
                             const Divider(
@@ -622,7 +596,7 @@ class _FilmCarouselState extends State<FilmCarousel> {
                                     color: Colors.yellow, size: 18),
                                 SizedBox(width: 5),
                                 Text(
-                                  '${film['rating']}/5',
+                                  '${film['rating']}/10',
                                   style: TextStyle(fontSize: 14),
                                 ),
                                 Text(

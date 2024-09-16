@@ -4,9 +4,11 @@ import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/components/my_customIcon_keyboad_left.dart';
 import 'package:flutter_app_chat/components/my_textfield.dart';
+import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/pages/home_page/home_page.dart';
 import 'package:flutter_app_chat/pages/login_page/loginBloc/login_bloc.dart';
+import 'package:flutter_app_chat/pages/manager_page/home_manager_page.dart';
 import 'package:flutter_app_chat/pages/register_page/register_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -34,8 +36,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    _emailController.text = 'user1';
-    _passwordController.text = 'password1';
+    _emailController.text = 'minhduc1122003';
+    _passwordController.text = '123123';
     super.initState();
   }
 
@@ -75,11 +77,21 @@ class _LoginPageState extends State<LoginPage> {
           } else if (state is LoginSuccess) {
             EasyLoading.dismiss();
             await Future.delayed(Duration(milliseconds: 150));
-            Navigator.pushAndRemoveUntil(
-              context,
-              ZoomPageRoute(page: HomePage()),
-              (Route<dynamic> route) => false, // Xóa tất cả các route trước đó
-            );
+            if (UserManager.instance.user?.role == 0) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                ZoomPageRoute(page: HomePage()),
+                (Route<dynamic> route) =>
+                    false, // Xóa tất cả các route trước đó
+              );
+            } else {
+              Navigator.pushAndRemoveUntil(
+                context,
+                ZoomPageRoute(page: HomeTab()),
+                (Route<dynamic> route) =>
+                    false, // Xóa tất cả các route trước đó
+              );
+            }
           }
         },
         child: Stack(

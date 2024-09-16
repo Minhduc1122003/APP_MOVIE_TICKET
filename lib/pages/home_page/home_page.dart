@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_chat/auth/api_service.dart';
+import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/my_tickets_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/history_page.dart';
@@ -28,6 +30,7 @@ class _HomePage extends State<HomePage> {
     super.initState();
     _page = widget.initialPageIndex;
     _pageController = PageController(initialPage: _page);
+
     print('UserManager from home_page: ${UserManager.instance.user?.email}');
   }
 

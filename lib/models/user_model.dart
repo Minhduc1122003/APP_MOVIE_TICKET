@@ -5,12 +5,13 @@ class User {
   final String email;
   final String fullName;
   final int phoneNumber; // Đảm bảo phoneNumber là int
-  final String photo;
-  final bool role;
+  final String? photo; // Đổi thành String? để cho phép giá trị null
+  final int role;
   final DateTime createDate;
   final DateTime updateDate;
   final String updateBy;
   final String status;
+  final bool isDelete;
   User({
     required this.userId,
     required this.userName,
@@ -18,12 +19,13 @@ class User {
     required this.email,
     required this.fullName,
     required this.phoneNumber,
-    required this.photo,
+    this.photo, // Không cần `required` vì giá trị có thể null
     required this.role,
     required this.createDate,
     required this.updateDate,
     required this.updateBy,
     required this.status,
+    required this.isDelete,
   });
 
   // Factory constructor to create a User instance from JSON
@@ -38,12 +40,13 @@ class User {
       phoneNumber: json['PhoneNumber'] is int
           ? json['PhoneNumber'] as int
           : int.tryParse(json['PhoneNumber'].toString()) ?? 0,
-      photo: json['Photo'] as String,
-      role: json['Role'] as bool,
+      photo: json['Photo'] as String?, // Cập nhật để có thể là null
+      role: json['Role'] as int,
       createDate: DateTime.parse(json['CreateDate'] as String),
       updateDate: DateTime.parse(json['UpdateDate'] as String),
       updateBy: json['UpdateBy'] as String,
       status: json['Status'] as String,
+      isDelete: json['IsDelete'] as bool,
     );
   }
 

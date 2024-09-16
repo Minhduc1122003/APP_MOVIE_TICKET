@@ -26,7 +26,7 @@ class ApiService {
     // baseUrl = 'http://192.168.1.23:8081';
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.100.24:8081';
+    baseUrl = 'http://192.168.1.40:8081';
 
     // wifi cty tuananh
     // baseUrl = 'http://192.168.2.83:8081';
@@ -157,13 +157,43 @@ class ApiService {
   }
 
   // Giả sử bạn đã có sẵn model MovieDetails
-  Future<List<MovieDetails>> getAllMovies() async {
+  Future<List<MovieDetails>> getMoviesDangChieu() async {
     await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
 
     try {
       // Gửi yêu cầu GET đến API
       final response = await http.get(
-        Uri.parse('$baseUrl/getAllMovies'),
+        Uri.parse('$baseUrl/getMoviesDangChieu'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        print('Parsed Data: $data');
+
+        // Chuyển đổi dữ liệu từ JSON sang danh sách các đối tượng MovieDetails
+        return data.map((item) => MovieDetails.fromJson(item)).toList();
+      } else {
+        throw Exception('Failed to get movies: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to get movies');
+    }
+  }
+
+  Future<List<MovieDetails>> getMoviesSapChieu() async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+
+    try {
+      // Gửi yêu cầu GET đến API
+      final response = await http.get(
+        Uri.parse('$baseUrl/getMoviesSapChieu'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
