@@ -296,51 +296,17 @@ class _FilmSelectionPageState extends State<FilmSelectionPage> {
 
                             SizedBox(height: 10),
 
-                            const MyListviewcarditeam(
-                              filmList: [
-                                {
-                                  'image': 'assets/images/slide1.png',
-                                  'title': 'Slide 1 Title',
-                                  'rating': 4.5,
-                                  'releaseDate': '2023-05-01',
-                                },
-                                {
-                                  'image': 'assets/images/postermada.jpg',
-                                  'title': 'Poster Mada',
-                                  'rating': 4.9,
-                                  'releaseDate': '2023-08-05',
-                                },
-                                {
-                                  'image': 'assets/images/slide3.jpg',
-                                  'title': 'Slide 3 Title',
-                                  'rating': 4.7,
-                                  'releaseDate': '2023-07-22',
-                                },
-                                {
-                                  'image': 'assets/images/slide2.jpg',
-                                  'title': 'Slide 2 Title',
-                                  'rating': 4.0,
-                                  'releaseDate': '2023-06-15',
-                                },
-                                {
-                                  'image': 'assets/images/postermada.jpg',
-                                  'title': 'Poster Mada',
-                                  'rating': 4.9,
-                                  'releaseDate': '2023-08-05',
-                                },
-                                {
-                                  'image': 'assets/images/slide3.jpg',
-                                  'title': 'Slide 3 Title',
-                                  'rating': 4.7,
-                                  'releaseDate': '2023-07-22',
-                                },
-                                {
-                                  'image': 'assets/images/postermada.jpg',
-                                  'title': 'Poster Mada',
-                                  'rating': 4.9,
-                                  'releaseDate': '2023-08-05',
-                                },
-                              ],
+                            MyListviewcarditeam(
+                              filmList: filmSapChieu.map((movie) {
+                                return {
+                                  'image':
+                                      'assets/images/${movie.posterUrl}', // Sử dụng ảnh của phim
+                                  'title': movie.title, // Tiêu đề phim
+                                  'rating':
+                                      movie.averageRating, // Đánh giá phim
+                                  'genre': movie.genres, // Ngày phát hành phim
+                                };
+                              }).toList(),
                             ),
 
                             // Các widget khác có thể được thêm vào dưới đây

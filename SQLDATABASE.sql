@@ -12,7 +12,7 @@ CREATE TABLE Users (
     FullName NVARCHAR(155) NOT NULL,
     PhoneNumber INT NOT NULL,
     Photo VARCHAR(50),
-    Role TINYINT NOT NULL, -- Sử dụng TINYINT để lưu trữ nhiều giá trị, 0: khach hàng, 1: nhân viên, 2 admin
+    Role INT NOT NULL, -- Sử dụng TINYINT để lưu trữ nhiều giá trị, 0: khach hàng, 1: nhân viên, 2 quản lý, 3: admin
 	CreateDate Datetime not null,
 	UpdateDate Datetime not null,
 	UpdateBy VARCHAR(50)not null,
@@ -22,13 +22,17 @@ CREATE TABLE Users (
 go
 INSERT INTO Users (UserName, Password, Email, FullName, PhoneNumber, Photo, Role, CreateDate, UpdateDate, UpdateBy, Status,IsDelete)
 VALUES 
-('minhduc1122003', '123123', 'user1@example.com', N'Lê Minh Đức KH', 123456789, 'photo1.jpg', 1, GETDATE(), GETDATE(), 0, N'Đang hoạt động',0),
-('minhduc11220031', '123123', 'user1@example.com', N'Lê Minh Đức NV', 123456789, 'photo1.jpg', 1, GETDATE(), GETDATE(), 1, N'Đang hoạt động',0),
-('minhduc11220032', '123123', 'user1@example.com', N'Lê Minh Đức AD', 123456789, 'photo1.jpg', 1, GETDATE(), GETDATE(), 2, N'Đang hoạt động',0)
+('minhduc1122003', '123123', 'user1@example.com', N'Lê Minh Đức KH', 123456789, '', 0, GETDATE(), GETDATE(), 0, N'Đang hoạt động',0),
+('minhduc11220031', '123123', 'user1@example.com', N'Lê Minh Đức NV', 123456789, '', 1, GETDATE(), GETDATE(), 1, N'Đang hoạt động',0),
+('minhduc11220032', '123123', 'user1@example.com', N'Lê Minh Đức AD', 123456789, '', 2, GETDATE(), GETDATE(), 2, N'Đang hoạt động',0),
+
 -- BẢNG Users CHUẨN
+
 -- + 1 bảng lịch sử hoạt động của users
 -- + 1 bảng lịch sử hoạt động của admin
 
+UPDATE Users
+SET Photo = NULL;
 
 
 CREATE TABLE Cinemas(
@@ -147,10 +151,16 @@ Chuyển thể từ tựa phim kinh dị nổi tiếng của Đan Mạch Gæster
 ', 110, '2024-09-13', 'khongnoidieudu.jpg', 'https://youtu.be/T-TQAfES10g', 5, 1, 0,N'Đang chiếu',0),
 (1, N'Joker', 4, N'
 Lấy bối cảnh thành phố Gotham những năm 80, Arthur Fleck lớn lên trong sự cô đơn, luôn phải cười vì lời dạy thuở nhỏ của mẹ. Nghèo khó cơ cực nên anh ta phải làm chú hề mua vui trên phố. Thế nhưng, dù khuôn mặt chú hề luôn cười nhưng nội tâm Arthur lại có vô vàn nỗi đau khi thương xuyên bị chà đạp, khinh khi. Cuối cùng, hắn trở nên điên loạn và trở thành "Hoàng tử tội phạm" Joker. Dù không liên quan đến vũ trụ điện ảnh DC mở rộng, Joker vẫn được các fan hâm mộ hết sức quan tâm.
-', 110, '2024-10-04', 'khongnoidieudu.jpg', 'https://youtu.be/Wh28HYiM80Y', 5, 1, 0,N'Đang chiếu',0),
+', 110, '2024-10-04', 'joker.jpg', 'https://youtu.be/Wh28HYiM80Y', 5, 1, 0,N'Đang chiếu',0),
+
 (1, N'Quỷ Án', 5, N'
 Kể về vụ án người phụ nữ Dani bị sát hại dã man tại ngôi nhà mà vợ chồng cô đang sửa sang ở vùng nông thôn hẻo lánh. Chồng cô - Ted đang làm bác sĩ tại bệnh viện tâm thần. Mọi nghi ngờ đổ dồn vào một bệnh nhân tại đây. Không may, nghi phạm đã chết. Một năm sau, em gái mù của Dani ghé tới. Darcy là nhà ngoại cảm tự xưng, mang theo nhiều món đồ kì quái. Cô đến nhà Ted để tìm chân tướng về cái chết của chị gái.
-', 110, '2024-09-13', 'quyan.jpg', 'https://youtu.be/RA5qp5btmT8', 4, 1, 0,N'Đang chiếu',0);
+', 110, '2024-09-13', 'quyan.jpg', 'https://youtu.be/RA5qp5btmT8', 4, 1, 0,N'Đang chiếu',0),
+
+(1, N'Cám', 6, N'
+Câu chuyện phim là dị bản kinh dị đẫm máu lấy cảm hứng từ truyện cổ tích nổi tiếng Tấm Cám, nội dung chính của phim xoay quanh Cám - em gái cùng cha khác mẹ của Tấm đồng thời sẽ có nhiều nhân vật và chi tiết sáng tạo, gợi cảm giác vừa lạ vừa quen cho khán giả. Sau loạt tác phẩm kinh dị ăn khách như Tết Ở Làng Địa Ngục, Kẻ Ăn Hồn... bộ đôi nhà sản xuất Hoàng Quân - đạo diễn Trần Hữu Tấn đã tiếp tục với một dị bản của cổ tích Việt Nam mang tên Cám. Cùng dàn diễn viên tiềm năng, vai Tấm do diễn viên Rima Thanh Vy thủ vai, trong khi vai Cám được trao cho gương mặt rất quen thuộc - Lâm Thanh Mỹ. Ngoài ra vai mẹ kế của diễn viên Thúy Diễm và vai Hoàng tử do Hải Nam đảm nhận. Dị bản sẽ cho một góc nhìn hoàn toàn khác về Tấm Cám khi sự thay đổi đến từ người nuôi cá bống lại là Cám. Cô bé có ngoại hình dị dạng, khiến cả gia đình bị dân làng cho là phù thủy. Cũng vì thế mà Cám mới là đứa con bị đối xử tệ bạc, bắt phải lựa gạo chứ không phải Tấm. Cùng với bài đồng dao về cá bống, giọng nói của Bụt trong phim mới cũng vang lên khi hỏi: “Vì sao con khóc?”. Thế nhưng, nó không mang màu sắc dịu hiền, thân thương của một vì thần tiên trong văn hóa Việt Nam mà đậm chất ma mị, kinh dị. Liệu đây có đúng là Bụt hay chính là ác quỷ đội lốt đã lừa dối Tấm và Cám từ lâu để đưa họ vào cái bẫy chết chóc?
+', 122, '2024-09-20', 'cam.jpg', 'https://youtu.be/RA5qp5btmT8', 5, 1, 1,N'Sắp chiếu',0),
+
 
 
 INSERT INTO MovieGenre (MovieID, IdGenre)
@@ -166,7 +176,11 @@ VALUES
 (4, 2),
 (4, 8),
 (5, 1),
-(5, 2)
+(5, 2),
+(6, 2),
+(6, 8),
+(6, 1),
+(6, 5)
 
 
 CREATE TABLE Rate (
@@ -229,7 +243,32 @@ CREATE TABLE Ticket(
 );
 go
 
----- INSERT DATA
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
