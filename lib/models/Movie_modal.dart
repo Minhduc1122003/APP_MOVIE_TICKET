@@ -71,7 +71,7 @@ class MovieDetails {
       reviewContents: json['ReviewContents'], // Có thể null
       averageRating: json['AverageRating'] != null
           ? (json['AverageRating'] as num).toDouble()
-          : null, // Có thể null
+          : 0, // Có thể null
       reviewCount: json['ReviewCount'],
       favourite: json['IsFavourite'],
       rating9_10: json['Rating_9_10'] ?? 0,

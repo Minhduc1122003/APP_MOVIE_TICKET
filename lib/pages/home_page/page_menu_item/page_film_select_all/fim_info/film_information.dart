@@ -8,6 +8,7 @@ import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/bloc/film_info_Bloc.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/giaodienTest.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/trailer_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/buyTicket_page.dart';
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
@@ -202,7 +203,7 @@ class _MovieHeaderState extends State<MovieHeader>
                         borderRadius: BorderRadius.all(Radius.circular(4)),
                       ),
                       child: Text(
-                        '${state.movieDetails?.age}+',
+                        '${state.movieDetails?.age}',
                         style: TextStyle(color: Colors.white, fontSize: 12),
                       ),
                     ),
@@ -359,7 +360,14 @@ class _MovieHeaderState extends State<MovieHeader>
                         Expanded(
                           child: Center(
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    SlideFromRightPageRoute(
+                                        page: TrailerPage(
+                                            videoUrl: state
+                                                .movieDetails!.trailerUrl)));
+                              },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
                                 foregroundColor: Colors.black,

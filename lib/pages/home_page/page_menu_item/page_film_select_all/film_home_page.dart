@@ -7,9 +7,7 @@ import 'package:flutter_app_chat/components/my_listViewCardIteam.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/film_hayDangChieu_screen.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/film_sapChieu_screen.dart';
-import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 class FilmSelectionPage extends StatefulWidget {
   const FilmSelectionPage({super.key});
@@ -20,34 +18,55 @@ class FilmSelectionPage extends StatefulWidget {
 
 class _FilmSelectionPageState extends State<FilmSelectionPage> {
   int _currentPage = 0;
-  int _currentPage2 = 0;
   Timer? _timer;
-  late Future<List<MovieDetails>> _moviesFuture;
-  late Future<List<MovieDetails>> _moviesFuture2;
-  late ApiService _APIService;
-  List<MovieDetails> filmDangChieu = []; // Danh sách tất cả filmDangChieu
-  List<MovieDetails> filmSapChieu = []; // Danh sách phim sau filmSapChieu
+  late Future<void> _dataFuture;
+  late ApiService _apiService;
+  List<MovieDetails> filmDangChieu = [];
+  List<MovieDetails> filmSapChieu = [];
+  double _titleFontSize = 23; // Kích thước chữ tiêu đề
+
+  final ScrollController _scrollController = ScrollController();
+  final ValueNotifier<double> _appBarHeightNotifier = ValueNotifier(100);
 
   @override
   void initState() {
     super.initState();
-
+    _apiService = ApiService();
     _startSlideshow();
-    _APIService = ApiService();
+    _dataFuture = _fetchData(); // Khởi tạo Future
 
-    _moviesFuture = _APIService.getMoviesDangChieu();
-    _moviesFuture2 = _APIService.getMoviesSapChieu();
+    _scrollController.addListener(() {
+      double scrollOffset = _scrollController.offset;
+      // Giảm thiểu tính toán trong setState để cải thiện hiệu suất
+      if (scrollOffset < 10 && _titleFontSize != 23) {
+        setState(() {
+          _titleFontSize = 23;
+        });
+      } else if (scrollOffset >= 10 && _titleFontSize != 16) {
+        setState(() {
+          _titleFontSize = 16;
+        });
+      }
+    });
+  }
 
-    _moviesFuture.then((movies) {
+  Future<void> _fetchData() async {
+    try {
+      final moviesDangChieu = await _apiService.getMoviesDangChieu();
+      final moviesSapChieu = await _apiService.getMoviesSapChieu();
+
       setState(() {
-        filmDangChieu = movies; // Lưu toàn bộ phim filmDangChieu
+        filmDangChieu = moviesDangChieu;
+        filmSapChieu = moviesSapChieu;
       });
-    });
-    _moviesFuture2.then((movies) {
-      setState(() {
-        filmSapChieu = movies; // Lưu toàn bộ phim filmSapChieu
-      });
-    });
+    } catch (error) {
+      // Xử lý lỗi nếu cần thiết
+      print('Có lỗi xảy ra: $error');
+    }
+  }
+
+  Future<void> _refreshData() async {
+    await _fetchData();
   }
 
   void _startSlideshow() {
@@ -61,265 +80,221 @@ class _FilmSelectionPageState extends State<FilmSelectionPage> {
   @override
   void dispose() {
     _timer?.cancel();
+    _scrollController.dispose();
+    _appBarHeightNotifier.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    double statusBarHeight = MediaQuery.of(context).padding.top;
-
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: BlocListener<SendCodeBloc, SendCodeState>(
-        listener: (context, state) async {
-          if (state is SendCodeError) {
-            print('login LoginError');
-            EasyLoading.showError('Sai tài khoản hoặc mật khẩu');
-          } else if (state is SendCodeWaiting) {
-            EasyLoading.show(status: 'Loading...');
-          } else if (state is SendCodeSuccess) {
-            await Future.delayed(Duration(milliseconds: 150));
+      body: FutureBuilder<void>(
+        future: _dataFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+                child:
+                    CircularProgressIndicator()); // Hiển thị spinner khi đang tải dữ liệu
+          } else if (snapshot.hasError) {
+            return Center(
+                child: Text(
+                    'Có lỗi xảy ra: ${snapshot.error}')); // Hiển thị lỗi nếu có
+          } else {
+            return RefreshIndicator(
+              onRefresh: _refreshData,
+              child: CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  _buildSliverAppBar(),
+                  SliverToBoxAdapter(child: _buildContent()),
+                ],
+              ),
+            );
           }
         },
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: ColorFiltered(
-                colorFilter: ColorFilter.mode(
-                  Colors.white.withOpacity(0.7),
-                  BlendMode.srcOver,
-                ),
-                child: Image.asset(
+      ),
+    );
+  }
+
+  SliverAppBar _buildSliverAppBar() {
+    return SliverAppBar(
+      backgroundColor: Color(0XFF6F3CD7),
+      expandedHeight: 80.0,
+      floating: false,
+      pinned: true,
+      flexibleSpace: LayoutBuilder(
+        builder: (context, constraints) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            double height = constraints.maxHeight;
+            _appBarHeightNotifier.value = height;
+          });
+
+          double height = constraints.maxHeight;
+          bool isTitleWhite = height <= 110; // Điều kiện để màu chữ là trắng
+
+          return FlexibleSpaceBar(
+            title: Text(
+              'PANTHERs CINEMA',
+              style: TextStyle(
+                color: isTitleWhite
+                    ? Colors.white
+                    : Colors.white, // Màu chữ dựa trên chiều cao
+                fontSize: 25, // Kích thước chữ
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            centerTitle: true, // Căn giữa tiêu đề khi mở rộng
+
+            background: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.asset(
                   'assets/images/background.png',
                   fit: BoxFit.cover,
+                  color: Colors.white.withOpacity(0.6), // Áp dụng độ mờ
+                  colorBlendMode:
+                      BlendMode.dstATop, // Kết hợp màu nền với hình ảnh
                 ),
-              ),
+              ],
             ),
-            Positioned(
-              top: statusBarHeight,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                child: Row(
-                  children: [
-                    const Text(
-                      'PANTHERs CINEMA',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    Spacer(),
-                    IconButton(
-                      icon: Icon(Icons.search),
-                      onPressed: () {
-                        // Implement your search action here
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Positioned.fill(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(0, 90, 0, 0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            FilmSlideshow(
-                              imageList: [
-                                'assets/images/slide1.png',
-                                'assets/images/slide2.jpg',
-                                'assets/images/slide3.jpg',
-                              ],
-                            ),
-                            SizedBox(height: 20),
+          );
+        },
+      ),
+      actions: [
+        ValueListenableBuilder<double>(
+          valueListenable: _appBarHeightNotifier,
+          builder: (context, height, child) {
+            bool isSearchIconVisible =
+                height <= 100; // Điều kiện để hiển thị icon tìm kiếm
 
-                            const Text(
-                              'PHIM NỔI BẬT',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 20),
-                            ),
-                            SizedBox(height: 10),
-                            FilmCarousel(
-                              filmList: filmDangChieu.map((movie) {
-                                return {
-                                  'image':
-                                      'assets/images/${movie.posterUrl}', // Sử dụng ảnh của phim
-                                  'title': movie.title, // Tiêu đề phim
-                                  'rating':
-                                      movie.averageRating, // Đánh giá phim
-                                  'releaseDate':
-                                      movie.releaseDate, // Ngày phát hành phim
-                                };
-                              }).toList(),
-                            ),
-                            SizedBox(height: 20),
-                            const Divider(
-                              height: 0,
-                              thickness: 6,
-                              indent: 0,
-                              endIndent: 0,
-                              color: Colors.white,
-                            ),
+            return isSearchIconVisible
+                ? IconButton(
+                    icon: Icon(Icons.search, color: Colors.white, size: 27),
+                    onPressed: () {},
+                  )
+                : SizedBox
+                    .shrink(); // Không hiển thị gì nếu điều kiện không thỏa mãn
+          },
+        ),
+      ],
+    );
+  }
 
-                            // Đặt đoạn text vào góc trái
-                            Align(
-                              alignment: Alignment
-                                  .centerLeft, // Căn trái giữa theo chiều dọc
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment
-                                    .spaceBetween, // Căn giữa khoảng cách giữa các phần tử trong Row
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.all(10),
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF6F3CD7), // Màu nền
-                                      borderRadius: BorderRadius.only(
-                                        bottomRight: Radius.circular(
-                                            10), // Bo góc dưới bên phải
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'Phim hay đang chiếu',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                        color: Colors
-                                            .white, // Màu chữ trắng để nổi bật trên nền màu
-                                      ),
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                          context,
-                                          SlideFromRightPageRoute(
-                                              page: FilmHaydangchieuScreen()));
-                                    },
-                                    child: const Row(
-                                      children: [
-                                        Text(
-                                          'Xem tất cả',
-                                          style: TextStyle(
-                                            color: Color(0xFF6F3CD7), // Màu nền
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            SizedBox(height: 10),
-                            // phim hay dang chieu
-                            MyListviewcarditeam(
-                              filmList: filmDangChieu.map((movie) {
-                                return {
-                                  'image':
-                                      'assets/images/${movie.posterUrl}', // Sử dụng ảnh của phim
-                                  'title': movie.title, // Tiêu đề phim
-                                  'rating':
-                                      movie.averageRating, // Đánh giá phim
-                                  'genre': movie.genres, // Ngày phát hành phim
-                                };
-                              }).toList(),
-                            ),
-                            SizedBox(height: 20),
-                            const Divider(
-                              height: 0,
-                              thickness: 6,
-                              indent: 0,
-                              endIndent: 0,
-                              color: Colors.white,
-                            ),
-
-                            // Đặt đoạn text vào góc trái
-                            Align(
-                              alignment: Alignment
-                                  .centerLeft, // Căn trái giữa theo chiều dọc
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment
-                                    .spaceBetween, // Căn giữa khoảng cách giữa các phần tử trong Row
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.all(10),
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF6F3CD7), // Màu nền
-                                      borderRadius: BorderRadius.only(
-                                        bottomRight: Radius.circular(
-                                            10), // Bo góc dưới bên phải
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'Phim sắp chiếu',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                        color: Colors
-                                            .white, // Màu chữ trắng để nổi bật trên nền màu
-                                      ),
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                          context,
-                                          SlideFromRightPageRoute(
-                                              page: FilmSapchieuScreen()));
-                                    },
-                                    child: const Row(
-                                      children: [
-                                        Text(
-                                          'Xem tất cả',
-                                          style: TextStyle(
-                                            color: Color(0xFF6F3CD7), // Màu nền
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            SizedBox(height: 10),
-
-                            MyListviewcarditeam(
-                              filmList: filmSapChieu.map((movie) {
-                                return {
-                                  'image':
-                                      'assets/images/${movie.posterUrl}', // Sử dụng ảnh của phim
-                                  'title': movie.title, // Tiêu đề phim
-                                  'rating':
-                                      movie.averageRating, // Đánh giá phim
-                                  'genre': movie.genres, // Ngày phát hành phim
-                                };
-                              }).toList(),
-                            ),
-
-                            // Các widget khác có thể được thêm vào dưới đây
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+  Widget _buildContent() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        FilmSlideshow(
+          imageList: [
+            'assets/images/slide1.png',
+            'assets/images/slide2.jpg',
+            'assets/images/slide3.jpg',
           ],
         ),
+        _buildSectionTitle('PHIM NỔI BẬT'),
+        FilmCarousel(
+          filmList: _mapMoviesToFilmList(filmDangChieu),
+        ),
+        SizedBox(
+          height: 20,
+        ),
+        _buildSectionDivider(),
+        _buildSectionHeader('Phim hay đang chiếu', FilmHaydangchieuScreen()),
+        SizedBox(
+          height: 20,
+        ),
+        MyListviewcarditeam(
+          filmList: _mapMoviesToFilmList(filmDangChieu),
+        ),
+        SizedBox(
+          height: 20,
+        ),
+        _buildSectionDivider(),
+        _buildSectionHeader('Phim sắp chiếu', FilmSapchieuScreen()),
+        SizedBox(
+          height: 20,
+        ),
+        MyListviewcarditeam(
+          filmList: _mapMoviesToFilmList(filmSapChieu),
+        ),
+        SizedBox(
+          height: 20,
+        ),
+      ],
+    );
+  }
+
+  List<Map<String, dynamic>> _mapMoviesToFilmList(List<MovieDetails> movies) {
+    return movies.map((movie) {
+      return {
+        'image': 'assets/images/${movie.posterUrl}',
+        'title': movie.title,
+        'rating': movie.averageRating,
+        'genre': movie.genres,
+      };
+    }).toList();
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 10),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionDivider() {
+    return const Divider(
+      height: 0,
+      thickness: 6,
+      color: Color(0xfff0f0f0),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, Widget page) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Container(
+            padding: EdgeInsets.fromLTRB(13, 13, 13, 10),
+            decoration: const BoxDecoration(
+              color: Color(0xFF6F3CD7),
+              borderRadius: BorderRadius.only(
+                bottomRight: Radius.circular(10),
+              ),
+            ),
+            child: Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                SlideFromRightPageRoute(page: page),
+              );
+            },
+            child: Text(
+              'Xem tất cả',
+              style: TextStyle(
+                color: Color(0xFF6F3CD7),
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -371,7 +346,7 @@ class _FilmSlideshowState extends State<FilmSlideshow> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 200,
+      height: 170,
       child: Stack(
         children: [
           PageView.builder(
@@ -438,20 +413,24 @@ class _FilmCarouselState extends State<FilmCarousel> {
   late PageController _pageController;
   late int _currentPage;
   Timer? _timer;
+  Timer?
+      _restartTimer; // Timer để khởi động lại sau khi người dùng ngừng thao tác
 
   @override
   void initState() {
     super.initState();
-    _currentPage = widget.filmList.length * 100;
+
+    _currentPage = 70; // Bắt đầu từ phần tử cuối cùng
     _pageController = PageController(
       initialPage: _currentPage,
       viewportFraction: 0.5,
     );
+
     _startSlideshow();
   }
 
   void _startSlideshow() {
-    _timer = Timer.periodic(Duration(seconds: 7), (Timer timer) {
+    _timer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
       if (_pageController.hasClients) {
         _currentPage++;
         _pageController.animateToPage(
@@ -470,126 +449,206 @@ class _FilmCarouselState extends State<FilmCarousel> {
     super.dispose();
   }
 
+  // Dừng slideshow
+  void _stopSlideshow() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  // Khởi động lại slideshow sau 2 giây
+  void _restartSlideshow() {
+    _restartTimer?.cancel(); // Hủy nếu có timer trước đó
+    _restartTimer = Timer(Duration(seconds: 2), () {
+      _startSlideshow();
+    });
+  }
+
+  void _goToNextPage() {
+    _stopSlideshow();
+    _currentPage = _currentPage + 1;
+    _pageController.animateToPage(
+      _currentPage,
+      duration: Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
+    _restartSlideshow();
+  }
+
+  void _goToPreviousPage() {
+    _stopSlideshow();
+    _currentPage = _currentPage - 1;
+    _pageController.animateToPage(
+      _currentPage,
+      duration: Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
+    _restartSlideshow();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 350, // Tăng chiều cao để có đủ không gian cho thông tin phim
-      child: PageView.builder(
-        controller: _pageController,
-        itemCount: widget.filmList.length * 1000,
-        onPageChanged: (int page) {
-          setState(() {
-            _currentPage = page;
-          });
-        },
-        itemBuilder: (context, index) {
-          final filmIndex = index % widget.filmList.length;
-          final film = widget.filmList[filmIndex];
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          height: 320,
+          child: PageView.builder(
+            controller: _pageController,
+            onPageChanged: (int page) {
+              _stopSlideshow(); // Dừng slideshow khi người dùng vuốt
 
-          return AnimatedBuilder(
-            animation: _pageController,
-            builder: (context, child) {
-              double scale = 1.0;
-              if (_pageController.position.haveDimensions) {
-                double pageOffset = _pageController.page! - index;
-                scale = (1 - (pageOffset.abs() * 0.3)).clamp(0.8, 1.0);
-              }
-              return Transform.scale(
-                scale: scale,
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: 5),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10), // Bỏ Border.all()
-                  ),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.asset(
-                                film['image'],
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                height: double.infinity,
-                              ),
-                            ),
-                            Positioned(
-                              top: 10,
-                              left: 10,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Color(0XFFffd700),
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: Text(
-                                  'TOP ${filmIndex + 1}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+              setState(() {
+                _currentPage = page;
+              });
+              _restartSlideshow(); // Khởi động lại slideshow sau 2 giây
+            },
+            itemBuilder: (context, index) {
+              final filmIndex = index % widget.filmList.length;
+              final film = widget.filmList[filmIndex];
+
+              return AnimatedBuilder(
+                animation: _pageController,
+                builder: (context, child) {
+                  double scale = 1.0;
+                  if (_pageController.position.haveDimensions) {
+                    scale = 1 - (_pageController.page! - index).abs() * 0.2;
+                    scale = scale.clamp(0.1, 1.0);
+                  }
+                  return Transform.scale(
+                    scale: scale,
+                    child: Container(
+                      margin: EdgeInsets.symmetric(horizontal: 5),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(
+                                          10), // Bỏ cong góc nếu cần
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black
+                                              .withOpacity(0.5), // Màu bóng
+                                          spreadRadius:
+                                              10, // Kích thước mở rộng của bóng
+                                          blurRadius: 5, // Độ mờ của bóng
+                                          offset: Offset(0,
+                                              10), // Vị trí bóng so với phần tử
+                                        ),
+                                      ],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                          10), // Bỏ cong góc nếu cần
+                                      child: Image.asset(
+                                        film['image'],
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(0.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment
-                              .center, // Căn giữa các phần tử trong cột
-                          children: [
-                            Text(
-                              film['title'],
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign:
-                                  TextAlign.center, // Căn giữa nội dung text
-                            ),
-                            SizedBox(height: 4),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment
-                                  .center, // Căn giữa các phần tử trong hàng
-                              children: [
-                                Icon(Icons.star,
-                                    color: Colors.yellow, size: 18),
-                                SizedBox(width: 5),
-                                Text(
-                                  '${film['rating']}/10',
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                                Text(
-                                  '(${film['rating']} lượt đánh giá)',
-                                  style: TextStyle(
-                                      fontSize: 12, color: Color(0xFFA69E9E)),
+                                Positioned(
+                                  top: 10,
+                                  left: 10,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Color(0XFFffd700),
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: Text(
+                                      'TOP ${filmIndex + 1}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
-                            SizedBox(height: 4),
-                            Text(
-                              'Ngày phát hành: ${film['releaseDate']}',
-                              style: TextStyle(fontSize: 14),
-                              textAlign:
-                                  TextAlign.center, // Căn giữa nội dung text
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(0.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  height: 5,
+                                ),
+                                Text(
+                                  film['title'],
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                SizedBox(height: 4),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.star,
+                                        color: Colors.yellow, size: 18),
+                                    SizedBox(width: 5),
+                                    Text(
+                                      '${film['rating']}/10',
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                    Text(
+                                      '(${film['rating']} lượt đánh giá)',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFFA69E9E)),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  '${film['genre']}',
+                                  style: TextStyle(fontSize: 14),
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               );
             },
-          );
-        },
-      ),
+          ),
+        ),
+        Positioned(
+          left: 10,
+          child: IconButton(
+            icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+            onPressed: _goToPreviousPage,
+          ),
+        ),
+        Positioned(
+          right: 10,
+          child: IconButton(
+            icon: Icon(Icons.arrow_forward_ios, color: Colors.white),
+            onPressed: _goToNextPage,
+          ),
+        ),
+      ],
     );
   }
 }

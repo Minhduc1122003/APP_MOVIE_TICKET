@@ -23,25 +23,24 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: [
-        BlocProvider<LoginBloc>(
-          create: (context) => LoginBloc(),
-        ),
-        BlocProvider<SendCodeBloc>(
-          create: (context) => SendCodeBloc(),
-        ),
-        BlocProvider<CreateAccountBloc>(
-          create: (context) => CreateAccountBloc(),
-        ),
-        BlocProvider<HomeTabBloc>(
-          create: (context) => HomeTabBloc(),
-        ),
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        builder: EasyLoading.init(),
-        home: HomePage(),
-      ),
-    );
+        providers: [
+          BlocProvider<LoginBloc>(
+            create: (context) => LoginBloc(),
+          ),
+          BlocProvider<SendCodeBloc>(
+            create: (context) => SendCodeBloc(),
+          ),
+          BlocProvider<CreateAccountBloc>(
+            create: (context) => CreateAccountBloc(),
+          ),
+          BlocProvider<HomeTabBloc>(
+            create: (context) => HomeTabBloc(),
+          ),
+        ],
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          builder: EasyLoading.init(),
+          home: HomePage(),
+        ));
   }
 }
