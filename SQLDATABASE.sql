@@ -1,7 +1,7 @@
-﻿CREATE DATABASE APP_MOVIE_TICKET;
+﻿CREATE DATABASE APP_MOVIE_TICKET2;
 go
 
-USE APP_MOVIE_TICKET;
+USE APP_MOVIE_TICKET2;
 GO
 
 CREATE TABLE Users (
@@ -22,18 +22,14 @@ CREATE TABLE Users (
 go
 INSERT INTO Users (UserName, Password, Email, FullName, PhoneNumber, Photo, Role, CreateDate, UpdateDate, UpdateBy, Status,IsDelete)
 VALUES 
-('minhduc1122003', '123123', 'user1@example.com', N'Lê Minh Đức KH', 123456789, '', 0, GETDATE(), GETDATE(), 0, N'Đang hoạt động',0),
-('minhduc11220031', '123123', 'user1@example.com', N'Lê Minh Đức NV', 123456789, '', 1, GETDATE(), GETDATE(), 1, N'Đang hoạt động',0),
-('minhduc11220032', '123123', 'user1@example.com', N'Lê Minh Đức AD', 123456789, '', 2, GETDATE(), GETDATE(), 2, N'Đang hoạt động',0),
+('minhduc1122003', '123123', 'user1@example.com', N'Lê Minh Đức KH', 123456789, null, 0, GETDATE(), GETDATE(), 0, N'Đang hoạt động',0),
+('minhduc11220031', '123123', 'user1@example.com', N'Lê Minh Đức NV', 123456789, null, 1, GETDATE(), GETDATE(), 1, N'Đang hoạt động',0),
+('minhduc11220032', '123123', 'user1@example.com', N'Lê Minh Đức AD', 123456789, null, 2, GETDATE(), GETDATE(), 2, N'Đang hoạt động',0)
 
 -- BẢNG Users CHUẨN
 
 -- + 1 bảng lịch sử hoạt động của users
 -- + 1 bảng lịch sử hoạt động của admin
-
-UPDATE Users
-SET Photo = NULL;
-
 
 CREATE TABLE Cinemas(
     CinemaID INT PRIMARY KEY IDENTITY(1,1),  -- Mã rạp, tự động tăng
@@ -159,7 +155,7 @@ Kể về vụ án người phụ nữ Dani bị sát hại dã man tại ngôi 
 
 (1, N'Cám', 6, N'
 Câu chuyện phim là dị bản kinh dị đẫm máu lấy cảm hứng từ truyện cổ tích nổi tiếng Tấm Cám, nội dung chính của phim xoay quanh Cám - em gái cùng cha khác mẹ của Tấm đồng thời sẽ có nhiều nhân vật và chi tiết sáng tạo, gợi cảm giác vừa lạ vừa quen cho khán giả. Sau loạt tác phẩm kinh dị ăn khách như Tết Ở Làng Địa Ngục, Kẻ Ăn Hồn... bộ đôi nhà sản xuất Hoàng Quân - đạo diễn Trần Hữu Tấn đã tiếp tục với một dị bản của cổ tích Việt Nam mang tên Cám. Cùng dàn diễn viên tiềm năng, vai Tấm do diễn viên Rima Thanh Vy thủ vai, trong khi vai Cám được trao cho gương mặt rất quen thuộc - Lâm Thanh Mỹ. Ngoài ra vai mẹ kế của diễn viên Thúy Diễm và vai Hoàng tử do Hải Nam đảm nhận. Dị bản sẽ cho một góc nhìn hoàn toàn khác về Tấm Cám khi sự thay đổi đến từ người nuôi cá bống lại là Cám. Cô bé có ngoại hình dị dạng, khiến cả gia đình bị dân làng cho là phù thủy. Cũng vì thế mà Cám mới là đứa con bị đối xử tệ bạc, bắt phải lựa gạo chứ không phải Tấm. Cùng với bài đồng dao về cá bống, giọng nói của Bụt trong phim mới cũng vang lên khi hỏi: “Vì sao con khóc?”. Thế nhưng, nó không mang màu sắc dịu hiền, thân thương của một vì thần tiên trong văn hóa Việt Nam mà đậm chất ma mị, kinh dị. Liệu đây có đúng là Bụt hay chính là ác quỷ đội lốt đã lừa dối Tấm và Cám từ lâu để đưa họ vào cái bẫy chết chóc?
-', 122, '2024-09-20', 'cam.jpg', 'https://youtu.be/RA5qp5btmT8', 5, 1, 1,N'Sắp chiếu',0),
+', 122, '2024-09-20', 'cam.jpg', 'https://youtu.be/RA5qp5btmT8', 5, 1, 1,N'Sắp chiếu',0)
 
 
 
@@ -242,7 +238,6 @@ CREATE TABLE Ticket(
     FOREIGN KEY (BuyTicketId) REFERENCES BuyTicket(BuyTicketId),
 );
 go
-
 
 
 
