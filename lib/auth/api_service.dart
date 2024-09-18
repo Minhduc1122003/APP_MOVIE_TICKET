@@ -26,7 +26,7 @@ class ApiService {
     // baseUrl = 'http://192.168.1.23:8081';
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.1.27:8081';
+    baseUrl = 'http://192.168.1.14:8081';
     // wifi cty tuananh
     // baseUrl = 'http://192.168.2.83:8081';
 

@@ -361,12 +361,12 @@ class _MovieHeaderState extends State<MovieHeader>
                           child: Center(
                             child: ElevatedButton(
                               onPressed: () {
-                                Navigator.push(
-                                    context,
-                                    SlideFromRightPageRoute(
-                                        page: TrailerPage(
-                                            videoUrl: state
-                                                .movieDetails!.trailerUrl)));
+                                // Navigator.push(
+                                //     context,
+                                //     SlideFromRightPageRoute(
+                                //         page: TrailerPage(
+                                //             videoUrl: state
+                                //                 .movieDetails!.trailerUrl)));
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
