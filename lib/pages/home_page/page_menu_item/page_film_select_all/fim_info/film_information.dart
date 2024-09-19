@@ -677,16 +677,28 @@ class CastAndCrew extends StatelessWidget {
 }
 
 class BuyTicketButton extends StatelessWidget {
-  build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16),
       color: Colors.white,
-      child: MyButton(
-          fontsize: 14,
-          paddingText: 10,
-          text: 'Đặt vé ngay',
-          onTap: () => Navigator.push(
-              context, SlideFromRightPageRoute(page: MobileSchedulePage()))),
+      child: BlocBuilder<FilmInfoBloc, FilmInfoBlocState>(
+        builder: (context, state) {
+          return MyButton(
+            fontsize: 14,
+            paddingText: 10,
+            text: 'Đặt vé ngay',
+            onTap: () => Navigator.push(
+              context,
+              SlideFromRightPageRoute(
+                page: BuyTicketPage(
+                  movieId: state.movieDetails!.movieId,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

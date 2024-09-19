@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter_app_chat/components/animation_page.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/film_information.dart';
 
 class MyListviewCardItem extends StatefulWidget {
   final List<Map<String, dynamic>> filmList;
@@ -88,7 +90,15 @@ class _MyListviewCardItemState extends State<MyListviewCardItem> {
 
   Widget _buildFilmItem(Map<String, dynamic> film) {
     return GestureDetector(
-      onTap: () => print(film['title']),
+      onTap: () {
+        // In ra ID của phần tử được bấm
+        Navigator.push(
+          context,
+          SlideFromRightPageRoute(
+            page: FilmInformation(movieId: film['movieID']),
+          ),
+        );
+      },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 7.0),
         child: Column(
@@ -149,22 +159,28 @@ class _MyListviewCardItemState extends State<MyListviewCardItem> {
   }
 
   Widget _buildTitle(String title) {
-    return AutoSizeText(
-      title,
-      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-      minFontSize: 16,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+    return SizedBox(
+      width: 150,
+      child: AutoSizeText(
+        title,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        minFontSize: 16,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
     );
   }
 
   Widget _buildGenre(String genre) {
-    return AutoSizeText(
-      genre,
-      style: const TextStyle(color: Colors.grey, fontSize: 14),
-      minFontSize: 14,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+    return SizedBox(
+      width: 150,
+      child: AutoSizeText(
+        genre,
+        style: const TextStyle(color: Colors.grey, fontSize: 14),
+        minFontSize: 14,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
     );
   }
 
