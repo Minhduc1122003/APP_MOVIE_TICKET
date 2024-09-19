@@ -29,6 +29,8 @@ dependencies:
   diacritic: ^0.1.5
 #  youtube_player_flutter: ^9.0.3
   page_transition: ^2.1.0
+  cached_network_image: ^3.4.1
+  flutter_staggered_animations: ^1.1.1
 
 
 dev_dependencies:

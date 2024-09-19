@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
@@ -119,7 +120,7 @@ class _FilmSelectionPageState extends State<FilmSelectionPage> {
   SliverAppBar _buildSliverAppBar() {
     return SliverAppBar(
       backgroundColor: Color(0XFF6F3CD7),
-      expandedHeight: 80.0,
+      expandedHeight: 120.0,
       floating: false,
       pinned: true,
       flexibleSpace: LayoutBuilder(
@@ -203,7 +204,7 @@ class _FilmSelectionPageState extends State<FilmSelectionPage> {
         SizedBox(
           height: 20,
         ),
-        MyListviewcarditeam(
+        MyListviewCardItem(
           filmList: _mapMoviesToFilmList(filmDangChieu),
         ),
         SizedBox(
@@ -214,7 +215,7 @@ class _FilmSelectionPageState extends State<FilmSelectionPage> {
         SizedBox(
           height: 20,
         ),
-        MyListviewcarditeam(
+        MyListviewCardItem(
           filmList: _mapMoviesToFilmList(filmSapChieu),
         ),
         SizedBox(
@@ -587,13 +588,17 @@ class _FilmCarouselState extends State<FilmCarousel> {
                                 SizedBox(
                                   height: 5,
                                 ),
-                                Text(
+                                AutoSizeText(
                                   film['title'],
                                   style: TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                   ),
-                                  textAlign: TextAlign.center,
+                                  maxLines: 1, // Giới hạn số dòng hiển thị là 2
+                                  overflow: TextOverflow
+                                      .ellipsis, // Hiển thị "..." khi văn bản quá dài
+                                  minFontSize:
+                                      14, // Kích thước font tối thiểu khi tự động điều chỉnh
                                 ),
                                 SizedBox(height: 4),
                                 Row(

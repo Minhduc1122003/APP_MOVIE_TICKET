@@ -1,48 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
-class MyListviewcarditeam extends StatefulWidget {
+class MyListviewCardItem extends StatefulWidget {
   final List<Map<String, dynamic>> filmList;
 
-  const MyListviewcarditeam({required this.filmList, Key? key})
+  const MyListviewCardItem({required this.filmList, Key? key})
       : super(key: key);
 
   @override
-  _MyListviewcarditeamState createState() => _MyListviewcarditeamState();
+  _MyListviewCardItemState createState() => _MyListviewCardItemState();
 }
 
-class _MyListviewcarditeamState extends State<MyListviewcarditeam> {
+class _MyListviewCardItemState extends State<MyListviewCardItem> {
   final ScrollController _scrollController = ScrollController();
-  bool _showPrevButton = false;
-  bool _showNextButton = true;
+  final ValueNotifier<bool> _showPrevButton = ValueNotifier(false);
+  final ValueNotifier<bool> _showNextButton = ValueNotifier(true);
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(() {
-      setState(() {
-        _showPrevButton = _scrollController.offset > 0;
-        _showNextButton = _scrollController.offset <
-            _scrollController.position.maxScrollExtent;
-      });
-    });
+    _scrollController.addListener(_updateButtonVisibility);
   }
 
-  void _scrollNext() {
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        _scrollController.offset + 150, // Scroll thêm 150 pixels
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
+  @override
+  void dispose() {
+    _scrollController.removeListener(_updateButtonVisibility);
+    _scrollController.dispose();
+    _showPrevButton.dispose();
+    _showNextButton.dispose();
+    super.dispose();
   }
 
-  void _scrollPrev() {
+  void _updateButtonVisibility() {
+    _showPrevButton.value = _scrollController.offset > 0;
+    _showNextButton.value =
+        _scrollController.offset < _scrollController.position.maxScrollExtent;
+  }
+
+  void _scroll(double offset) {
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
-        _scrollController.offset - 150, // Scroll lùi 150 pixels
-        duration: Duration(milliseconds: 300),
+        (_scrollController.offset + offset).clamp(
+          0.0,
+          _scrollController.position.maxScrollExtent,
+        ),
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     }
@@ -51,120 +53,148 @@ class _MyListviewcarditeamState extends State<MyListviewcarditeam> {
   @override
   Widget build(BuildContext context) {
     final bool showButtons = widget.filmList.length > 3;
-    return Stack(
-      children: [
-        SizedBox(
-          height: 300,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            controller: _scrollController,
-            itemCount: widget.filmList.length,
-            itemBuilder: (context, index) {
-              final film = widget.filmList[index];
-              return GestureDetector(
-                onTap: () {
-                  print(film['title']); // In ra tên phim khi nhấn vào
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
+          children: [
+            SizedBox(
+              height: 300,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                controller: _scrollController,
+                itemCount: widget.filmList.length,
+                itemBuilder: (context, index) {
+                  return _buildFilmItem(widget.filmList[index]);
                 },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 7.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        constraints: BoxConstraints(
-                          maxWidth: 150, // Đặt kích thước tối đa cho hình ảnh
-                          maxHeight: 220,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            film['image'],
-                            width: 150,
-                            height: 220,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: 150, // Đặt kích thước cho rating
-                        child: Row(
-                          children: [
-                            Icon(Icons.star, color: Colors.yellow, size: 18),
-                            SizedBox(width: 5),
-                            AutoSizeText(
-                              '${film['rating']}/10',
-                              style: const TextStyle(
-                                color: Colors.grey,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        width: 150, // Đặt kích thước cho tiêu đề
-                        child: AutoSizeText(
-                          film['title'],
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 150, // Đặt kích thước cho tiêu đề
-                        child: AutoSizeText(
-                          '${film['genre']}',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
+              ),
+            ),
+            if (showButtons) ...[
+              _buildNavigationButton(
+                icon: Icons.arrow_back_ios,
+                onPressed: _showPrevButton,
+                alignment: Alignment.centerLeft,
+              ),
+              _buildNavigationButton(
+                icon: Icons.arrow_forward_ios,
+                onPressed: _showNextButton,
+                alignment: Alignment.centerRight,
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildFilmItem(Map<String, dynamic> film) {
+    return GestureDetector(
+      onTap: () => print(film['title']),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 7.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildFilmImage(film['image']),
+            const SizedBox(height: 8),
+            _buildRating(film['rating']),
+            _buildTitle(film['title']),
+            _buildGenre(film['genre']),
+          ],
         ),
-        if (showButtons)
-          Positioned(
-            left: 10,
-            top: 0,
-            bottom: 100,
-            child: Align(
-              alignment: Alignment.center,
-              child: _showPrevButton
-                  ? IconButton(
-                      icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-                      onPressed: _scrollPrev,
-                    )
-                  : SizedBox.shrink(),
-            ),
-          ),
-        if (showButtons)
-          Positioned(
-            right: 10,
-            top: 0,
-            bottom: 100,
-            child: Align(
-              alignment: Alignment.center,
-              child: _showNextButton
-                  ? IconButton(
-                      icon: Icon(Icons.arrow_forward_ios, color: Colors.white),
-                      onPressed: _scrollNext,
-                    )
-                  : SizedBox.shrink(),
-            ),
-          ),
+      ),
+    );
+  }
+
+  Widget _buildFilmImage(String imageUrl) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 150, maxHeight: 220),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.asset(
+          imageUrl,
+          width: 150,
+          height: 220,
+          fit: BoxFit.cover,
+          frameBuilder: (BuildContext context, Widget child, int? frame,
+              bool wasSynchronouslyLoaded) {
+            if (wasSynchronouslyLoaded) {
+              return child;
+            }
+            return AnimatedOpacity(
+              child: child,
+              opacity: frame == null ? 0 : 1,
+              duration: const Duration(seconds: 1),
+              curve: Curves.easeOut,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRating(double rating) {
+    return Row(
+      children: [
+        const Icon(Icons.star, color: Colors.yellow, size: 18),
+        const SizedBox(width: 5),
+        AutoSizeText(
+          '$rating/10',
+          style: const TextStyle(color: Colors.grey),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
+    );
+  }
+
+  Widget _buildTitle(String title) {
+    return AutoSizeText(
+      title,
+      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      minFontSize: 16,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  Widget _buildGenre(String genre) {
+    return AutoSizeText(
+      genre,
+      style: const TextStyle(color: Colors.grey, fontSize: 14),
+      minFontSize: 14,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  Widget _buildNavigationButton({
+    required IconData icon,
+    required ValueNotifier<bool> onPressed,
+    required Alignment alignment,
+  }) {
+    return Positioned.fill(
+      child: Align(
+        alignment: alignment,
+        child: ValueListenableBuilder<bool>(
+          valueListenable: onPressed,
+          builder: (context, value, child) {
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: Icon(icon, color: Colors.white),
+                onPressed: value
+                    ? () => _scroll(icon == Icons.arrow_back_ios ? -150 : 150)
+                    : null,
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }

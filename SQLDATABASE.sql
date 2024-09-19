@@ -1,7 +1,7 @@
 ﻿CREATE DATABASE APP_MOVIE_TICKET;
 go
 
-USE APP_MOVIE_TICKET;
+USE APP_MOVIE_TICKET2;
 GO
 CREATE TABLE Users (
     UserId INT PRIMARY KEY IDENTITY(1,1), -- Thiết lập UserId tự động tăng
@@ -19,6 +19,8 @@ CREATE TABLE Users (
 	IsDelete BIT not null, -- 0: false, 1: true;
 );
 go
+
+
 
 -- BẢNG Users CHUẨN
 
@@ -385,6 +387,20 @@ INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) V
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
 -- Insert dữ liệu cho bảng Favourite
 INSERT INTO Favourite (MovieID, UserId)
@@ -443,6 +459,44 @@ VALUES
 
 
 
+
+
+/*
+CREATE TABLE Classes (
+    ClassId INT PRIMARY KEY IDENTITY(1,1), -- Thiết lập ClassId tự động tăng
+    ClassName NVARCHAR(100) NOT NULL, -- Tên lớp học
+    Description NVARCHAR(255), -- Mô tả lớp học
+    Status NVARCHAR(20) NOT NULL -- Trạng thái lớp học
+);
+GO
+INSERT INTO Classes (ClassName, Description, Status)
+VALUES 
+('Toán 10', 'Lớp học môn Toán lớp 10', N'Đang hoạt động'),
+('Văn 10', 'Lớp học môn Văn lớp 10', N'Đang hoạt động'),
+('Hóa 11', 'Lớp học môn Hóa lớp 11', N'Đang hoạt động'),
+('Sinh 12', 'Lớp học môn Sinh lớp 12', N'Đang hoạt động'),
+('Anh Văn 11', 'Lớp học môn Anh Văn lớp 11', N'Đang hoạt động');
+GO
+
+CREATE TABLE Grades (
+    GradeId INT PRIMARY KEY IDENTITY(1,1), -- Thiết lập GradeId tự động tăng
+    UserId INT NOT NULL, 
+    ClassId INT NOT NULL, 
+    Score FLOAT NOT NULL, -- Điểm số
+    Status NVARCHAR(20) NOT NULL, -- Trạng thái điểm
+    FOREIGN KEY (UserId) REFERENCES Users(UserId), -- Liên kết với bảng Users
+    FOREIGN KEY (ClassId) REFERENCES Classes(ClassId) -- Liên kết với bảng Classes
+);
+GO
+INSERT INTO Grades (UserId, ClassId, Score, Status)
+VALUES 
+(1, 1, 8.5, N'Đạt'),  -- Minh Đức KH trong lớp Toán 10
+(2, 1, 9.0, N'Đạt'),  -- Minh Đức NV trong lớp Toán 10
+(3, 2, 7.5, N'Đạt'),  -- Minh Đức AD trong lớp Văn 10
+(1, 3, 6.0, N'Đạt'),  -- Minh Đức KH trong lớp Hóa 11
+(2, 4, 9.2, N'Đạt');  -- Minh Đức NV trong lớp Sinh 12
+GO
+*/
 
 
 
