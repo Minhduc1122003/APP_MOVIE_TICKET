@@ -144,7 +144,17 @@ CREATE TABLE Ticket(
 );
 go
 
-
+CREATE TABLE Showtime (
+    ShowtimeID INT PRIMARY KEY IDENTITY(1,1),    -- Mã lịch chiếu, tự động tăng
+    MovieID INT NOT NULL,                        -- Mã phim
+    CinemaRoomID INT NOT NULL,                   -- Mã phòng chiếu
+    ShowtimeDate DATE NOT NULL,                  -- Ngày chiếu
+    StartTime TIME NOT NULL,                     -- Giờ bắt đầu
+    EndTime TIME NOT NULL,                       -- Giờ kết thúc
+    CONSTRAINT FK_MovieID FOREIGN KEY (MovieID) REFERENCES Movies(MovieID),
+    CONSTRAINT FK_CinemaRoomID FOREIGN KEY (CinemaRoomID) REFERENCES CinemaRoom(CinemaRoomID)
+);
+GO
 
 
 
@@ -292,6 +302,79 @@ VALUES
 
 
 
+
+
+-- Lịch chiếu từ 8:00 đến 10:00
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-30', '08:00', '10:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 2, '2024-09-30', '08:00', '10:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 3, '2024-09-30', '08:00', '10:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Không Nói Điều Dữ'), 4, '2024-09-30', '08:00', '10:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Joker'), 5, '2024-09-30', '08:00', '10:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Quỷ Án'), 6, '2024-09-30', '08:00', '10:00');
+
+-- Lịch chiếu từ 10:15 đến 12:15
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 1, '2024-09-30', '10:15', '12:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-30', '10:15', '12:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 3, '2024-09-30', '10:15', '12:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'The Crow: Báo Thù'), 4, '2024-09-30', '10:15', '12:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Anh Trai Vượt Mọi Tam Tai'), 5, '2024-09-30', '10:15', '12:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Longlegs: Thảm Kịch Dị Giáo'), 6, '2024-09-30', '10:15', '12:15');
+
+-- Lịch chiếu từ 12:30 đến 14:30
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 1, '2024-09-30', '12:30', '14:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 2, '2024-09-30', '12:30', '14:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-30', '12:30', '14:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Quỷ Án'), 4, '2024-09-30', '12:30', '14:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Không Nói Điều Dữ'), 5, '2024-09-30', '12:30', '14:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Joker'), 6, '2024-09-30', '12:30', '14:30');
+
+-- Lịch chiếu từ 14:45 đến 16:45
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-30', '14:45', '16:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 2, '2024-09-30', '14:45', '16:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 3, '2024-09-30', '14:45', '16:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Longlegs: Thảm Kịch Dị Giáo'), 4, '2024-09-30', '14:45', '16:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'The Crow: Báo Thù'), 5, '2024-09-30', '14:45', '16:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Anh Trai Vượt Mọi Tam Tai'), 6, '2024-09-30', '14:45', '16:45');
+
+-- Lịch chiếu từ 17:00 đến 19:00
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 1, '2024-09-30', '17:00', '19:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-30', '17:00', '19:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 3, '2024-09-30', '17:00', '19:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Joker'), 4, '2024-09-30', '17:00', '19:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Quỷ Án'), 5, '2024-09-30', '17:00', '19:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Không Nói Điều Dữ'), 6, '2024-09-30', '17:00', '19:00');
+
+-- Lịch chiếu từ 19:00 đến 21:15
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 1, '2024-09-30', '19:00', '21:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 2, '2024-09-30', '19:00', '21:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-30', '19:00', '21:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Anh Trai Vượt Mọi Tam Tai'), 4, '2024-09-30', '19:00', '21:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Longlegs: Thảm Kịch Dị Giáo'), 5, '2024-09-30', '19:00', '21:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'The Crow: Báo Thù'), 6, '2024-09-30', '19:00', '21:15');
+
+-- Lịch chiếu từ 21:30 đến 23:45
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-30', '21:30', '23:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 2, '2024-09-30', '21:30', '23:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 3, '2024-09-30', '21:30', '23:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Không Nói Điều Dữ'), 4, '2024-09-30', '21:30', '23:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Joker'), 5, '2024-09-30', '21:30', '23:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Quỷ Án'), 6, '2024-09-30', '21:30', '23:45');
+
+-- Cinema Room 1
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 1, '2024-09-30', '00:00', '02:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-30', '00:00', '02:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 3, '2024-09-30', '00:00', '02:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'The Crow: Báo Thù'), 4, '2024-09-30', '00:00', '02:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Anh Trai Vượt Mọi Tam Tai'), 5, '2024-09-30', '00:00', '02:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Longlegs: Thảm Kịch Dị Giáo'), 6, '2024-09-30', '00:00', '02:00');
 
 
 
