@@ -378,9 +378,30 @@ INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) V
 ((SELECT MovieID FROM Movies WHERE Title = N'Anh Trai Vượt Mọi Tam Tai'), 5, '2024-09-30', '00:00', '02:00'),
 ((SELECT MovieID FROM Movies WHERE Title = N'Longlegs: Thảm Kịch Dị Giáo'), 6, '2024-09-30', '00:00', '02:00');
 
-
-
-
+-- Insert đánh giá cho Movie 1 (Làm Giàu Với Ma)
+INSERT INTO Rate (MovieID, UserId, Content, Rating)
+VALUES 
+(1, 1, N'Phim rất hay và cảm động!', 1),
+(1, 2, N'Cốt truyện hấp dẫn, diễn xuất tốt.', 1),
+(1, 3, N'Tạm ổn, còn nhiều điểm thiếu sót.', 4),
+(2, 1, N'Phim rất hay và cảm động!', 2),
+(2, 2, N'Cốt truyện hấp dẫn, diễn xuất tốt.', 9),
+(2, 3, N'Tạm ổn, còn nhiều điểm thiếu sót.', 5),
+(3, 1, N'Phim rất hay và cảm động!', 9),
+(3, 2, N'Cốt truyện hấp dẫn, diễn xuất tốt.', 7),
+(3, 3, N'Tạm ổn, còn nhiều điểm thiếu sót.', 3),
+(4, 1, N'Phim rất hay và cảm động!', 7),
+(4, 2, N'Cốt truyện hấp dẫn, diễn xuất tốt.', 9),
+(5, 3, N'Tạm ổn, còn nhiều điểm thiếu sót.', 6),
+(5, 1, N'Phim rất hay và cảm động!', 2),
+(5, 2, N'Cốt truyện hấp dẫn, diễn xuất tốt.', 7),
+(6, 3, N'Tạm ổn, còn nhiều điểm thiếu sót.', 5),
+(7, 1, N'Phim rất hay và cảm động!', 9),
+(7, 2, N'Cốt truyện hấp dẫn, diễn xuất tốt.', 7),
+(7, 3, N'Tạm ổn, còn nhiều điểm thiếu sót.', 9),
+(7, 1, N'Phim rất hay và cảm động!', 8),
+(8, 2, N'Cốt truyện hấp dẫn, diễn xuất tốt.', 6),
+(8, 3, N'Tạm ổn, còn nhiều điểm thiếu sót.', 2);
 
 
 
