@@ -17,13 +17,13 @@ class ApiService {
     final info = NetworkInfo();
     // String? ip = await info.getWifiIP(); // 192.168.1.43
     // wifi trọ tuan anh:
-    baseUrl = 'http://192.168.1.7:8081';
+    // baseUrl = 'http://192.168.1.7:8081';
 
     // wifi trọ của đức:
     //baseUrl = 'http://192.168.100.24:8081';
 
     // wifi cty minhduc
-    // baseUrl = 'http://192.168.1.23:8081';
+    baseUrl = 'http://192.168.1.23:8081';
 
     // wifi cf24/24
 

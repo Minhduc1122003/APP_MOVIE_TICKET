@@ -46,16 +46,16 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               MovieHeader(movieId: widget.movieId),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
-              Divider(
+              const Divider(
                 height: 0,
                 thickness: 6,
                 color: Color(0xfff0f0f0),
               ),
               DateSelector(),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
               TimeSelector(),
@@ -218,6 +218,18 @@ class _MovieHeaderState extends State<MovieHeader>
                         style: TextStyle(color: Colors.white, fontSize: 12),
                       ),
                     ),
+                    SizedBox(height: 8),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Được cộng đồng đánh giá tích cực!',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w300),
+                      ),
+                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -246,8 +258,12 @@ class RatingSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    double fontSize24 = screenWidth * 0.04; // Ví dụ: 6% chiều rộng màn hình
+    double fontSize16 = screenWidth * 0.03;
+    double fontSize12 = screenWidth * 0.02;
+
     return Container(
-      padding: EdgeInsets.all(10),
       child: BlocBuilder<FilmInfoBloc, FilmInfoBlocState>(
         builder: (context, state) {
           return Column(
@@ -259,10 +275,9 @@ class RatingSection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 10, 10, 10),
+                  padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
                   child: Row(
                     children: [
-                      // Phần tử chiếm 40% chiều rộng
                       Expanded(
                         flex: 4,
                         child: Column(
@@ -272,34 +287,44 @@ class RatingSection extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.star,
-                                    color: Colors.orange, size: 30),
-                                Text('${movieDetails.averageRating}',
-                                    style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.orange)),
-                                Text(' /10',
-                                    style: TextStyle(
-                                        color: Colors.black, fontSize: 16)),
+                                    color: Colors.orange, size: fontSize24),
+                                Text(
+                                  '${movieDetails.averageRating}',
+                                  style: TextStyle(
+                                    fontSize: fontSize16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.orange,
+                                  ),
+                                ),
+                                Text(
+                                  ' /10',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: fontSize16,
+                                  ),
+                                ),
                               ],
                             ),
-                            SizedBox(height: 5),
-                            Text('(${movieDetails.reviewCount} đánh giá)',
-                                style: TextStyle(
-                                    color: Colors.black, fontSize: 12)),
+                            AutoSizeText(
+                              '(${movieDetails.reviewCount} đánh giá)',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: fontSize12,
+                              ),
+                              maxLines: 1,
+                              minFontSize: 8,
+                            ),
                           ],
                         ),
                       ),
-                      // Phần tử chiếm 60% chiều rộng
                       Expanded(
                         flex: 6,
-                        child: _buildRatingBar(
-                            movieDetails), // Gọi hàm với dữ liệu phim
+                        child: _buildRatingBar(movieDetails),
                       ),
                     ],
                   ),
                 ),
-              )
+              ),
             ],
           );
         },
@@ -330,9 +355,13 @@ class RatingSection extends StatelessWidget {
     return Row(
       children: [
         SizedBox(
-          width: 40,
-          child:
-              Text(label, style: TextStyle(fontSize: 12, color: Colors.black)),
+          width: 30,
+          child: AutoSizeText(
+            label,
+            style: TextStyle(fontSize: 10, color: Colors.black),
+            maxLines: 1,
+            minFontSize: 8,
+          ),
         ),
         Expanded(
           child: LinearProgressIndicator(
@@ -341,10 +370,10 @@ class RatingSection extends StatelessWidget {
             valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
           ),
         ),
-        SizedBox(width: 10), // Khoảng cách giữa thanh và số lượng
+        SizedBox(width: 10),
         Text(
-          '($count)', // Hiển thị số lượng đánh giá
-          style: TextStyle(fontSize: 12, color: Colors.black),
+          '($count)',
+          style: TextStyle(fontSize: 10, color: Colors.black),
         ),
       ],
     );
@@ -358,11 +387,41 @@ class DateSelector extends StatefulWidget {
 
 class _DateSelectorState extends State<DateSelector> {
   int _selectedIndex = 0; // Lưu trữ chỉ số của item được chọn
+  double _titlePadding = 10; // Giá trị padding cho tiêu đề
+  double _leftPadding = 10; // Giá trị padding bên trái cho phần tử đầu tiên
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController()
+      ..addListener(() {
+        // Kiểm tra vị trí cuộn
+        if (_scrollController.position.pixels > 0) {
+          setState(() {
+            _titlePadding = 0; // Đặt padding bằng 0 khi cuộn
+            _leftPadding =
+                0; // Đặt padding bên trái của phần tử đầu tiên bằng 0
+          });
+        } else {
+          setState(() {
+            _titlePadding = 10; // Đặt padding về 10 khi ở đầu
+            _leftPadding =
+                10; // Đặt padding bên trái của phần tử đầu tiên về 10
+          });
+        }
+      });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10),
       color: Colors.white,
       child: Column(
         crossAxisAlignment:
@@ -370,11 +429,14 @@ class _DateSelectorState extends State<DateSelector> {
         children: [
           SizedBox(height: 10), // Khoảng cách giữa tiêu đề và danh sách ngày
 
-          Text(
-            'Chọn ngày',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+          const Padding(
+            padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+            child: Text(
+              'Chọn ngày',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           SizedBox(height: 10), // Khoảng cách giữa tiêu đề và danh sách ngày
@@ -386,6 +448,7 @@ class _DateSelectorState extends State<DateSelector> {
                   Expanded(
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
+                      controller: _scrollController,
                       child: Wrap(
                         spacing: 8, // Khoảng cách ngang giữa các button
                         runSpacing:
@@ -398,16 +461,20 @@ class _DateSelectorState extends State<DateSelector> {
                           var dayInfo = entry.value;
                           bool isSelected = index == _selectedIndex;
 
-                          return _buildDateItem(
-                            dayInfo['dayMonth'] ?? '',
-                            dayInfo['dayOfWeek'] ?? '',
-                            isSelected: isSelected,
-                            onTap: () {
-                              setState(() {
-                                _selectedIndex =
-                                    index; // Cập nhật chỉ số của item được chọn
-                              });
-                            },
+                          return Padding(
+                            padding: EdgeInsets.only(
+                                left: index == 0 ? _leftPadding : 0),
+                            child: _buildDateItem(
+                              dayInfo['dayMonth'] ?? '',
+                              dayInfo['dayOfWeek'] ?? '',
+                              isSelected: isSelected,
+                              onTap: () {
+                                setState(() {
+                                  _selectedIndex =
+                                      index; // Cập nhật chỉ số của item được chọn
+                                });
+                              },
+                            ),
                           );
                         }).toList(),
                       ),
@@ -434,7 +501,7 @@ class _DateSelectorState extends State<DateSelector> {
             color: isSelected ? Colors.transparent : Colors.grey,
           ),
         ),
-        constraints: BoxConstraints(
+        constraints: const BoxConstraints(
           minWidth: 50,
           minHeight: 50,
         ),
@@ -470,20 +537,19 @@ class TimeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
       color: Colors.white,
       child: Column(
         crossAxisAlignment:
             CrossAxisAlignment.start, // Đặt tiêu đề ở góc trên bên trái
         children: [
-          Text(
+          const Text(
             'Lọc theo khung giờ',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(
+          const SizedBox(
               height: 5), // Khoảng cách giữa tiêu đề và danh sách thời gian
           Row(
             children: [
