@@ -17,7 +17,7 @@ class ApiService {
     final info = NetworkInfo();
     // String? ip = await info.getWifiIP(); // 192.168.1.43
     // wifi trọ tuan anh:
-    // baseUrl = 'http://192.168.1.12:8081';
+    baseUrl = 'http://192.168.1.7:8081';
 
     // wifi trọ của đức:
     //baseUrl = 'http://192.168.100.24:8081';
@@ -26,9 +26,13 @@ class ApiService {
     // baseUrl = 'http://192.168.1.23:8081';
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.1.23:8081';
+
+    //baseUrl = 'http://192.168.1.23:8081';
+
+    //baseUrl = 'http://192.168.1.33:8081';
+
     // wifi cty tuananh
-    // baseUrl = 'http://192.168.2.83:8081';
+    //baseUrl = 'http://192.168.2.83:8081';
 
     print(baseUrl);
   }
@@ -75,30 +79,29 @@ class ApiService {
 
   Future<Map<String, dynamic>> createAccount(String email, String password,
       String username, String fullname, int phoneNumber, String photo) async {
-    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
-    print('Đã vào API_Service: $phoneNumber');
+    await _initBaseUrl(); // Ensure baseUrl is initialized
+    print('Entering API_Service: $phoneNumber');
 
     final response = await http.post(
       Uri.parse('$baseUrl/createAccount'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode(<String, String>{
+      body: jsonEncode(<String, dynamic>{
         'email': email,
         'password': password,
         'username': username,
         'fullname': fullname,
-        'phoneNumber': phoneNumber.toString(),
+        'phoneNumber': phoneNumber,
         'photo': photo,
+        // Note: The server will handle CreateDate, UpdateDate, UpdateBy, Status, and IsDelete
       }),
     );
 
     if (response.statusCode == 200) {
-      // Nếu server trả về một response thành công
       return jsonDecode(response.body);
     } else {
-      // Nếu server trả về một lỗi
-      throw Exception('Failed to createAccount');
+      throw Exception('Failed to create account: ${response.body}');
     }
   }
 
