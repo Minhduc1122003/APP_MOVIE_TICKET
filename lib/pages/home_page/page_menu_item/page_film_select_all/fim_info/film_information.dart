@@ -603,6 +603,11 @@ class RatingSection extends StatelessWidget {
             valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
           ),
         ),
+        SizedBox(width: 10), // Khoảng cách giữa thanh và số lượng
+        Text(
+          '($count)', // Hiển thị số lượng đánh giá
+          style: TextStyle(fontSize: 12, color: Colors.black),
+        ),
       ],
     );
   }

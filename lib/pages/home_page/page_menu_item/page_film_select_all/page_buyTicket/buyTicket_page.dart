@@ -218,14 +218,6 @@ class _MovieHeaderState extends State<MovieHeader>
                         style: TextStyle(color: Colors.white, fontSize: 12),
                       ),
                     ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Phim được phổ biến đến người xem từ đủ ${movieDetails.age} tuổi trở lên',
-                      style: TextStyle(fontSize: 12),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -348,6 +340,11 @@ class RatingSection extends StatelessWidget {
             backgroundColor: Colors.grey[300],
             valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
           ),
+        ),
+        SizedBox(width: 10), // Khoảng cách giữa thanh và số lượng
+        Text(
+          '($count)', // Hiển thị số lượng đánh giá
+          style: TextStyle(fontSize: 12, color: Colors.black),
         ),
       ],
     );
