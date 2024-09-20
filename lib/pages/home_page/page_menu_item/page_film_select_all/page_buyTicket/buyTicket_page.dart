@@ -7,6 +7,8 @@ import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/bloc/buyTicket_Bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+late ApiService _apiService = ApiService();
+
 class BuyTicketPage extends StatefulWidget {
   final int movieId;
 
@@ -17,6 +19,19 @@ class BuyTicketPage extends StatefulWidget {
 }
 
 class _BuyTicketPageState extends State<BuyTicketPage> {
+  late final ApiService _APIService;
+
+  @override
+  void initState() {
+    super.initState();
+    _APIService = ApiService(); // Khởi tạo _APIService ở cấp cha
+  }
+
+  Future<MovieDetails?> _loadMovieDetails() async {
+    return await _APIService.findByViewMovieID(
+        widget.movieId, UserManager.instance.user?.userId ?? 0);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -42,32 +57,46 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
         ),
         backgroundColor: Colors.white,
         body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              MovieHeader(movieId: widget.movieId),
-              const SizedBox(
-                height: 20,
-              ),
-              const Divider(
-                height: 0,
-                thickness: 6,
-                color: Color(0xfff0f0f0),
-              ),
-              DateSelector(),
-              const SizedBox(
-                height: 10,
-              ),
-              TimeSelector(),
-              _buildCinemaItem('Cinema A', '12 km',
-                  ['9:00', '11:00', '13:30', '15:30', '17:30']),
-              _buildCinemaItem('Cinema B', '4.2 km',
-                  ['9:00', '11:00', '13:30', '15:30', '17:30']),
-              _buildCinemaItem('Cinema C', '9.1 km',
-                  ['9:00', '11:00', '13:30', '15:30', '17:30']),
-            ],
-          ),
-        ),
+            child: FutureBuilder<MovieDetails?>(
+                future: _loadMovieDetails(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Lỗi: ${snapshot.error}'));
+                  } else if (!snapshot.hasData) {
+                    return Center(child: Text('Không có dữ liệu'));
+                  }
+
+                  final movieDetails = snapshot.data!;
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      MovieHeader(
+                        movieId: widget.movieId,
+                        apiService: _APIService,
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      const Divider(
+                        height: 0,
+                        thickness: 6,
+                        color: Color(0xfff0f0f0),
+                      ),
+                      DateSelector(),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      TimeSelector(),
+                      _buildCinemaItem(
+                          '${movieDetails.cinemaName}',
+                          '${movieDetails.cinemaAddress}',
+                          ['9:00', '11:00', '13:30', '15:30', '17:30']),
+                    ],
+                  );
+                })),
       ),
     );
   }
@@ -115,7 +144,10 @@ class _PersistentHeaderDelegate extends SliverPersistentHeaderDelegate {
 
 class MovieHeader extends StatefulWidget {
   final int movieId;
-  const MovieHeader({super.key, required this.movieId});
+
+  final ApiService apiService; // Nhận ApiService từ BuyTicketPage
+  const MovieHeader(
+      {super.key, required this.movieId, required this.apiService});
 
   @override
   _MovieHeaderState createState() => _MovieHeaderState();
@@ -125,18 +157,16 @@ class _MovieHeaderState extends State<MovieHeader>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   bool isFavourite = false;
-  late ApiService _APIService;
 
   @override
   void initState() {
     super.initState();
     _controller =
         AnimationController(vsync: this, duration: Duration(milliseconds: 500));
-    _APIService = ApiService();
   }
 
   Future<MovieDetails?> _loadMovieDetails() async {
-    return await _APIService.findByViewMovieID(
+    return await _apiService.findByViewMovieID(
         widget.movieId, UserManager.instance.user?.userId ?? 0);
   }
 
@@ -629,9 +659,11 @@ Widget _buildCinemaItem(
                       overflow: TextOverflow.ellipsis,
                     ),
                     SizedBox(height: 4),
-                    Text(
-                      'You are near this cinema ($distance)',
+                    AutoSizeText(
+                      '$distance',
                       style: TextStyle(color: Colors.grey, fontSize: 14),
+                      minFontSize: 12,
+                      maxLines: 1,
                     ),
                     SizedBox(height: 8),
                     SizedBox(

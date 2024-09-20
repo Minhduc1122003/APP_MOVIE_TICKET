@@ -45,11 +45,7 @@ go
 
 -- BẢNG Cinemas CHUẨN
 
-CREATE TABLE Genre (
-    IdGenre INT PRIMARY KEY IDENTITY(1,1),
-    GenreName NVARCHAR(100) NOT NULL
-);
-go
+
 
 
 
@@ -89,6 +85,11 @@ CREATE TABLE MovieGenre (
     FOREIGN KEY (MovieID) REFERENCES Movies(MovieID),
     FOREIGN KEY (IdGenre) REFERENCES Genre(IdGenre)
 );
+CREATE TABLE Genre (
+    IdGenre INT PRIMARY KEY IDENTITY(1,1),
+    GenreName NVARCHAR(100) NOT NULL
+);
+go
 
 CREATE TABLE Rate (
     IdRate INT PRIMARY KEY IDENTITY(1,1),
@@ -378,6 +379,30 @@ INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) V
 ((SELECT MovieID FROM Movies WHERE Title = N'Anh Trai Vượt Mọi Tam Tai'), 5, '2024-09-30', '00:00', '02:00'),
 ((SELECT MovieID FROM Movies WHERE Title = N'Longlegs: Thảm Kịch Dị Giáo'), 6, '2024-09-30', '00:00', '02:00');
 
+/*
+SELECT * FROM Showtime WHERE MovieID =2
+
+DECLARE @InputDate DATE = '2024-09-30';
+DECLARE @InputTime TIME = '21:00';
+DECLARE @movieID int = 2;
+
+SELECT 
+    M.Title AS MovieTitle,
+    S.CinemaRoomID,
+    S.ShowtimeDate,
+    S.StartTime,
+    S.EndTime
+FROM 
+    Showtime S
+JOIN 
+    Movies M ON S.MovieID = M.MovieID
+WHERE 
+    S.ShowtimeDate = @InputDate
+    AND S.StartTime > @InputTime
+	AND M.MovieID = @movieID
+ORDER BY 
+    S.StartTime;
+	*/
 -- Insert đánh giá cho Movie 1 (Làm Giàu Với Ma)
 INSERT INTO Rate (MovieID, UserId, Content, Rating)
 VALUES 

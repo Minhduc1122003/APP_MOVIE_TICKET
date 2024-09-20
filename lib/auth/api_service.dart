@@ -23,7 +23,7 @@ class ApiService {
     //baseUrl = 'http://192.168.100.24:8081';
 
     // wifi cty minhduc
-    baseUrl = 'http://192.168.1.23:8081';
+    baseUrl = 'http://172.20.10.4:8081';
 
     // wifi cf24/24
 
