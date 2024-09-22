@@ -2,10 +2,12 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
+import 'package:flutter_app_chat/models/ShowTime_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/bloc/film_info_Bloc.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/bloc/buyTicket_Bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
 late ApiService _apiService = ApiService();
 
@@ -20,16 +22,40 @@ class BuyTicketPage extends StatefulWidget {
 
 class _BuyTicketPageState extends State<BuyTicketPage> {
   late final ApiService _APIService;
+  late List<ShowTimeDetails> _showtimes = [];
 
   @override
   void initState() {
     super.initState();
     _APIService = ApiService(); // Khởi tạo _APIService ở cấp cha
+    _loadShowtimes(); // Gọi hàm _loadShowtimes
   }
 
   Future<MovieDetails?> _loadMovieDetails() async {
     return await _APIService.findByViewMovieID(
         widget.movieId, UserManager.instance.user?.userId ?? 0);
+  }
+
+  Future<void> _loadShowtimes() async {
+    DateTime dateGet = DateTime(2024, 9, 30);
+    TimeOfDay timeGet = TimeOfDay(hour: 08, minute: 0);
+    try {
+      _showtimes =
+          await _APIService.getShowtime(widget.movieId, dateGet, timeGet);
+      if (_showtimes.isNotEmpty) {
+        for (var showtime in _showtimes) {
+          print('Cinema Room ID: ${showtime.cinemaRoomID}');
+          print('Showtime Date: ${showtime.getFormattedDate()}');
+          print('Start Time: ${showtime.getFormattedTime()}');
+          print('movieDuration: ${showtime.movieDuration}');
+          print('endTime : ${showtime.getFormattedEndTime()}');
+        }
+      } else {
+        print('Không tìm thấy lịch chiếu nào.');
+      }
+    } catch (e) {
+      print('Lỗi khi tải lịch chiếu: $e');
+    }
   }
 
   @override
@@ -89,11 +115,32 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
                       const SizedBox(
                         height: 10,
                       ),
-                      TimeSelector(),
+                      const Divider(
+                        height: 2,
+                        thickness: 6,
+                        color: Color(0xfff0f0f0),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
+                        child: Text(
+                          'Chọn rạp',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                       _buildCinemaItem(
-                          '${movieDetails.cinemaName}',
-                          '${movieDetails.cinemaAddress}',
-                          ['9:00', '11:00', '13:30', '15:30', '17:30']),
+                        context,
+                        '${movieDetails.cinemaName}',
+                        '${movieDetails.cinemaAddress}',
+                        _showtimes
+                            .map((showtime) => {
+                                  'start': showtime.getFormattedTime(),
+                                  'end': showtime.getFormattedEndTime(),
+                                })
+                            .toList(), // Truyền danh sách Start Time và End Time
+                      ),
                     ],
                   );
                 })),
@@ -630,15 +677,13 @@ class TimeSelector extends StatelessWidget {
   }
 }
 
-Widget _buildCinemaItem(
-    String cinemaName, String distance, List<String> times) {
+Widget _buildCinemaItem(BuildContext context, String cinemaName,
+    String distance, List<Map<String, String>> timeSlots) {
   return Card(
     margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-    child: Padding(
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    child: ExpansionTile(
+      title: Column(
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -665,22 +710,9 @@ Widget _buildCinemaItem(
                       minFontSize: 12,
                       maxLines: 1,
                     ),
-                    SizedBox(height: 8),
-                    SizedBox(
-                      height: 40, // Đặt chiều cao cho các phần tử
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: List.generate(times.length, (index) {
-                          return Expanded(
-                            child: _buildTimeSlot(times[index], onTap: () {}),
-                          );
-                        }),
-                      ),
-                    ),
                   ],
                 ),
               ),
-              SizedBox(width: 8),
               IconButton(
                 icon: Icon(Icons.favorite_border_sharp),
                 onPressed: () {},
@@ -690,11 +722,51 @@ Widget _buildCinemaItem(
           ),
         ],
       ),
+      children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
+          child: Align(
+            alignment: Alignment.centerLeft, // Căn trái
+            child: Text(
+              'Chọn suất chiếu',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Wrap(
+            spacing: 8.0, // Khoảng cách giữa các mục
+            runSpacing: 8.0, // Khoảng cách giữa các hàng
+            children: List.generate(timeSlots.length, (index) {
+              return Container(
+                width: (timeSlots.length > 1)
+                    ? (MediaQuery.of(context).size.width - 48 - 16) /
+                        3 // Tính chiều rộng cho mỗi mục
+                    : null, // Nếu chỉ có 1 mục thì không giới hạn chiều rộng
+                child: Align(
+                  alignment: Alignment.centerLeft, // Căn trái
+                  child: _buildTimeSlot(
+                    timeSlots[index]['start']!,
+                    timeSlots[index]['end']!,
+                    onTap: () {
+                      // Xử lý sự kiện khi nhấn vào giờ chiếu
+                    },
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ],
     ),
   );
 }
 
-Widget _buildTimeSlot(String time,
+Widget _buildTimeSlot(String startTime, String endTime,
     {bool isSelected = false, required Function() onTap}) {
   return GestureDetector(
     onTap: onTap,
@@ -709,10 +781,30 @@ Widget _buildTimeSlot(String time,
         ),
       ),
       child: Center(
-        child: Text(time,
+          child: Row(
+        mainAxisSize: MainAxisSize.min, // Chỉ sử dụng chiều rộng tối thiểu
+        children: [
+          AutoSizeText(
+            startTime,
             style: TextStyle(
-                fontSize: 14, color: isSelected ? Colors.white : Colors.black)),
-      ),
+                color: isSelected ? Colors.white : Colors.black,
+                fontWeight: FontWeight.w300),
+            maxFontSize: 14, // Cỡ chữ tối đa
+            minFontSize: 8, // Cỡ chữ tối thiểu
+            maxLines: 1, // Chỉ hiển thị một dòng
+          ),
+          SizedBox(width: 2), // Khoảng cách giữa hai Text
+          AutoSizeText(
+            '~ $endTime',
+            style: TextStyle(
+              color: isSelected ? Colors.grey : Colors.grey,
+            ),
+            maxFontSize: 11, // Cỡ chữ tối đa
+            minFontSize: 6, // Cỡ chữ tối thiểu
+            maxLines: 1, // Chỉ hiển thị một dòng
+          ),
+        ],
+      )),
     ),
   );
 }

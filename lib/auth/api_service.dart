@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
+import 'package:flutter_app_chat/models/ShowTime_modal.dart';
 import 'package:flutter_app_chat/models/chat_item_model.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:http/http.dart' as http;
@@ -23,7 +25,7 @@ class ApiService {
     //baseUrl = 'http://192.168.100.24:8081';
 
     // wifi cty minhduc
-    baseUrl = 'http://172.20.10.4:8081';
+    baseUrl = 'http://172.19.201.236:8081';
 
     // wifi cf24/24
 
@@ -295,6 +297,48 @@ class ApiService {
     } else {
       // Nếu server trả về một lỗi
       throw Exception('Failed to login');
+    }
+  }
+
+  Future<List<ShowTimeDetails>> getShowtime(
+      int movieID, DateTime dateGet, TimeOfDay timeGet) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+
+    try {
+      // Tạo đối tượng JSON để gửi
+      final Map<String, dynamic> requestBody = {
+        'movieId': movieID,
+        'date': dateGet
+            .toIso8601String()
+            .split('T')[0], // Chuyển đổi DateTime sang định dạng ngày
+        'time':
+            '${timeGet.hour}:${timeGet.minute}:00' // Chuyển đổi TimeOfDay sang định dạng giờ
+      };
+
+      // Gửi yêu cầu POST đến API
+      final response = await http.post(
+        Uri.parse('$baseUrl/getShowtime'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(requestBody), // Gửi dữ liệu trong body
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        print('Parsed Data: $data');
+
+        // Chuyển đổi dữ liệu từ JSON sang danh sách các đối tượng ShowTimeDetails
+        return data.map((item) => ShowTimeDetails.fromJson(item)).toList();
+      } else {
+        throw Exception('Failed to get showtimes: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to get showtimes');
     }
   }
 

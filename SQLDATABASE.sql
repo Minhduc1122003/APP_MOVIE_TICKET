@@ -20,8 +20,6 @@ CREATE TABLE Users (
 );
 go
 
-
-
 -- BẢNG Users CHUẨN
 
 -- + 1 bảng lịch sử hoạt động của users
@@ -153,13 +151,54 @@ CREATE TABLE Showtime (
     CinemaRoomID INT NOT NULL,                   -- Mã phòng chiếu
     ShowtimeDate DATE NOT NULL,                  -- Ngày chiếu
     StartTime TIME NOT NULL,                     -- Giờ bắt đầu
-    EndTime TIME NOT NULL,                       -- Giờ kết thúc
     CONSTRAINT FK_MovieID FOREIGN KEY (MovieID) REFERENCES Movies(MovieID),
     CONSTRAINT FK_CinemaRoomID FOREIGN KEY (CinemaRoomID) REFERENCES CinemaRoom(CinemaRoomID)
 );
 GO
 
+-- tạo bảng chứa ghế
+CREATE TABLE Seats (
+    SeatID INT PRIMARY KEY IDENTITY(1,1),      -- Mã ghế tự động tăng
+    CinemaRoomID INT NOT NULL,                 -- Mã phòng chiếu
+    ChairCode NVARCHAR(10) NOT NULL,           -- Mã ghế (Ví dụ: A1, A2, ...)
+    Status BIT NOT NULL DEFAULT 0,             -- Trạng thái ghế (0: chưa đặt, 1: đã đặt)
+    FOREIGN KEY (CinemaRoomID) REFERENCES CinemaRoom(CinemaRoomID)
+);
+GO
 
+
+DECLARE @RoomID INT = 1;  -- RoomID của phòng chiếu bắt đầu
+DECLARE @Row CHAR(1);  -- Hàng ghế (A, B, C,...)
+DECLARE @SeatNumber INT;  -- Số ghế (1, 2, 3,...)
+
+WHILE @RoomID <= 6  -- Giả sử có 6 phòng chiếu
+BEGIN
+    SET @Row = 'A';  -- Bắt đầu từ hàng 'A'
+    
+    -- Duyệt qua từng hàng từ 'A' đến 'M'
+    WHILE ASCII(@Row) <= ASCII('M')  
+    BEGIN
+        SET @SeatNumber = 1;  -- Đặt lại số ghế bắt đầu từ 1
+        
+        -- Duyệt qua từng ghế từ 1 đến 16 trong mỗi hàng
+        WHILE @SeatNumber <= 16  
+        BEGIN
+            -- Xác định mã ghế theo hàng và số ghế (ví dụ A1, A2,... M16,...)
+            INSERT INTO Seats (CinemaRoomID, ChairCode, Status)
+            VALUES (@RoomID, @Row + CAST(@SeatNumber AS NVARCHAR(10)), 0);
+            
+            -- Tăng số ghế lên
+            SET @SeatNumber = @SeatNumber + 1;
+        END
+        
+        -- Chuyển sang hàng tiếp theo (A -> B -> C, v.v.)
+        SET @Row = CHAR(ASCII(@Row) + 1);  
+    END
+    
+    -- Chuyển sang phòng chiếu tiếp theo
+    SET @RoomID = @RoomID + 1;
+END;
+GO
 
 
 -- insert:
@@ -307,102 +346,136 @@ VALUES
 
 
 
--- Lịch chiếu từ 8:00 đến 10:00
-INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) VALUES 
-((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-30', '08:00', '10:00'),
-((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 2, '2024-09-30', '08:00', '10:00'),
-((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 3, '2024-09-30', '08:00', '10:00'),
-((SELECT MovieID FROM Movies WHERE Title = N'Không Nói Điều Dữ'), 4, '2024-09-30', '08:00', '10:00'),
-((SELECT MovieID FROM Movies WHERE Title = N'Joker'), 5, '2024-09-30', '08:00', '10:00'),
-((SELECT MovieID FROM Movies WHERE Title = N'Quỷ Án'), 6, '2024-09-30', '08:00', '10:00');
+-- Lịch chiếu từ Rạp 1
 
--- Lịch chiếu từ 10:15 đến 12:15
-INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) VALUES 
-((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 1, '2024-09-30', '10:15', '12:15'),
-((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-30', '10:15', '12:15'),
-((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 3, '2024-09-30', '10:15', '12:15'),
-((SELECT MovieID FROM Movies WHERE Title = N'The Crow: Báo Thù'), 4, '2024-09-30', '10:15', '12:15'),
-((SELECT MovieID FROM Movies WHERE Title = N'Anh Trai Vượt Mọi Tam Tai'), 5, '2024-09-30', '10:15', '12:15'),
-((SELECT MovieID FROM Movies WHERE Title = N'Longlegs: Thảm Kịch Dị Giáo'), 6, '2024-09-30', '10:15', '12:15');
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime) 
+VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-30', '09:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-30', '11:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-30', '13:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-30', '15:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-30', '18:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-30', '20:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-30', '22:30');
 
--- Lịch chiếu từ 12:30 đến 14:30
-INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) VALUES 
-((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 1, '2024-09-30', '12:30', '14:30'),
-((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 2, '2024-09-30', '12:30', '14:30'),
-((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-30', '12:30', '14:30'),
-((SELECT MovieID FROM Movies WHERE Title = N'Quỷ Án'), 4, '2024-09-30', '12:30', '14:30'),
-((SELECT MovieID FROM Movies WHERE Title = N'Không Nói Điều Dữ'), 5, '2024-09-30', '12:30', '14:30'),
-((SELECT MovieID FROM Movies WHERE Title = N'Joker'), 6, '2024-09-30', '12:30', '14:30');
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime) 
+VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-30', '09:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-30', '11:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-30', '14:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-30', '16:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-30', '18:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-30', '20:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-30', '23:00');
 
--- Lịch chiếu từ 14:45 đến 16:45
-INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) VALUES 
-((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-30', '14:45', '16:45'),
-((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 2, '2024-09-30', '14:45', '16:45'),
-((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 3, '2024-09-30', '14:45', '16:45'),
-((SELECT MovieID FROM Movies WHERE Title = N'Longlegs: Thảm Kịch Dị Giáo'), 4, '2024-09-30', '14:45', '16:45'),
-((SELECT MovieID FROM Movies WHERE Title = N'The Crow: Báo Thù'), 5, '2024-09-30', '14:45', '16:45'),
-((SELECT MovieID FROM Movies WHERE Title = N'Anh Trai Vượt Mọi Tam Tai'), 6, '2024-09-30', '14:45', '16:45');
 
--- Lịch chiếu từ 17:00 đến 19:00
-INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) VALUES 
-((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 1, '2024-09-30', '17:00', '19:00'),
-((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-30', '17:00', '19:00'),
-((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 3, '2024-09-30', '17:00', '19:00'),
-((SELECT MovieID FROM Movies WHERE Title = N'Joker'), 4, '2024-09-30', '17:00', '19:00'),
-((SELECT MovieID FROM Movies WHERE Title = N'Quỷ Án'), 5, '2024-09-30', '17:00', '19:00'),
-((SELECT MovieID FROM Movies WHERE Title = N'Không Nói Điều Dữ'), 6, '2024-09-30', '17:00', '19:00');
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime) 
+VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-30', '10:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-30', '12:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-30', '14:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-30', '16:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-30', '19:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-30', '21:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-30', '23:30');
 
--- Lịch chiếu từ 19:00 đến 21:15
-INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) VALUES 
-((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 1, '2024-09-30', '19:00', '21:15'),
-((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 2, '2024-09-30', '19:00', '21:15'),
-((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-30', '19:00', '21:15'),
-((SELECT MovieID FROM Movies WHERE Title = N'Anh Trai Vượt Mọi Tam Tai'), 4, '2024-09-30', '19:00', '21:15'),
-((SELECT MovieID FROM Movies WHERE Title = N'Longlegs: Thảm Kịch Dị Giáo'), 5, '2024-09-30', '19:00', '21:15'),
-((SELECT MovieID FROM Movies WHERE Title = N'The Crow: Báo Thù'), 6, '2024-09-30', '19:00', '21:15');
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime) 
+VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 4, '2024-09-30', '10:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 4, '2024-09-30', '12:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 4, '2024-09-30', '15:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 4, '2024-09-30', '17:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 4, '2024-09-30', '19:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 4, '2024-09-30', '22:00');
 
--- Lịch chiếu từ 21:30 đến 23:45
-INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) VALUES 
-((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-30', '21:30', '23:45'),
-((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 2, '2024-09-30', '21:30', '23:45'),
-((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 3, '2024-09-30', '21:30', '23:45'),
-((SELECT MovieID FROM Movies WHERE Title = N'Không Nói Điều Dữ'), 4, '2024-09-30', '21:30', '23:45'),
-((SELECT MovieID FROM Movies WHERE Title = N'Joker'), 5, '2024-09-30', '21:30', '23:45'),
-((SELECT MovieID FROM Movies WHERE Title = N'Quỷ Án'), 6, '2024-09-30', '21:30', '23:45');
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime) 
+VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 5, '2024-09-30', '09:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Joker'), 5, '2024-09-30', '11:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'The Crow: Báo Thù'), 5, '2024-09-30', '13:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 5, '2024-09-30', '15:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 5, '2024-09-30', '18:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Joker'), 5, '2024-09-30', '20:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'The Crow: Báo Thù'), 5, '2024-09-30', '22:30');
 
--- Cinema Room 1
-INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime, EndTime) VALUES 
-((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 1, '2024-09-30', '00:00', '02:00'),
-((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-30', '00:00', '02:00'),
-((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 3, '2024-09-30', '00:00', '02:00'),
-((SELECT MovieID FROM Movies WHERE Title = N'The Crow: Báo Thù'), 4, '2024-09-30', '00:00', '02:00'),
-((SELECT MovieID FROM Movies WHERE Title = N'Anh Trai Vượt Mọi Tam Tai'), 5, '2024-09-30', '00:00', '02:00'),
-((SELECT MovieID FROM Movies WHERE Title = N'Longlegs: Thảm Kịch Dị Giáo'), 6, '2024-09-30', '00:00', '02:00');
 
-/*
-SELECT * FROM Showtime WHERE MovieID =2
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime) 
+VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Không Nói Điều Dữ'), 6, '2024-09-30', '09:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Quỷ Án'), 6, '2024-09-30', '11:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Anh Trai Vượt Mọi Tam Tai'), 6, '2024-09-30', '14:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Longlegs: Thảm Kịch Dị Giáo'), 6, '2024-09-30', '16:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Không Nói Điều Dữ'), 6, '2024-09-30', '18:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Quỷ Án'), 6, '2024-09-30', '20:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Anh Trai Vượt Mọi Tam Tai'), 6, '2024-09-30', '23:00');
 
-DECLARE @InputDate DATE = '2024-09-30';
-DECLARE @InputTime TIME = '21:00';
-DECLARE @movieID int = 2;
+----------------------------- ngày 29/09/2024-------------------------------------------
 
-SELECT 
-    M.Title AS MovieTitle,
-    S.CinemaRoomID,
-    S.ShowtimeDate,
-    S.StartTime,
-    S.EndTime
-FROM 
-    Showtime S
-JOIN 
-    Movies M ON S.MovieID = M.MovieID
-WHERE 
-    S.ShowtimeDate = @InputDate
-    AND S.StartTime > @InputTime
-	AND M.MovieID = @movieID
-ORDER BY 
-    S.StartTime;
-	*/
+
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime) 
+VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-29', '09:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-29', '11:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-29', '13:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-29', '15:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-29', '18:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-29', '20:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 1, '2024-09-29', '22:30');
+
+-- Rạp 2
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime) 
+VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-29', '09:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-29', '11:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-29', '14:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-29', '16:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-29', '18:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-29', '20:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 2, '2024-09-29', '23:00');
+
+-- Rạp 3
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime) 
+VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-29', '10:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-29', '12:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-29', '14:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-29', '16:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-29', '19:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-29', '21:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 3, '2024-09-29', '23:30');
+
+-- Rạp 4
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime) 
+VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 4, '2024-09-29', '10:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 4, '2024-09-29', '12:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 4, '2024-09-29', '15:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 4, '2024-09-29', '17:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 4, '2024-09-29', '19:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Làm Giàu Với Ma'), 4, '2024-09-29', '22:00');
+
+-- Rạp 5
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime) 
+VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 5, '2024-09-29', '09:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Joker'), 5, '2024-09-29', '11:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'The Crow: Báo Thù'), 5, '2024-09-29', '13:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Báo Thủ Đi Tìm Chủ'), 5, '2024-09-29', '15:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Tìm Kiếm Tài Năng Âm Phủ'), 5, '2024-09-29', '18:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Joker'), 5, '2024-09-29', '20:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'The Crow: Báo Thù'), 5, '2024-09-29', '22:30');
+
+-- Rạp 6
+INSERT INTO Showtime (MovieID, CinemaRoomID, ShowtimeDate, StartTime) 
+VALUES 
+((SELECT MovieID FROM Movies WHERE Title = N'Không Nói Điều Dữ'), 6, '2024-09-29', '09:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Quỷ Án'), 6, '2024-09-29', '11:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Anh Trai Vượt Mọi Tam Tai'), 6, '2024-09-29', '14:00'),
+((SELECT MovieID FROM Movies WHERE Title = N'Longlegs: Thảm Kịch Dị Giáo'), 6, '2024-09-29', '16:15'),
+((SELECT MovieID FROM Movies WHERE Title = N'Không Nói Điều Dữ'), 6, '2024-09-29', '18:30'),
+((SELECT MovieID FROM Movies WHERE Title = N'Quỷ Án'), 6, '2024-09-29', '20:45'),
+((SELECT MovieID FROM Movies WHERE Title = N'Anh Trai Vượt Mọi Tam Tai'), 6, '2024-09-29', '23:00');
+
 -- Insert đánh giá cho Movie 1 (Làm Giàu Với Ma)
 INSERT INTO Rate (MovieID, UserId, Content, Rating)
 VALUES 
@@ -435,7 +508,34 @@ VALUES
 
 
 
+/*
+SELECT * FROM Showtime WHERE MovieID =2
 
+
+DECLARE @InputDate DATE = '2024-09-30';
+DECLARE @InputTime TIME = '21:00';
+DECLARE @movieID INT = 1;
+
+SELECT 
+    M.Title AS MovieTitle,
+    M.Duration AS MovieDuration,  -- Lấy thêm thời lượng phim
+    S.CinemaRoomID,
+    S.ShowtimeDate,
+    S.StartTime,
+    DATEADD(MINUTE, M.Duration, CAST(S.StartTime AS DATETIME)) AS EndTime  -- Tính thời gian kết thúc
+FROM 
+    Showtime S
+JOIN 
+    Movies M ON S.MovieID = M.MovieID
+WHERE 
+    S.ShowtimeDate = @InputDate
+    AND S.StartTime > @InputTime
+    AND M.MovieID = @movieID
+ORDER BY 
+    S.StartTime;
+
+
+	*/
 
 
 
