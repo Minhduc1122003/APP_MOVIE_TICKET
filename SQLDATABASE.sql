@@ -79,11 +79,10 @@ CREATE TABLE Movies (
 );
 go
 
-
 CREATE TABLE MovieGenre (
+	IdmovieGenre INT PRIMARY KEY IDENTITY(1,1),
     MovieID INT NOT NULL,
     IdGenre INT NOT NULL,
-    PRIMARY KEY (MovieID, IdGenre),
     FOREIGN KEY (MovieID) REFERENCES Movies(MovieID),
     FOREIGN KEY (IdGenre) REFERENCES Genre(IdGenre)
 );
@@ -161,7 +160,7 @@ CREATE TABLE Seats (
     SeatID INT PRIMARY KEY IDENTITY(1,1),      -- Mã ghế tự động tăng
     CinemaRoomID INT NOT NULL,                 -- Mã phòng chiếu
     ChairCode NVARCHAR(10) NOT NULL,           -- Mã ghế (Ví dụ: A1, A2, ...)
-    Status BIT NOT NULL DEFAULT 0,             -- Trạng thái ghế (0: bình thường, 1: Đang sửa)
+    DefectiveChair BIT NOT NULL DEFAULT 0,             -- Trạng thái ghế (0: bình thường, 1: Đang sửa)
     FOREIGN KEY (CinemaRoomID) REFERENCES CinemaRoom(CinemaRoomID)
 );
 GO
@@ -188,8 +187,8 @@ INSERT INTO SeatReservation (ShowtimeID, SeatID, Status) VALUES
           s.SeatID,
 		  s.CinemaRoomID,
           s.ChairCode,
-		  s.DefectiveChair,
-		  
+		  s.DefectiveChair, 
+		 
           COALESCE(sr.Status, 0) AS ReservationStatus
         FROM 
           Seats s
@@ -199,6 +198,7 @@ INSERT INTO SeatReservation (ShowtimeID, SeatID, Status) VALUES
           s.CinemaRoomID = 1 -- Lọc theo CinemaRoomID
         ORDER BY 
           s.SeatID;
+
 
 
 DECLARE @RoomID INT = 1;  -- RoomID của phòng chiếu bắt đầu

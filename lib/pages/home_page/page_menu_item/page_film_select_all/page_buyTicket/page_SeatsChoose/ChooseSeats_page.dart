@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
+import 'package:flutter_app_chat/models/Chair_modal.dart';
+import 'package:flutter_app_chat/models/ShowTime_modal.dart';
 
 late ApiService _apiService = ApiService();
 
 class ChooseseatsPage extends StatefulWidget {
-  final int movieId;
+  final int cinemaRoomID;
+  final int showTimeID;
 
-  const ChooseseatsPage({super.key, required this.movieId});
+  const ChooseseatsPage(
+      {super.key, required this.cinemaRoomID, required this.showTimeID});
 
   @override
   _ChooseseatsPageState createState() => _ChooseseatsPageState();
@@ -14,18 +18,101 @@ class ChooseseatsPage extends StatefulWidget {
 
 class _ChooseseatsPageState extends State<ChooseseatsPage>
     with AutomaticKeepAliveClientMixin {
-  late ApiService _APIService; // Khởi tạo biến _APIService
+  late ApiService _APIService;
+  late List<ChairModel> _chair = [];
 
   @override
   void initState() {
     super.initState();
-    _APIService = ApiService(); // Khởi tạo _APIService
+    _APIService = ApiService();
+    _loadChair();
+  }
+
+  Future<void> _loadChair() async {
+    try {
+      _chair = await _APIService.getChairList(
+          widget.cinemaRoomID, widget.showTimeID);
+      if (_chair.isNotEmpty) {
+        print('Đã tìm thấy ghế!');
+        setState(() {}); // Cập nhật UI sau khi tải dữ liệu
+      } else {
+        print('Không tìm thấy ghế nào.');
+      }
+    } catch (e) {
+      print('Lỗi khi tải ghế: $e');
+    }
+  }
+
+  Widget buildCinemaSeatGrid(List<ChairModel> chairs) {
+    // Giả định kích thước chiều rộng của GridView
+    double gridWidth = MediaQuery.of(context).size.width;
+    int numberOfColumns = 16;
+    double cellSize = (gridWidth - (numberOfColumns - 1) * 4) /
+        numberOfColumns; // 4 là khoảng cách giữa các ô
+
+    return Stack(
+      children: [
+        GridView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: numberOfColumns,
+            childAspectRatio: 1,
+            crossAxisSpacing: 4,
+            mainAxisSpacing: 4,
+          ),
+          itemCount: chairs.length,
+          itemBuilder: (context, index) {
+            final chair = chairs[index];
+            String seatLabel = chair.chairCode;
+
+            Color seatColor = Colors.grey[300]!;
+            if (chair.reservationStatus) {
+              seatColor = Colors.red;
+            } else if (chair.defectiveChair) {
+              seatColor = Colors.black;
+            } else if (['A1', 'A2', 'J15', 'J16'].contains(seatLabel)) {
+              seatColor = Color(0xFF6F3CD7);
+            }
+
+            return GestureDetector(
+              onTap: () {
+                print('Ghế được chọn: $seatLabel');
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: seatColor,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Center(
+                  child: Text(
+                    seatLabel,
+                    style: TextStyle(fontSize: 10),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        // Vẽ hình vuông tại trung tâm, chứa khoảng 20 ghế (5x4)
+        CustomPaint(
+          size: Size(double.infinity, double.infinity),
+          painter: SquareCenterPainter(
+            center: Offset(
+              (numberOfColumns / 2 - 2) * cellSize, // Đặt hình vuông ở giữa
+              (numberOfColumns / 2 - 2) * cellSize, // Đặt hình vuông ở giữa
+            ),
+            cellSize: cellSize *
+                5, // Kích thước của khung lớn hơn để chứa khoảng 20 ghế
+          ),
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(
-        context); // Vì sử dụng AutomaticKeepAliveClientMixin, cần gọi super.build
+    super.build(context);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0XFF6F3CD7),
@@ -71,49 +158,16 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                 ),
                 SizedBox(height: 20),
                 // Seating grid
-                InteractiveViewer(
-                  boundaryMargin: EdgeInsets.all(20.0),
-                  minScale: 0.1, // Tỉ lệ thu nhỏ tối thiểu
-                  maxScale: 4.0, // Tỉ lệ phóng to tối đa
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 16,
-                      childAspectRatio: 1,
-                      crossAxisSpacing: 4,
-                      mainAxisSpacing: 4,
-                    ),
-                    itemCount: 10 * 16,
-                    itemBuilder: (context, index) {
-                      final row = String.fromCharCode(65 + (index ~/ 16));
-                      final seat = (index % 16) + 1;
-                      final seatLabel = '$row$seat';
-                      Color seatColor = Colors.grey[300]!;
-                      if (['A1', 'A2', 'J15', 'J16'].contains(seatLabel)) {
-                        seatColor = Color(0xFF6F3CD7);
-                      }
-                      return GestureDetector(
-                        onTap: () {
-                          // Handle seat selection
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: seatColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Center(
-                            child: Text(
-                              seat.toString(),
-                              style: TextStyle(fontSize: 10),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                Container(
+                  width: double.infinity, // Hoặc một giá trị cụ thể
+                  height: 400, // Đặt chiều cao hoặc chiều rộng cho khung
+                  child: InteractiveViewer(
+                    boundaryMargin: EdgeInsets.all(20.0),
+                    minScale: 0.1,
+                    maxScale: 4.0,
+                    child: buildCinemaSeatGrid(_chair),
                   ),
                 ),
-
                 SizedBox(height: 20),
                 // Legend
                 Row(
@@ -177,6 +231,33 @@ class CurvedLinePainter extends CustomPainter {
 
     // Vẽ đường chính
     canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
+class SquareCenterPainter extends CustomPainter {
+  final Offset center;
+  final double cellSize;
+
+  SquareCenterPainter({required this.center, required this.cellSize});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    var paint = Paint()
+      ..color = Colors.blue.withOpacity(0.5) // Màu cho khung vuông
+      ..style = PaintingStyle.fill;
+
+    // Vẽ hình vuông
+    canvas.drawRect(
+      Rect.fromCenter(
+        center: center,
+        width: cellSize, // Kích thước hình vuông lớn hơn để chứa 20 ghế
+        height: cellSize,
+      ),
+      paint,
+    );
   }
 
   @override

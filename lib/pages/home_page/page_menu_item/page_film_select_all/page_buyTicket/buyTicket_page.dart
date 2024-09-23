@@ -133,8 +133,12 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
                           ),
                         ),
                       ),
-                      _buildCinemaItem(context, '${movieDetails.cinemaName}',
-                          '${movieDetails.cinemaAddress}', _showtimes),
+                      _buildCinemaItem(
+                          context,
+                          '${movieDetails.cinemaName}',
+                          '${movieDetails.cinemaAddress}',
+                          _showtimes
+                          ),
                     ],
                   );
                 })),
@@ -755,7 +759,8 @@ Widget _buildCinemaItem(BuildContext context, String cinemaName,
                         context,
                         SlideFromRightPageRoute(
                           page: ChooseseatsPage(
-                              movieId: timeSlots[index].showTimeID),
+                              cinemaRoomID: timeSlots[index].cinemaRoomID,
+                              showTimeID: timeSlots[index].showTimeID),
                         ),
                       );
                       // Xử lý sự kiện khi nhấn vào giờ chiếu

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_app_chat/models/Chair_modal.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/ShowTime_modal.dart';
 import 'package:flutter_app_chat/models/chat_item_model.dart';
@@ -334,6 +335,44 @@ class ApiService {
 
         // Chuyển đổi dữ liệu từ JSON sang danh sách các đối tượng ShowTimeDetails
         return data.map((item) => ShowTimeDetails.fromJson(item)).toList();
+      } else {
+        throw Exception('Failed to get showtimes: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to get showtimes');
+    }
+  }
+
+  Future<List<ChairModel>> getChairList(
+      int cinemaRoomID, int showTimeID) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+
+    try {
+      // Tạo đối tượng JSON để gửi
+      final Map<String, dynamic> requestBody = {
+        'cinemaRoomID': cinemaRoomID,
+        'showTimeID': showTimeID
+      };
+
+      // Gửi yêu cầu POST đến API
+      final response = await http.post(
+        Uri.parse('$baseUrl/getChair'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(requestBody), // Gửi dữ liệu trong body
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        print('Parsed Data: $data');
+
+        // Chuyển đổi dữ liệu từ JSON sang danh sách các đối tượng ShowTimeDetails
+        return data.map((item) => ChairModel.fromJson(item)).toList();
       } else {
         throw Exception('Failed to get showtimes: ${response.statusCode}');
       }
