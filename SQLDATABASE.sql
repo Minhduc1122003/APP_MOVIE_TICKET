@@ -184,56 +184,6 @@ INSERT INTO SeatReservation (ShowtimeID, SeatID, Status) VALUES
 (1, (SELECT TOP 1 SeatID FROM Seats WHERE ChairCode = 'A2'), 0), -- Ghế A2 chưa đặt
 (1, (SELECT TOP 1 SeatID FROM Seats WHERE ChairCode = 'C2'), 0); -- Ghế C2 chưa đặt
 
- SELECT 
-          s.SeatID,
-		  s.CinemaRoomID,
-          s.ChairCode,
-		  s.DefectiveChair, 
-		 
-          COALESCE(sr.Status, 0) AS ReservationStatus
-        FROM 
-          Seats s
-        LEFT JOIN 
-          SeatReservation sr ON s.SeatID = sr.SeatID AND sr.ShowtimeID = 1
-        WHERE 
-          s.CinemaRoomID = 1 -- Lọc theo CinemaRoomID
-        ORDER BY 
-          s.SeatID;
-
-
-
-DECLARE @RoomID INT = 1;  -- RoomID của phòng chiếu bắt đầu
-DECLARE @Row CHAR(1);  -- Hàng ghế (A, B, C,...)
-DECLARE @SeatNumber INT;  -- Số ghế (1, 2, 3,...)
-
-WHILE @RoomID <= 6  -- Giả sử có 6 phòng chiếu
-BEGIN
-    SET @Row = 'A';  -- Bắt đầu từ hàng 'A'
-    
-    -- Duyệt qua từng hàng từ 'A' đến 'M'
-    WHILE ASCII(@Row) <= ASCII('M')  
-    BEGIN
-        SET @SeatNumber = 1;  -- Đặt lại số ghế bắt đầu từ 1
-        
-        -- Duyệt qua từng ghế từ 1 đến 16 trong mỗi hàng
-        WHILE @SeatNumber <= 16  
-        BEGIN
-            -- Xác định mã ghế theo hàng và số ghế (ví dụ A1, A2,... M16,...)
-            INSERT INTO Seats (CinemaRoomID, ChairCode, Status)
-            VALUES (@RoomID, @Row + CAST(@SeatNumber AS NVARCHAR(10)), 0);
-            
-            -- Tăng số ghế lên
-            SET @SeatNumber = @SeatNumber + 1;
-        END
-        
-        -- Chuyển sang hàng tiếp theo (A -> B -> C, v.v.)
-        SET @Row = CHAR(ASCII(@Row) + 1);  
-    END
-    
-    -- Chuyển sang phòng chiếu tiếp theo
-    SET @RoomID = @RoomID + 1;
-END;
-GO
 
 
 -- insert:
@@ -569,7 +519,58 @@ WHERE
 ORDER BY 
     S.StartTime;
 
+	
+ SELECT 
+          s.SeatID,
+		  s.CinemaRoomID,
+          s.ChairCode,
+		  s.DefectiveChair, 
+		 
+          COALESCE(sr.Status, 0) AS ReservationStatus
+        FROM 
+          Seats s
+        LEFT JOIN 
+          SeatReservation sr ON s.SeatID = sr.SeatID AND sr.ShowtimeID = 1
+        WHERE 
+          s.CinemaRoomID = 1 -- Lọc theo CinemaRoomID
+        ORDER BY 
+          s.SeatID;
 
+
+		  ----new 23/09 5:43 ---
+
+DECLARE @RoomID INT = 1;  -- RoomID của phòng chiếu bắt đầu
+DECLARE @Row CHAR(1);  -- Hàng ghế (A, B, C,...)
+DECLARE @SeatNumber INT;  -- Số ghế (1, 2, 3,...)
+
+WHILE @RoomID <= 6  -- Giả sử có 6 phòng chiếu
+BEGIN
+    SET @Row = 'A';  -- Bắt đầu từ hàng 'A'
+    
+    -- Duyệt qua từng hàng từ 'A' đến 'M'
+    WHILE ASCII(@Row) <= ASCII('M')  
+    BEGIN
+        SET @SeatNumber = 1;  -- Đặt lại số ghế bắt đầu từ 1
+        
+        -- Duyệt qua từng ghế từ 1 đến 16 trong mỗi hàng
+        WHILE @SeatNumber <= 16  
+        BEGIN
+            -- Xác định mã ghế theo hàng và số ghế (ví dụ A1, A2,... M16,...)
+            INSERT INTO Seats (CinemaRoomID, ChairCode, Status)
+            VALUES (@RoomID, @Row + CAST(@SeatNumber AS NVARCHAR(10)), 0);
+            
+            -- Tăng số ghế lên
+            SET @SeatNumber = @SeatNumber + 1;
+        END
+        
+        -- Chuyển sang hàng tiếp theo (A -> B -> C, v.v.)
+        SET @Row = CHAR(ASCII(@Row) + 1);  
+    END
+    
+    -- Chuyển sang phòng chiếu tiếp theo
+    SET @RoomID = @RoomID + 1;
+END;
+GO
 	*/
 
 
