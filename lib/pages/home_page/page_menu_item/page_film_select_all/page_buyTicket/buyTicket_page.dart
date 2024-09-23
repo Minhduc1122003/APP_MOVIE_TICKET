@@ -1,11 +1,14 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
+import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/ShowTime_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/bloc/film_info_Bloc.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/film_information.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/bloc/buyTicket_Bloc.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/ChooseSeats_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
@@ -130,17 +133,8 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
                           ),
                         ),
                       ),
-                      _buildCinemaItem(
-                        context,
-                        '${movieDetails.cinemaName}',
-                        '${movieDetails.cinemaAddress}',
-                        _showtimes
-                            .map((showtime) => {
-                                  'start': showtime.getFormattedTime(),
-                                  'end': showtime.getFormattedEndTime(),
-                                })
-                            .toList(), // Truyền danh sách Start Time và End Time
-                      ),
+                      _buildCinemaItem(context, '${movieDetails.cinemaName}',
+                          '${movieDetails.cinemaAddress}', _showtimes),
                     ],
                   );
                 })),
@@ -678,7 +672,7 @@ class TimeSelector extends StatelessWidget {
 }
 
 Widget _buildCinemaItem(BuildContext context, String cinemaName,
-    String distance, List<Map<String, String>> timeSlots) {
+    String distance, List<ShowTimeDetails> timeSlots) {
   return Card(
     margin: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -750,9 +744,20 @@ Widget _buildCinemaItem(BuildContext context, String cinemaName,
                 child: Align(
                   alignment: Alignment.centerLeft, // Căn trái
                   child: _buildTimeSlot(
-                    timeSlots[index]['start']!,
-                    timeSlots[index]['end']!,
+                    timeSlots[index]
+                        .getFormattedTime(), // Lấy thời gian bắt đầu
+                    timeSlots[index]
+                        .getFormattedEndTime(), // Lấy thời gian kết thúc
                     onTap: () {
+                      print(
+                          'Nhấp vào suất chiếu có ID: ${timeSlots[index].showTimeID}');
+                      Navigator.push(
+                        context,
+                        SlideFromRightPageRoute(
+                          page: ChooseseatsPage(
+                              movieId: timeSlots[index].showTimeID),
+                        ),
+                      );
                       // Xử lý sự kiện khi nhấn vào giờ chiếu
                     },
                   ),

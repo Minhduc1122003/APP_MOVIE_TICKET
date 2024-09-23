@@ -1,7 +1,7 @@
 ﻿CREATE DATABASE APP_MOVIE_TICKET;
 go
 
-USE APP_MOVIE_TICKET2;
+USE APP_MOVIE_TICKET;
 GO
 CREATE TABLE Users (
     UserId INT PRIMARY KEY IDENTITY(1,1), -- Thiết lập UserId tự động tăng
@@ -161,10 +161,44 @@ CREATE TABLE Seats (
     SeatID INT PRIMARY KEY IDENTITY(1,1),      -- Mã ghế tự động tăng
     CinemaRoomID INT NOT NULL,                 -- Mã phòng chiếu
     ChairCode NVARCHAR(10) NOT NULL,           -- Mã ghế (Ví dụ: A1, A2, ...)
-    Status BIT NOT NULL DEFAULT 0,             -- Trạng thái ghế (0: chưa đặt, 1: đã đặt)
+    Status BIT NOT NULL DEFAULT 0,             -- Trạng thái ghế (0: bình thường, 1: Đang sửa)
     FOREIGN KEY (CinemaRoomID) REFERENCES CinemaRoom(CinemaRoomID)
 );
 GO
+
+-- tạo bảng trung gian chứa ghế
+
+CREATE TABLE SeatReservation (
+    ReservationID INT PRIMARY KEY IDENTITY(1,1), -- Mã đặt ghế, tự động tăng
+    ShowtimeID INT NOT NULL,                    -- Mã lịch chiếu (tham chiếu từ bảng Showtime)
+    SeatID INT NOT NULL,                        -- Mã ghế (tham chiếu từ bảng Seats)
+    Status BIT NOT NULL DEFAULT 0,              -- Trạng thái ghế (0: chưa đặt, 1: đã đặt)
+    CONSTRAINT FK_ShowtimeID FOREIGN KEY (ShowtimeID) REFERENCES Showtime(ShowtimeID),
+    CONSTRAINT FK_SeatID FOREIGN KEY (SeatID) REFERENCES Seats(SeatID)
+);
+GO
+INSERT INTO SeatReservation (ShowtimeID, SeatID, Status) VALUES
+(1, (SELECT TOP 1 SeatID FROM Seats WHERE ChairCode = 'A1'), 1), -- Ghế A1 đã đặt
+(1, (SELECT TOP 1 SeatID FROM Seats WHERE ChairCode = 'B5'), 1), -- Ghế B5 đã đặt
+(1, (SELECT TOP 1 SeatID FROM Seats WHERE ChairCode = 'C4'), 1), -- Ghế C4 đã đặt
+(1, (SELECT TOP 1 SeatID FROM Seats WHERE ChairCode = 'A2'), 0), -- Ghế A2 chưa đặt
+(1, (SELECT TOP 1 SeatID FROM Seats WHERE ChairCode = 'C2'), 0); -- Ghế C2 chưa đặt
+
+ SELECT 
+          s.SeatID,
+		  s.CinemaRoomID,
+          s.ChairCode,
+		  s.DefectiveChair,
+		  
+          COALESCE(sr.Status, 0) AS ReservationStatus
+        FROM 
+          Seats s
+        LEFT JOIN 
+          SeatReservation sr ON s.SeatID = sr.SeatID AND sr.ShowtimeID = 1
+        WHERE 
+          s.CinemaRoomID = 1 -- Lọc theo CinemaRoomID
+        ORDER BY 
+          s.SeatID;
 
 
 DECLARE @RoomID INT = 1;  -- RoomID của phòng chiếu bắt đầu

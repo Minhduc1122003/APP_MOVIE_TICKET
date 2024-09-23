@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 
 class ShowTimeDetails {
+  final int showTimeID;
   final String movieTitle;
   final int movieDuration;
   final int cinemaRoomID;
@@ -9,6 +10,7 @@ class ShowTimeDetails {
   final DateTime endTime;
 
   ShowTimeDetails({
+    required this.showTimeID,
     required this.movieTitle,
     required this.movieDuration,
     required this.cinemaRoomID,
@@ -18,6 +20,7 @@ class ShowTimeDetails {
   });
   factory ShowTimeDetails.fromJson(Map<String, dynamic> json) {
     return ShowTimeDetails(
+      showTimeID: json['ShowTimeID'],
       movieTitle: json['MovieTitle'],
       movieDuration: json['MovieDuration'],
       cinemaRoomID: json['CinemaRoomID'],
@@ -29,6 +32,7 @@ class ShowTimeDetails {
 
   Map<String, dynamic> toJson() {
     return {
+      'ShowTimeID': showTimeID,
       'MovieTitle': movieTitle,
       'MovieDuration': movieDuration,
       'CinemaRoomID': cinemaRoomID,
