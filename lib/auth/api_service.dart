@@ -25,11 +25,11 @@ class ApiService {
     //baseUrl = 'http://192.168.100.24:8081';
 
     // wifi cty minhduc
-    baseUrl = 'http://172.19.201.236:8081';
+    // baseUrl = 'http://172.19.201.236:8081';
 
     // wifi cf24/24
 
-    //baseUrl = 'http://192.168.1.23:8081';
+    baseUrl = 'http://192.168.1.38:8081';
 
     //baseUrl = 'http://192.168.1.33:8081';
 
@@ -261,7 +261,8 @@ class ApiService {
     final response = await http.post(
       Uri.parse('$baseUrl/addFavourire'),
       headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
+        'Content-Type': 'application/json; char'
+            'set=UTF-8',
       },
       body: jsonEncode(<String, int>{
         'movieId': movieID,

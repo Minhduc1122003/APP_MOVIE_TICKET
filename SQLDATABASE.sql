@@ -606,8 +606,8 @@ VALUES
 
 
 
-
 /*
+
 CREATE TABLE Classes (
     ClassId INT PRIMARY KEY IDENTITY(1,1), -- Thiết lập ClassId tự động tăng
     ClassName NVARCHAR(100) NOT NULL, -- Tên lớp học
@@ -642,14 +642,10 @@ VALUES
 (1, 3, 6.0, N'Đạt'),  -- Minh Đức KH trong lớp Hóa 11
 (2, 4, 9.2, N'Đạt');  -- Minh Đức NV trong lớp Sinh 12
 GO
+
 */
 
-
-
-
 /*
-
-
 -------------- SOCKET IO ---------------------
 CREATE TABLE Conversations (
     Id INT PRIMARY KEY IDENTITY(1,1),
