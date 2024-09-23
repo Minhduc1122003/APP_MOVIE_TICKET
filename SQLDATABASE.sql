@@ -88,6 +88,7 @@ CREATE TABLE MovieGenre (
 );
 go
 
+
 CREATE TABLE Rate (
     IdRate INT PRIMARY KEY IDENTITY(1,1),
     MovieID INT NOT NULL,
