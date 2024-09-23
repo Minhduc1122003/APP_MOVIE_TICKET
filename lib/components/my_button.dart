@@ -9,6 +9,7 @@ class MyButton extends StatelessWidget {
   final Color color; // Màu nền
   final Color colorText; // Màu văn bản
   final bool border; // Kiểm soát việc hiển thị đường viền
+  final bool isBold; // Kiểm soát việc hiển thị đường viền
 
   const MyButton({
     super.key,
@@ -21,6 +22,7 @@ class MyButton extends StatelessWidget {
     this.color = const Color(
         0XFF6F3CD7), // Mặc định là màu 0XFF6F3CD7 nếu không được truyền vào
     this.colorText = Colors.white, // Màu văn bản mặc định
+    this.isBold = false, // Mặc định không in đậm
   });
 
   @override
@@ -49,7 +51,9 @@ class MyButton extends StatelessWidget {
                   style: TextStyle(
                     color: colorText, // Màu sắc văn bản
                     fontSize: fontsize,
-                    fontWeight: FontWeight.w400,
+                    fontWeight: isBold
+                        ? FontWeight.bold
+                        : FontWeight.w400, // Kiểm soát chữ in đậm
                   ),
                 ),
                 if (showIcon) ...[
