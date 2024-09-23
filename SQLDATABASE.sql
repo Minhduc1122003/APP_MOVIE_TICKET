@@ -81,13 +81,14 @@ go
 
 
 CREATE TABLE MovieGenre (
+	IdmovieGenre INT PRIMARY KEY IDENTITY(1,1),
     MovieID INT NOT NULL,
     IdGenre INT NOT NULL,
-    PRIMARY KEY (MovieID, IdGenre),
     FOREIGN KEY (MovieID) REFERENCES Movies(MovieID),
     FOREIGN KEY (IdGenre) REFERENCES Genre(IdGenre)
 );
 go
+
 
 CREATE TABLE Rate (
     IdRate INT PRIMARY KEY IDENTITY(1,1),
