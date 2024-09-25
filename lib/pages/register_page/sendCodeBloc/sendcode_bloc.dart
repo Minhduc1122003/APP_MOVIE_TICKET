@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
-import 'package:meta/meta.dart';
+import 'package:logger/logger.dart';
 
 part 'sendcode_event.dart';
 part 'sendcode_state.dart';
@@ -9,9 +9,11 @@ class SendCodeBloc extends Bloc<SendCodeEvent, SendCodeState> {
   SendCodeBloc() : super(SendCodeInitial()) {
     on<SendCode>(_sendcode);
   }
+  final logger = Logger();
   void _sendcode(SendCode event, Emitter<SendCodeState> emit) async {
     emit(SendCodeWaiting());
-    print('Đã vào _sendcode');
+    logger.d(
+        'Đã vào _sendcode'); // d là viết tắt của debug, có thể dùng e cho error hoặc w cho warning
     try {
       // Lấy thông tin từ event
       String title = event.title;

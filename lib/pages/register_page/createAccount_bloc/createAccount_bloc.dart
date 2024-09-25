@@ -1,8 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
-import 'package:flutter_app_chat/models/user_manager.dart';
-import 'package:flutter_app_chat/models/user_model.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'createAccount_event.dart';
@@ -32,7 +29,7 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
           email, password, username, fullname, phoneNumber, photo);
 
       if (response['message'] == 'Account created successfully') {
-        print("Đăng ký tài khoan thành công");
+        print("Đăng ký tài khoản thành công");
 
         emit(CreateAccountSuccess());
       } else {
