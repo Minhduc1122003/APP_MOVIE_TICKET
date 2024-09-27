@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
+import 'package:flutter_app_chat/components/spinkit.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/home_page.dart';
 import 'package:flutter_app_chat/pages/login_page/loginBloc/login_bloc.dart';
 import 'package:flutter_app_chat/pages/manager_page/home_manager_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '../../components/my_button.dart';
 import '../../components/my_textfield.dart';
@@ -18,10 +20,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  bool _savePassword = false;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  bool _isLoading = false;
   void _onLoginButtonPressed(BuildContext context) {
     final String email = _emailController.text;
     final String password = _passwordController.text;
@@ -39,7 +41,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
@@ -47,41 +48,49 @@ class _LoginPageState extends State<LoginPage> {
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Color(0xff6750a4),
-                Color(0xffb2aad5),
+                Color(0xe06f3cd7),
               ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              stops: [0.66],
+              begin: Alignment.topCenter,
             ),
           ),
         ),
-        leading: const Icon(
-          Icons.arrow_back_ios,
-          color: Colors.white,
-        ),
-        title: const Text(
-          'Đăng nhập',
-          style: TextStyle(
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new_outlined,
             color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+            size: 16,
           ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
         ),
-        centerTitle: true,
       ),
       body: BlocListener<LoginBloc, LoginState>(
         listener: (context, state) async {
           if (state is LoginError) {
+            hideLoadingSpinner(context);
+
             EasyLoading.showError('Sai tài khoản hoặc mật khẩu');
           } else if (state is LoginWaiting) {
-            EasyLoading.show();
+            showLoadingSpinner(context);
           } else if (state is LoginSuccess) {
-            EasyLoading.dismiss();
-            await Future.delayed(const Duration(milliseconds: 150));
+            // Fetch data after successful login
+            hideLoadingSpinner(context);
+
+            ApiService apiService = ApiService();
+            final moviesDangChieu = await apiService.getMoviesDangChieu();
+            final moviesSapChieu = await apiService.getMoviesSapChieu();
+
             if (UserManager.instance.user?.role == 0) {
               Navigator.pushAndRemoveUntil(
                 context,
-                ZoomPageRoute(page: HomePage()),
+                ZoomPageRoute(
+                  page: HomePage(
+                    filmDangChieu: moviesDangChieu,
+                    filmSapChieu: moviesSapChieu,
+                  ),
+                ),
                 (Route<dynamic> route) => false,
               );
             } else {
@@ -97,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
           children: [
             // Background gradient
             Container(
-              height: double.infinity,
+              height: 250,
               width: double.infinity,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
@@ -105,30 +114,49 @@ class _LoginPageState extends State<LoginPage> {
                     Color(0xe06f3cd7),
                     Color(0xe8cfb3f6),
                   ],
-                  stops: [0.66, 1.0],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
+                  stops: [0.66, 1],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
               ),
             ),
             // Welcome message
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(30, 40, 50, 0),
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: Text(
-                  'Chào mừng bạn quay lại với PANTHERs CINEMA!',
-                  style: TextStyle(
-                    color: const Color(0xf2ffffff),
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.1,
-                    height: 2.0,
-                    decoration: TextDecoration.none,
-                    fontStyle: FontStyle.italic,
-                  ),
-                  textAlign: TextAlign.left,
+              padding: const EdgeInsets.fromLTRB(0, 0, 50, 0),
+              child: const Align(
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start, // Căn về bên trái
+
+                  children: [
+                    Text(
+                      'Hello!',
+                      style: TextStyle(
+                        color: Color(0xf2ffffff),
+                        fontSize: 60,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                        height: 2.0,
+                        decoration: TextDecoration.none,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                    Text(
+                      'Chào mừng bạn quay trở lại...',
+                      style: TextStyle(
+                        color: Color(0xf2ffffff),
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.1,
+                        height: 2.0,
+                        decoration: TextDecoration.none,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -163,15 +191,15 @@ class _LoginPageState extends State<LoginPage> {
                                 placeHolder: "Mật khẩu",
                                 controller: _passwordController,
                               ),
-                              _savePassForgotPassword(),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 20),
                               MyButton(
-                                fontsize: 16,
+                                fontsize: 18,
                                 paddingText: 16,
                                 text: 'ĐĂNG NHẬP',
                                 onTap: () => _onLoginButtonPressed(context),
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 10),
+                              _ForgotPassword(),
                             ],
                           ),
                         ),
@@ -229,7 +257,7 @@ class _LoginPageState extends State<LoginPage> {
                       color: Colors.black,
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 0),
+                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -261,34 +289,38 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
               ),
+            // if (_isLoading)
+            //   const Positioned.fill(
+            //     child: Center(
+            //       child: SpinKitSpinningLines(
+            //         color: Color(0xe06f3cd7), // Màu sắc của spinner
+            //         size: 50.0, // Kích thước của spinner
+            //       ),
+            //     ),
+            //   ),
           ],
         ),
       ),
     );
   }
 
-  Widget _savePassForgotPassword() {
+  Widget _ForgotPassword() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          children: [
-            Checkbox(
-              value: _savePassword,
-              onChanged: (bool? value) {
-                setState(() {
-                  _savePassword = value ?? false;
-                });
-              },
+        Expanded(
+          // Đảm bảo nút chiếm toàn bộ chiều rộng
+          child: TextButton(
+            onPressed: () {
+              print('Quên mật khẩu');
+            },
+            style: TextButton.styleFrom(
+              side: const BorderSide(
+                color: Color(0xe06f3cd7), // Màu viền
+                width: 1.0, // Độ dày viền
+              ),
             ),
-            const Text('Lưu mật khẩu'),
-          ],
-        ),
-        TextButton(
-          onPressed: () {
-            print('Quên mật khẩu');
-          },
-          child: const Text('Quên mật khẩu?'),
+            child: const Text('Quên mật khẩu?'),
+          ),
         ),
       ],
     );

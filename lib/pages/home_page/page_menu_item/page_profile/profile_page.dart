@@ -324,13 +324,6 @@ class _ProfilePage extends State<ProfilePage> {
                                             ),
                                             TextButton(
                                               onPressed: () async {
-                                                EasyLoading.show();
-                                                await Future.delayed(
-                                                    const Duration(
-                                                        milliseconds: 800));
-                                                EasyLoading.dismiss();
-                                                print(
-                                                    'User đã tồn tại: ${UserManager.instance.user?.email}');
                                                 UserManager.instance
                                                     .clearUser();
                                                 print(

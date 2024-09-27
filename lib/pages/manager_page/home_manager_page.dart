@@ -20,8 +20,6 @@ class HomeTab extends StatefulWidget {
 
 @override
 class _HomeTabState extends State<HomeTab> {
-  bool _isServiceRunning = false;
-
   @override
   void initState() {
     super.initState();

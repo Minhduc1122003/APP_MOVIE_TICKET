@@ -12,8 +12,17 @@ import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select
 
 class HomePage extends StatefulWidget {
   final int initialPageIndex;
+  final List<MovieDetails> filmDangChieu;
+  final List<MovieDetails> filmSapChieu;
 
-  HomePage({this.initialPageIndex = 0});
+  HomePage({
+    this.initialPageIndex = 0,
+    List<MovieDetails>? filmDangChieu, // Làm cho nó có thể null
+    List<MovieDetails>? filmSapChieu, // Làm cho nó có thể null
+  })  : filmDangChieu =
+            filmDangChieu ?? [], // Mặc định là danh sách rỗng nếu null
+        filmSapChieu =
+            filmSapChieu ?? []; // Mặc định là danh sách rỗng nếu null
 
   @override
   _HomePage createState() => _HomePage();
@@ -24,6 +33,9 @@ class _HomePage extends State<HomePage> {
   Color bgColor = Color(0XFFf2f2f2);
   late final PageController _pageController;
   DateTime? lastPressed; // Thời gian của lần nhấn nút quay lại gần nhất
+  bool _isLoading = true; // Trạng thái loading
+  List<MovieDetails> _filmDangChieu = [];
+  List<MovieDetails> _filmSapChieu = [];
 
   @override
   void initState() {
@@ -31,7 +43,43 @@ class _HomePage extends State<HomePage> {
     _page = widget.initialPageIndex;
     _pageController = PageController(initialPage: _page);
 
-    print('UserManager from home_page: ${UserManager.instance.user?.email}');
+    // Gán dữ liệu từ widget vào các danh sách nội bộ
+    _filmDangChieu = List.from(widget.filmDangChieu);
+    _filmSapChieu = List.from(widget.filmSapChieu);
+
+    // Kiểm tra nếu dữ liệu phim đang chiếu và sắp chiếu rỗng
+    if (_filmDangChieu.isEmpty && _filmSapChieu.isEmpty) {
+      _fetchMovies(); // Gọi hàm lấy phim từ API
+    } else {
+      setState(() {
+        _isLoading = false; // Nếu có dữ liệu, tắt trạng thái loading
+      });
+    }
+  }
+
+  Future<void> _fetchMovies() async {
+    ApiService apiService = ApiService();
+    try {
+      setState(() {
+        _isLoading = true; // Bắt đầu trạng thái loading
+      });
+
+      // Lấy phim đang chiếu và sắp chiếu
+      final moviesDangChieu = await apiService.getMoviesDangChieu();
+      final moviesSapChieu = await apiService.getMoviesSapChieu();
+
+      // Cập nhật danh sách phim và tắt trạng thái loading
+      setState(() {
+        _filmDangChieu = moviesDangChieu;
+        _filmSapChieu = moviesSapChieu;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error fetching movies: $e');
+      setState(() {
+        _isLoading = false; // Dù có lỗi cũng tắt trạng thái loading
+      });
+    }
   }
 
   List<Widget> get _navigatorItems {
@@ -50,39 +98,19 @@ class _HomePage extends State<HomePage> {
       children: [
         Icon(
           icon,
-          size: isSelected ? 20 : 18, // Giảm kích thước của biểu tượng
-          color: isSelected
-              ? Color(0XFF6F3CD7)
-              : Colors.black, // Thay đổi màu sắc của biểu tượng
+          size: isSelected ? 20 : 18, // Giảm kích thước biểu tượng
+          color: isSelected ? Color(0XFF6F3CD7) : Colors.black,
         ),
         Text(
           label,
           style: TextStyle(
             fontWeight: FontWeight.w500,
             fontSize: isSelected ? 10 : 8, // Giảm kích thước chữ
-            color: isSelected
-                ? Color(0XFF6F3CD7)
-                : Colors.black, // Thay đổi màu chữ
+            color: isSelected ? Color(0XFF6F3CD7) : Colors.black,
           ),
         ),
       ],
     );
-  }
-
-  Widget _buildPage(int pageIndex) {
-    switch (pageIndex) {
-      case 0:
-        return FilmSelectionPage();
-      case 1:
-        return MyTicketsPage();
-      case 2:
-        return HistoryPage();
-      case 3:
-        return CheckUserPage();
-      default:
-        return const Center(
-            child: Text('Unknown page', style: TextStyle(fontSize: 24)));
-    }
   }
 
   @override
@@ -102,9 +130,7 @@ class _HomePage extends State<HomePage> {
             SnackBar(
               content: const Text(
                 'Nhấn lần nữa để thoát',
-                style: TextStyle(
-                  fontSize: 14,
-                ),
+                style: TextStyle(fontSize: 14),
                 textAlign: TextAlign.center,
               ),
               duration: maxDuration,
@@ -112,10 +138,8 @@ class _HomePage extends State<HomePage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              padding: EdgeInsets.symmetric(
-                  vertical: 10), // Điều chỉnh padding nếu cần
-              margin: EdgeInsets.only(
-                  bottom: 16, left: 16, right: 16), // Điều chỉnh margin nếu cần
+              padding: EdgeInsets.symmetric(vertical: 10),
+              margin: EdgeInsets.only(bottom: 16, left: 16, right: 16),
             ),
           );
 
@@ -125,15 +149,23 @@ class _HomePage extends State<HomePage> {
       },
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: IndexedStack(
-          index: _page, // Hiển thị chỉ một trang tại một thời điểm
-          children: [
-            FilmSelectionPage(),
-            MyTicketsPage(),
-            HistoryPage(),
-            CheckUserPage(),
-          ],
-        ),
+        body: _isLoading
+            ? Center(
+                child:
+                    CircularProgressIndicator()) // Hiển thị vòng xoay loading
+            : IndexedStack(
+                index: _page, // Chỉ hiển thị một trang tại một thời điểm
+                children: [
+                  FilmSelectionPage(
+                    filmDangChieu:
+                        _filmDangChieu, // Truyền dữ liệu từ danh sách nội bộ
+                    filmSapChieu: _filmSapChieu,
+                  ),
+                  MyTicketsPage(),
+                  HistoryPage(),
+                  CheckUserPage(),
+                ],
+              ),
         bottomNavigationBar: CurvedNavigationBar(
           items: _navigatorItems,
           height: 50,

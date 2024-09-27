@@ -10,9 +10,14 @@ import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/film_sapChieu_screen.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/film_information.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:page_transition/page_transition.dart';
 
 class FilmSelectionPage extends StatefulWidget {
-  const FilmSelectionPage({super.key});
+  final List<MovieDetails> filmDangChieu;
+  final List<MovieDetails> filmSapChieu;
+  const FilmSelectionPage(
+      {required this.filmDangChieu, required this.filmSapChieu, Key? key})
+      : super(key: key);
 
   @override
   _FilmSelectionPageState createState() => _FilmSelectionPageState();
@@ -22,10 +27,7 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
     with SingleTickerProviderStateMixin {
   int _currentPage = 0;
   Timer? _timer;
-  late Future<void> _dataFuture;
-  late ApiService _apiService;
-  List<MovieDetails> filmDangChieu = [];
-  List<MovieDetails> filmSapChieu = [];
+
   late AnimationController _animationController;
   late Animation<double> _appBarHeightAnimation;
 
@@ -34,8 +36,6 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
   @override
   void initState() {
     super.initState();
-    _apiService = ApiService();
-    _dataFuture = _fetchData();
     _startSlideshow();
 
     _animationController = AnimationController(
@@ -53,24 +53,6 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
         _animationController.animateTo(80.0);
       }
     });
-  }
-
-  Future<void> _fetchData() async {
-    try {
-      final moviesDangChieu = await _apiService.getMoviesDangChieu();
-      final moviesSapChieu = await _apiService.getMoviesSapChieu();
-
-      setState(() {
-        filmDangChieu = moviesDangChieu;
-        filmSapChieu = moviesSapChieu;
-      });
-    } catch (error) {
-      print('Có lỗi xảy ra: $error');
-    }
-  }
-
-  Future<void> _refreshData() async {
-    await _fetchData();
   }
 
   void _startSlideshow() {
@@ -92,82 +74,66 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder<void>(
-        future: _dataFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Có lỗi xảy ra: ${snapshot.error}'));
-          } else {
-            return RefreshIndicator(
-              onRefresh: _refreshData,
-              child: CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  SliverAppBar(
-                    backgroundColor: Color(0XFF6F3CD7),
-                    expandedHeight: _appBarHeightAnimation.value,
-                    floating: false,
-                    pinned: true,
-                    flexibleSpace: FlexibleSpaceBar(
-                      titlePadding: EdgeInsets.only(bottom: 16.0),
-                      title: Align(
-                        alignment:
-                            Alignment.bottomCenter, // Căn giữa tiêu đề ở dưới
-                        child: Text(
-                          'PANTHERs CINEMA',
-                          style: TextStyle(
-                            color: _appBarHeightAnimation.value <= 100
-                                ? Colors.white
-                                : Colors.black,
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      centerTitle: true,
-                      background: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Image.asset(
-                            'assets/images/background.png',
-                            fit: BoxFit.cover,
-                            color: Colors.white.withOpacity(0.6),
-                            colorBlendMode: BlendMode.dstATop,
-                          ),
-                        ],
-                      ),
-                    ),
-                    actions: [
-                      AnimatedBuilder(
-                        animation: _appBarHeightAnimation,
-                        builder: (context, child) {
-                          bool isSearchIconVisible =
-                              _appBarHeightAnimation.value > 80;
-                          return isSearchIconVisible
-                              ? Align(
-                                  alignment: Alignment.centerRight,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(right: 16.0),
-                                    child: IconButton(
-                                      icon: Icon(Icons.search,
-                                          color: Colors.white, size: 27),
-                                      onPressed: () {},
-                                    ),
-                                  ),
-                                )
-                              : SizedBox.shrink();
-                        },
-                      ),
-                    ],
+      body: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverAppBar(
+            backgroundColor: Color(0XFF6F3CD7),
+            expandedHeight: _appBarHeightAnimation.value,
+            floating: false,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              titlePadding: EdgeInsets.only(bottom: 16.0),
+              title: Align(
+                alignment: Alignment.bottomCenter, // Căn giữa tiêu đề ở dưới
+                child: Text(
+                  'PANTHERs CINEMA',
+                  style: TextStyle(
+                    color: _appBarHeightAnimation.value <= 100
+                        ? Colors.white
+                        : Colors.black,
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
                   ),
-                  SliverToBoxAdapter(child: _buildContent()),
+                ),
+              ),
+              centerTitle: true,
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset(
+                    'assets/images/background.png',
+                    fit: BoxFit.cover,
+                    color: Colors.white.withOpacity(0.6),
+                    colorBlendMode: BlendMode.dstATop,
+                  ),
                 ],
               ),
-            );
-          }
-        },
+            ),
+            actions: [
+              AnimatedBuilder(
+                animation: _appBarHeightAnimation,
+                builder: (context, child) {
+                  bool isSearchIconVisible = _appBarHeightAnimation.value > 80;
+                  return isSearchIconVisible
+                      ? Align(
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 16.0),
+                            child: IconButton(
+                              icon: Icon(Icons.search,
+                                  color: Colors.white, size: 27),
+                              onPressed: () {},
+                            ),
+                          ),
+                        )
+                      : SizedBox.shrink();
+                },
+              ),
+            ],
+          ),
+          SliverToBoxAdapter(child: _buildContent()),
+        ],
       ),
     );
   }
@@ -185,7 +151,7 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
         ),
         _buildSectionTitle('PHIM NỔI BẬT'),
         FilmCarousel(
-          filmList: _mapMoviesToFilmList(filmDangChieu),
+          filmList: _mapMoviesToFilmList(widget.filmDangChieu),
         ),
         SizedBox(
           height: 20,
@@ -196,7 +162,7 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
           height: 20,
         ),
         MyListviewCardItem(
-          filmList: _mapMoviesToFilmList(filmDangChieu),
+          filmList: _mapMoviesToFilmList(widget.filmDangChieu),
         ),
         SizedBox(
           height: 20,
@@ -207,7 +173,7 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
           height: 20,
         ),
         MyListviewCardItem(
-          filmList: _mapMoviesToFilmList(filmSapChieu),
+          filmList: _mapMoviesToFilmList(widget.filmSapChieu),
         ),
         SizedBox(
           height: 20,

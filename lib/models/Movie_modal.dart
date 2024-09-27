@@ -10,6 +10,7 @@ class MovieDetails {
   final String trailerUrl;
   final bool subTitle; // Đã thêm SubTitle
   final bool voiceover; // Đã thêm Voiceover
+  final double? price; // Đã thêm Voiceover
   final String age; // Thay thế LanguageName bằng Age
   final String genres;
   final String cinemaName;
@@ -34,6 +35,7 @@ class MovieDetails {
     required this.trailerUrl,
     required this.subTitle,
     required this.voiceover,
+    this.price,
     required this.genres,
     required this.cinemaName,
     required this.cinemaAddress,
@@ -49,6 +51,8 @@ class MovieDetails {
     required this.rating1_2,
   });
   // Hàm khởi tạo từ JSON
+  // Hàm định dạng giá thành chuỗi theo định dạng tiền tệ
+
   factory MovieDetails.fromJson(Map<String, dynamic> json) {
     final DateFormat formatter = DateFormat('dd/MM/yyyy');
     final DateTime? parsedDate = json['ReleaseDate'] != null
@@ -65,6 +69,9 @@ class MovieDetails {
       age: json['Age'],
       subTitle: json['SubTitle'],
       voiceover: json['Voiceover'],
+      price: json['Price'] != null
+          ? (json['Price'] as num).toDouble()
+          : null, // Handle null
       genres: json['Genres'],
       cinemaName: json['CinemaName'],
       cinemaAddress: json['CinemaAddress'],
@@ -95,6 +102,7 @@ class MovieDetails {
       'TrailerUrl': trailerUrl,
       'Subtitle': subTitle,
       'Voiceover': voiceover,
+      'Price': price, // Can be null
       'Age': age,
 
       'Genres': genres,
@@ -122,6 +130,7 @@ class MovieDetails {
     String? trailerUrl,
     bool? subTitle,
     bool? voiceover,
+    double? price,
     String? age,
     String? genres,
     String? cinemaName,
@@ -146,6 +155,7 @@ class MovieDetails {
       trailerUrl: trailerUrl ?? this.trailerUrl,
       subTitle: subTitle ?? this.subTitle,
       voiceover: voiceover ?? this.voiceover,
+      price: price ?? this.price, // Price is now nullable
       genres: genres ?? this.genres,
       cinemaName: cinemaName ?? this.cinemaName,
       cinemaAddress: cinemaAddress ?? this.cinemaAddress,

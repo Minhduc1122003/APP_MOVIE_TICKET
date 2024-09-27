@@ -36,6 +36,7 @@ class _FilmInformationState extends State<FilmInformation>
   void initState() {
     super.initState();
     _APIService = ApiService();
+    _loadMovieDetails();
   }
 
   Future<MovieDetails?> _loadMovieDetails() async {
