@@ -8,8 +8,7 @@ class User {
   final String? photo; // Đổi thành String? để cho phép giá trị null
   final int role;
   final DateTime createDate;
-  final DateTime updateDate;
-  final String updateBy;
+
   final String status;
   final bool isDelete;
   User({
@@ -22,8 +21,6 @@ class User {
     this.photo, // Không cần `required` vì giá trị có thể null
     required this.role,
     required this.createDate,
-    required this.updateDate,
-    required this.updateBy,
     required this.status,
     required this.isDelete,
   });
@@ -43,8 +40,6 @@ class User {
       photo: json['Photo'] as String?, // Cập nhật để có thể là null
       role: json['Role'] as int,
       createDate: DateTime.parse(json['CreateDate'] as String),
-      updateDate: DateTime.parse(json['UpdateDate'] as String),
-      updateBy: json['UpdateBy'] as String,
       status: json['Status'] as String,
       isDelete: json['IsDelete'] as bool,
     );

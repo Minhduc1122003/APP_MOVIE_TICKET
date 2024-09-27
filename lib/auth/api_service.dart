@@ -30,7 +30,7 @@ class ApiService {
 
     // wifi cf24/24
 
-    baseUrl = 'http://192.168.100.24:8081';
+    baseUrl = 'http://192.168.1.77:8081';
 
     //baseUrl = 'http://192.168.1.33:8081';
 
