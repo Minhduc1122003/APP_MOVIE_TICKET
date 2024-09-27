@@ -168,7 +168,8 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
           height: 20,
         ),
         _buildSectionDivider(),
-        _buildSectionHeader('Phim sắp chiếu', FilmSapchieuScreen()),
+        _buildSectionHeader('Phim sắp chiếu',
+            FilmSapchieuScreen(filmSapChieu: widget.filmSapChieu)),
         SizedBox(
           height: 20,
         ),
