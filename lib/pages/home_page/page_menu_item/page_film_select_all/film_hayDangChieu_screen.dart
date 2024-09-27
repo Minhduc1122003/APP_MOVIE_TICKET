@@ -48,9 +48,6 @@ class _FilmHaydangchieuScreenState extends State<FilmHaydangchieuScreen> {
         });
       }
     });
-
-    // Lắng nghe sự thay đổi khi người dùng nhập ký tự
-    // Lắng nghe sự thay đổi khi người dùng nhập ký tự
     _searchController.addListener(() {
       _filterMovies(_searchController.text);
       if (_searchController.text.isNotEmpty) {

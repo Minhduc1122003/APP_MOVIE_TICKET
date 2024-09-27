@@ -570,23 +570,32 @@ class _FilmCarouselState extends State<FilmCarousel> {
                                         14, // Kích thước font tối thiểu khi tự động điều chỉnh
                                   ),
                                   SizedBox(height: 4),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.star,
-                                          color: Colors.yellow, size: 18),
-                                      SizedBox(width: 5),
-                                      Text(
-                                        '${film['rating']}/10',
-                                        style: TextStyle(fontSize: 14),
-                                      ),
-                                      Text(
-                                        '(${film['rating']} lượt đánh giá)',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: Color(0xFFA69E9E)),
-                                      ),
-                                    ],
+                                  FittedBox(
+                                    fit: BoxFit
+                                        .scaleDown, // Thu nhỏ nội dung nếu không đủ không gian
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.star,
+                                            color: Colors.yellow, size: 18),
+                                        SizedBox(width: 5),
+                                        AutoSizeText(
+                                          '${film['rating']}/10',
+                                          minFontSize: 10,
+                                          maxFontSize: 14,
+                                        ),
+                                        SizedBox(width: 5),
+                                        AutoSizeText(
+                                          '(${film['rating']} lượt đánh giá)',
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              color: Color(0xFFA69E9E)),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                   SizedBox(height: 4),
                                   Text(

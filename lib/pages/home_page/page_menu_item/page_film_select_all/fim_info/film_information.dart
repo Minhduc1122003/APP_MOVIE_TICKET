@@ -7,7 +7,6 @@ import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/bloc/film_info_Bloc.dart';
-import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/giaodienTest.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/trailer_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/buyTicket_page.dart';
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
