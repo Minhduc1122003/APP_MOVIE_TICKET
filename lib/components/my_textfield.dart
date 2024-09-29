@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 class MyTextfield extends StatefulWidget {
   final String? title;
@@ -12,6 +11,8 @@ class MyTextfield extends StatefulWidget {
   final TextEditingController? controller;
   final String? placeHolder;
   final bool? isCode; // Nullable boolean
+  final FocusNode? focusNode; // Thêm focusNode
+  final String? errorMessage; // Thêm errorMessage
 
   const MyTextfield({
     Key? key,
@@ -22,7 +23,9 @@ class MyTextfield extends StatefulWidget {
     this.isPhone = false,
     this.controller,
     this.placeHolder = '',
-    this.isCode, // Nullable boolean
+    this.isCode,
+    this.focusNode, // Khởi tạo focusNode
+    this.errorMessage,
   }) : super(key: key);
 
   @override
@@ -31,19 +34,6 @@ class MyTextfield extends StatefulWidget {
 
 class _MyTextfieldState extends State<MyTextfield> {
   bool _obscureText = true;
-  late FocusNode _focusNode;
-
-  @override
-  void initState() {
-    super.initState();
-    _focusNode = FocusNode();
-  }
-
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    super.dispose();
-  }
 
   @override
   void didUpdateWidget(covariant MyTextfield oldWidget) {
@@ -67,7 +57,7 @@ class _MyTextfieldState extends State<MyTextfield> {
           TextField(
             controller: widget.controller,
             obscureText: widget.isPassword ? _obscureText : false,
-            focusNode: _focusNode,
+            focusNode: widget.focusNode, // Sử dụng focusNode từ widget
             decoration: InputDecoration(
               border: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(8.0)),
@@ -143,10 +133,20 @@ class _MyTextfieldState extends State<MyTextfield> {
                                   ),
                                 )
                               : null,
-
               // Không hiển thị gì nếu isCode là null
             ),
           ),
+          // Hiển thị thông báo lỗi nếu có
+          if (widget.errorMessage != null) ...[
+            const SizedBox(height: 5),
+            Text(
+              widget.errorMessage!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontSize: 12,
+              ),
+            ),
+          ],
         ],
       ),
     );

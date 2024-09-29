@@ -8,13 +8,17 @@ import 'package:flutter_app_chat/pages/login_page/loginBloc/login_bloc.dart';
 import 'package:flutter_app_chat/pages/manager_page/home_manager_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '../../components/my_button.dart';
 import '../../components/my_textfield.dart';
 import '../register_page/register_page.dart';
 
 class LoginPage extends StatefulWidget {
+  final bool isBack; // Add the isBack attribute
+
+  // Constructor with optional isBack parameter
+  LoginPage({this.isBack = false});
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -55,16 +59,18 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new_outlined,
-            color: Colors.white,
-            size: 16,
-          ),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
+        leading: widget.isBack // Correct usage of widget.isBack
+            ? Text('')
+            : IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios_new_outlined,
+                  color: Colors.white,
+                  size: 16,
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
       ),
       body: BlocListener<LoginBloc, LoginState>(
         listener: (context, state) async {
@@ -210,7 +216,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             // Footer that disappears when keyboard is visible
-            if (bottomInset == 0) // Only show this when keyboard is not visible
+            if (bottomInset == 0)
               Positioned(
                 bottom: 0,
                 left: 0,
