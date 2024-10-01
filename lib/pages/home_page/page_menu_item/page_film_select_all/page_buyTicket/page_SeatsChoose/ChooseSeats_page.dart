@@ -8,6 +8,8 @@ import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/buyTicket_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/cinema_seat_grid.dart';
+import 'package:flutter_app_chat/pages/login_page/login_page.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 
@@ -336,14 +338,79 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                     paddingText: 10,
                     text: 'Đặt vé ngay',
                     isBold: true,
-                    onTap: () => Navigator.push(
-                      context,
-                      SlideFromRightPageRoute(
-                        page: BuyTicketPage(
-                          movieId: 1,
-                        ),
-                      ),
-                    ),
+                    onTap: () {
+                      // Kiểm tra người dùng đã đăng nhập chưa
+                      if (UserManager.instance.user?.userId == null) {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Bạn chưa đăng nhập!'),
+                              content: RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: 'Bạn cần ',
+                                      style: DefaultTextStyle.of(context).style,
+                                    ),
+                                    const TextSpan(
+                                      text: 'đăng nhập',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0XFF6F3CD7),
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text:
+                                          ' để sử dụng tính năng này, bạn có muốn đăng nhập?',
+                                      style: DefaultTextStyle.of(context).style,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context)
+                                        .pop(); // Đóng hộp thoại
+                                  },
+                                  child: const Text('Hủy',
+                                      style: TextStyle(color: Colors.black)),
+                                ),
+                                TextButton(
+                                  onPressed: () async {
+                                    EasyLoading.show();
+                                    await Future.delayed(
+                                        const Duration(milliseconds: 200));
+                                    EasyLoading.dismiss();
+                                    Navigator.of(context).pop();
+                                    Navigator.push(
+                                      context,
+                                      SlideFromLeftPageRoute(page: LoginPage()),
+                                    );
+                                  },
+                                  child: const Text(
+                                    'Đăng Nhập',
+                                    style: TextStyle(
+                                      color: Color(0XFF6F3CD7),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      } else {
+                        // Nếu đã đăng nhập, chuyển đến trang đặt vé
+                        Navigator.push(
+                          context,
+                          SlideFromRightPageRoute(
+                            page: BuyTicketPage(movieId: 1),
+                          ),
+                        );
+                      }
+                    },
                   ),
                 ),
               ],

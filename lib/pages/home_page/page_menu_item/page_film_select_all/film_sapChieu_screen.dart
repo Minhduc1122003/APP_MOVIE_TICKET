@@ -123,39 +123,36 @@ class _FilmSapchieuScreenState extends State<FilmSapchieuScreen> {
             ),
           ],
         ),
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 20),
-          child: SingleChildScrollView(
-            child: Column(
-              children: moviesByMonth.entries.map((entry) {
-                final month = entry.key;
-                final movieList = entry.value;
+        body: SingleChildScrollView(
+          child: Column(
+            children: moviesByMonth.entries.map((entry) {
+              final month = entry.key;
+              final movieList = entry.value;
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Tiêu đề tháng
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 10),
-                      child: Text(
-                        month,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple,
-                        ),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Tiêu đề tháng
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 10),
+                    child: Text(
+                      month,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple,
                       ),
                     ),
-                    // Danh sách phim của tháng đó
-                    SizedBox(
-                      height: 300,
-                      child: MyListviewCardItem(filmList: movieList),
-                    ),
-                  ],
-                );
-              }).toList(),
-            ),
+                  ),
+                  // Danh sách phim của tháng đó
+                  SizedBox(
+                    height: 300,
+                    child: MyListviewCardItem(filmList: movieList),
+                  ),
+                ],
+              );
+            }).toList(),
           ),
         ),
       ),

@@ -3,6 +3,7 @@ import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/spinkit.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
+import 'package:flutter_app_chat/pages/forgot_page/forgot_page.dart';
 import 'package:flutter_app_chat/pages/home_page/home_page.dart';
 import 'package:flutter_app_chat/pages/login_page/loginBloc/login_bloc.dart';
 import 'package:flutter_app_chat/pages/manager_page/home_manager_page.dart';
@@ -205,7 +206,7 @@ class _LoginPageState extends State<LoginPage> {
                                 onTap: () => _onLoginButtonPressed(context),
                               ),
                               const SizedBox(height: 10),
-                              _ForgotPassword(),
+                              _ForgotPassword(context),
                             ],
                           ),
                         ),
@@ -310,14 +311,18 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _ForgotPassword() {
+  Widget _ForgotPassword(BuildContext context) {
     return Row(
       children: [
         Expanded(
           // Đảm bảo nút chiếm toàn bộ chiều rộng
           child: TextButton(
             onPressed: () {
-              print('Quên mật khẩu');
+              // Điều hướng tới trang ForgotPage
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ForgotPage()),
+              );
             },
             style: TextButton.styleFrom(
               side: const BorderSide(
