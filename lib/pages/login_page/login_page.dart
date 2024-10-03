@@ -66,7 +66,7 @@ class _LoginPageState extends State<LoginPage> {
                 icon: Icon(
                   Icons.arrow_back_ios_new_outlined,
                   color: Colors.white,
-                  size: 16,
+                  size: 24,
                 ),
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -191,12 +191,16 @@ class _LoginPageState extends State<LoginPage> {
                               MyTextfield(
                                 placeHolder: "Email",
                                 controller: _emailController,
+                                icon: Icons
+                                    .email_outlined, // Hiển thị biểu tượng người ở bên trái
                               ),
                               const SizedBox(height: 20),
                               MyTextfield(
                                 isPassword: true,
                                 placeHolder: "Mật khẩu",
                                 controller: _passwordController,
+                                icon: Icons
+                                    .lock_outline, // Hiển thị biểu tượng người ở bên trái
                               ),
                               const SizedBox(height: 20),
                               MyButton(

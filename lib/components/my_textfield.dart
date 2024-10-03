@@ -13,6 +13,7 @@ class MyTextfield extends StatefulWidget {
   final bool? isCode; // Nullable boolean
   final FocusNode? focusNode; // Thêm focusNode
   final String? errorMessage; // Thêm errorMessage
+  final IconData? icon; // Changed from Icons? to IconData?
 
   const MyTextfield({
     Key? key,
@@ -26,6 +27,7 @@ class MyTextfield extends StatefulWidget {
     this.isCode,
     this.focusNode, // Khởi tạo focusNode
     this.errorMessage,
+    this.icon,
   }) : super(key: key);
 
   @override
@@ -66,6 +68,13 @@ class _MyTextfieldState extends State<MyTextfield> {
               hintStyle: const TextStyle(color: Colors.black26),
               fillColor: const Color(0xfff3f3f4),
               filled: widget.isFill,
+              prefixIcon: widget.icon != null
+                  ? Icon(
+                      widget.icon,
+                      color: Colors.black.withOpacity(0.6),
+                      size: 20.0, // or FontWeight.bold, etc.
+                    )
+                  : null, // Add icon if provided
               prefixText: widget.isPhone ? '+84 ' : null,
               prefixStyle: const TextStyle(color: Colors.black),
               suffixIcon: widget.isPassword

@@ -240,12 +240,10 @@ class _RegisterPageState extends State<RegisterPage> {
                   Expanded(
                     child: SingleChildScrollView(
                       padding: EdgeInsets.fromLTRB(
-                        20,
-                        50,
-                        20,
-                        MediaQuery.of(context)
-                            .viewInsets
-                            .bottom, // Điều chỉnh với chiều cao của bàn phím
+                        15,
+                        30,
+                        15,
+                        20, // Điều chỉnh với chiều cao của bàn phím
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -258,6 +256,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             sendCode: true,
                             focusNode: _emailFocusNode,
                             errorMessage: errorMessages['email'],
+                            icon: Icons.email_outlined,
                           ),
                           const SizedBox(height: 10),
                           ValueListenableBuilder<bool>(
@@ -271,6 +270,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                 isCode: isCode,
                                 focusNode: _codeFocusNode,
                                 errorMessage: errorMessages['code'],
+                                icon: Icons.privacy_tip_outlined,
                               );
                             },
                           ),
@@ -282,6 +282,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             sendCode: false,
                             focusNode: _usernameFocusNode,
                             errorMessage: errorMessages['username'],
+                            icon: Icons.person_outlined,
                           ),
                           const SizedBox(height: 10),
                           MyTextfield(
@@ -291,6 +292,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             sendCode: false,
                             focusNode: _fullnameFocusNode,
                             errorMessage: errorMessages['fullname'],
+                            icon: Icons.person_pin_rounded,
                           ),
                           const SizedBox(height: 10),
                           MyTextfield(
@@ -301,6 +303,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             isPhone: true,
                             focusNode: _phoneFocusNode,
                             errorMessage: errorMessages['phone'],
+                            icon: Icons.phone_outlined,
                           ),
                           const SizedBox(height: 10),
                           MyTextfield(
@@ -310,6 +313,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             sendCode: false,
                             focusNode: _passwordFocusNode,
                             errorMessage: errorMessages['password'],
+                            icon: Icons.lock_outline,
                           ),
                           const SizedBox(height: 20),
                           MyButton(
