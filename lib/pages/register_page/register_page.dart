@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/components/my_textfield.dart';
-import 'package:flutter_app_chat/pages/login_page/login_page.dart';
+import 'package:flutter_app_chat/pages/register_page/register_page_2.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-
-import 'createAccount_bloc/createAccount_bloc.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -21,23 +19,23 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _fullnameController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _lastnameController = TextEditingController();
+  final TextEditingController _firstnameController = TextEditingController();
+  final TextEditingController _checkPassword = TextEditingController();
 
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _codeFocusNode = FocusNode();
-  final FocusNode _usernameFocusNode = FocusNode();
-  final FocusNode _fullnameFocusNode = FocusNode();
-  final FocusNode _phoneFocusNode = FocusNode();
+  final FocusNode _lastnameFocusNode = FocusNode();
+  final FocusNode _firstnameFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
+  final FocusNode _checkPasswordFocusNode = FocusNode();
+
   // Tạo một Map để lưu trữ các lỗi
   Map<String, String?> errorMessages = {
     'email': null,
     'code': null,
-    'username': null,
-    'fullname': null,
-    'phone': null,
+    'lastname': null,
+    'firstname': null,
     'password': null,
   };
   String codeIs = "1"; // Placeholder for the code received
@@ -48,24 +46,21 @@ class _RegisterPageState extends State<RegisterPage> {
   void onCreateAccountPressed(BuildContext context) {
     final String email = _emailController.text;
     final String password = _passwordController.text;
-    final String username = _usernameController.text;
-    final String fullname = _fullnameController.text;
-    final int phoneNumber = int.tryParse(_phoneController.text) ?? 0;
-    final String photo = '';
+    final String lastname = _lastnameController.text;
+    final String firstname = _firstnameController.text;
 
     // Validate inputs
     if (email.isEmpty ||
         password.isEmpty ||
-        username.isEmpty ||
-        fullname.isEmpty ||
-        phoneNumber == 0) {
+        lastname.isEmpty ||
+        firstname.isEmpty == 0) {
       EasyLoading.showError("Vui lòng điền đầy đủ thông tin!");
       return;
     }
 
-    BlocProvider.of<CreateAccountBloc>(context).add(
-      CreateAccount(email, password, username, fullname, phoneNumber, photo),
-    );
+    //   BlocProvider.of<CreateAccountBloc>(context).add(
+    //     CreateAccount(email, password, lastname, firstname),
+    //   );
   }
 
   // Check if the entered code matches the received one
@@ -82,19 +77,25 @@ class _RegisterPageState extends State<RegisterPage> {
       errorMessages['code'] = _codeController.text.isEmpty
           ? 'Thông tin bạn điền chưa đầy đủ'
           : null;
-      errorMessages['username'] = _usernameController.text.isEmpty
+      errorMessages['lastname'] = _lastnameController.text.isEmpty
           ? 'Thông tin bạn điền chưa đầy đủ'
           : null;
-      errorMessages['fullname'] = _fullnameController.text.isEmpty
+      errorMessages['firstname'] = _firstnameController.text.isEmpty
           ? 'Thông tin bạn điền chưa đầy đủ'
           : null;
-      errorMessages['phone'] = _phoneController.text.isEmpty
-          ? 'Thông tin bạn điền chưa đầy đủ'
-          : null;
+
       errorMessages['password'] = _passwordController.text.isEmpty
           ? 'Thông tin bạn điền chưa đầy đủ'
           : null;
     });
+// Check if the passwords match
+    if (_passwordController.text != _checkPassword.text) {
+      errorMessages['password'] =
+          'Mật khẩu nhập lại chưa đúng'; // Set error message
+    } else if (_passwordController.text.isNotEmpty) {
+      errorMessages['password'] =
+          null; // Clear error message if passwords match
+    }
 
     return errorMessages.values.every((error) => error == null);
   }
@@ -102,20 +103,38 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void initState() {
     super.initState();
-    _codeController.addListener(_checkCode); // Listen to code changes
+    _codeController.addListener(_checkCode); // Listen to code changes\
+
+    _checkPasswordFocusNode.addListener(() {
+      if (!_checkPasswordFocusNode.hasFocus) {
+        _validatePasswordMatch(); // Validate password match when focus is lost
+      }
+    });
+  }
+
+  void _validatePasswordMatch() {
+    setState(() {
+      if (_passwordController.text != _checkPassword.text) {
+        errorMessages['password'] =
+            'Mật khẩu nhập lại chưa đúng'; // Set error message
+      } else {
+        errorMessages['password'] = null; // Clear error message if they match
+      }
+    });
   }
 
   @override
   void dispose() {
     _codeController.removeListener(_checkCode);
+    _checkPasswordFocusNode.dispose(); // Dispose of the focus node
     _codeController.dispose();
     isCodeNotifier.dispose();
     _emailFocusNode.dispose();
     _codeFocusNode.dispose();
-    _usernameFocusNode.dispose();
-    _fullnameFocusNode.dispose();
-    _phoneFocusNode.dispose();
+    _lastnameFocusNode.dispose();
+    _firstnameFocusNode.dispose();
     _passwordFocusNode.dispose();
+    _checkPassword.dispose();
     super.dispose();
   }
 
@@ -130,7 +149,7 @@ class _RegisterPageState extends State<RegisterPage> {
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Color(0xe06f3cd7),
+                Color(0x0FF6439FF),
               ],
               stops: [0.66],
               begin: Alignment.topCenter,
@@ -172,12 +191,15 @@ class _RegisterPageState extends State<RegisterPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Container(
+                    height: MediaQuery.of(context).size.height * 0.25,
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Color(0xe06f3cd7),
-                          Color(0xe0ffffff),
+                          Color(0x0FF6439FF), // Tím
+                          Color(0xFF4F75FF), // Xanh ngọc
+                          Color(0xFFFFFFFF), // Trắng
                         ],
+                        stops: [0.0, 0.3, 1.0], // Phân bố đều hơn cho các màu
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
@@ -187,26 +209,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       children: [
                         Align(
                           alignment: Alignment.center,
-                          child: Text(
-                            'Chào mừng bạn đến với',
-                            style: TextStyle(
-                              color: Color(0xe0ffffff),
-                              fontSize: 25,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.1,
-                              height: 1.5,
-                              fontStyle: FontStyle.italic,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        Align(
-                          alignment: Alignment.center,
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 0, 0,
-                                10), // Thêm padding đều cho tất cả các cạnh
+                            padding: EdgeInsets.fromLTRB(0, 20, 0, 10),
                             child: Text(
-                              'PANTHERs CINEMA!',
+                              'Chào mừng bạn đến với',
                               style: TextStyle(
                                 color: Color(0xe0ffffff),
                                 fontSize: 25,
@@ -222,13 +228,17 @@ class _RegisterPageState extends State<RegisterPage> {
                         Align(
                           alignment: Alignment.center,
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 0, 0,
-                                20), // Thêm padding theo hướng tùy chỉnh
+                            padding: const EdgeInsets.fromLTRB(0, 5, 0,
+                                10), // Thêm padding đều cho tất cả các cạnh
                             child: Text(
-                              'Hãy điền các thông tin còn thiếu để hoàn tất việc đăng ký',
+                              'PANTHERs CINEMA!',
                               style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w300,
+                                color: Color(0xe0ffffff),
+                                fontSize: 25,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.1,
+                                height: 1.5,
+                                fontStyle: FontStyle.italic,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -239,118 +249,90 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: EdgeInsets.fromLTRB(
+                      padding: const EdgeInsets.fromLTRB(
                         15,
-                        30,
+                        10,
                         15,
                         20, // Điều chỉnh với chiều cao của bàn phím
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: <Widget>[
-                          MyTextfield(
-                            isPassword: false,
-                            placeHolder: "Nhập địa chỉ email",
-                            controller: _emailController,
-                            sendCode: true,
-                            focusNode: _emailFocusNode,
-                            errorMessage: errorMessages['email'],
-                            icon: Icons.email_outlined,
-                          ),
-                          const SizedBox(height: 10),
-                          ValueListenableBuilder<bool>(
-                            valueListenable: isCodeNotifier,
-                            builder: (context, isCode, child) {
-                              return MyTextfield(
-                                isPassword: false,
-                                placeHolder: "Mã xác nhận",
-                                controller: _codeController,
-                                sendCode: false,
-                                isCode: isCode,
-                                focusNode: _codeFocusNode,
-                                errorMessage: errorMessages['code'],
-                                icon: Icons.privacy_tip_outlined,
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          MyTextfield(
-                            isPassword: false,
-                            placeHolder: "Tên người dùng",
-                            controller: _usernameController,
-                            sendCode: false,
-                            focusNode: _usernameFocusNode,
-                            errorMessage: errorMessages['username'],
-                            icon: Icons.person_outlined,
-                          ),
-                          const SizedBox(height: 10),
-                          MyTextfield(
-                            isPassword: false,
-                            placeHolder: "Họ tên",
-                            controller: _fullnameController,
-                            sendCode: false,
-                            focusNode: _fullnameFocusNode,
-                            errorMessage: errorMessages['fullname'],
-                            icon: Icons.person_pin_rounded,
-                          ),
-                          const SizedBox(height: 10),
-                          MyTextfield(
-                            isPassword: false,
-                            placeHolder: "Số điện thoại",
-                            controller: _phoneController,
-                            sendCode: false,
-                            isPhone: true,
-                            focusNode: _phoneFocusNode,
-                            errorMessage: errorMessages['phone'],
-                            icon: Icons.phone_outlined,
-                          ),
-                          const SizedBox(height: 10),
-                          MyTextfield(
-                            isPassword: true,
-                            placeHolder: "Mật khẩu",
-                            controller: _passwordController,
-                            sendCode: false,
-                            focusNode: _passwordFocusNode,
-                            errorMessage: errorMessages['password'],
-                            icon: Icons.lock_outline,
-                          ),
-                          const SizedBox(height: 20),
-                          MyButton(
-                            fontsize: 16,
-                            paddingText: 16,
-                            text: 'HOÀN TẤT',
-                            showIcon: false,
-                            onTap: () async {
-                              if (_validateFields()) {
-                                EasyLoading.show(status: 'Loading...');
-                                if (codeIs == _codeController.text) {
-                                  EasyLoading.dismiss();
-                                  await Future.delayed(
-                                    const Duration(milliseconds: 200),
-                                  );
-                                  EasyLoading.show();
-                                  Navigator.pushAndRemoveUntil(
-                                    context,
-                                    SlideFromRightPageRoute(
-                                        page: LoginPage(
-                                      isBack: true,
-                                    )),
-                                    (Route<dynamic> route) => false,
-                                  );
-                                  EasyLoading.dismiss();
-                                } else {
-                                  EasyLoading.dismiss();
-                                  EasyLoading.showError(
-                                      "Mã xác nhận không đúng!");
-                                }
-                              } else {
-                                EasyLoading.showError(
-                                    'Thông tin bạn điền chưa đầy đủ');
-                              }
-                            },
-                          ),
-                        ],
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: MyTextfield(
+                                    isPassword: false,
+                                    placeHolder: "Họ",
+                                    controller: _firstnameController,
+                                    sendCode: false,
+                                    focusNode: _firstnameFocusNode,
+                                    errorMessage: errorMessages['firstname'],
+                                  ),
+                                ),
+                                SizedBox(
+                                    width: 10), // Khoảng cách giữa 2 textfield
+                                Expanded(
+                                  child: MyTextfield(
+                                    isPassword: false,
+                                    placeHolder: "Tên",
+                                    controller: _lastnameController,
+                                    sendCode: false,
+                                    focusNode: _lastnameFocusNode,
+                                    errorMessage: errorMessages['lastname'],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            MyTextfield(
+                              isPassword: false,
+                              placeHolder: "Email",
+                              controller: _emailController,
+                              focusNode: _emailFocusNode,
+                              errorMessage: errorMessages['email'],
+                              icon: Icons.email_outlined,
+                            ),
+                            const SizedBox(height: 10),
+                            MyTextfield(
+                              isPassword: true,
+                              placeHolder: "Mật khẩu",
+                              controller: _passwordController,
+                              sendCode: false,
+                              focusNode: _passwordFocusNode,
+                              errorMessage: errorMessages['password'],
+                              icon: Icons.lock_outline,
+                            ),
+                            const SizedBox(height: 10),
+                            MyTextfield(
+                              isPassword: true,
+                              placeHolder: "Nhập lại mật khẩu",
+                              controller: _checkPassword,
+                              sendCode: false,
+                              focusNode: _checkPasswordFocusNode,
+                              errorMessage: errorMessages['password'],
+                              icon: Icons.lock_outline,
+                            ),
+                            const SizedBox(height: 20),
+                            MyButton(
+                              fontsize: 16,
+                              paddingText: 16,
+                              text: 'Đăng ký',
+                              showIcon: false,
+                              onTap: () async {
+                                Navigator.push(
+                                  context,
+                                  SlideFromRightPageRoute(
+                                      page: RegisterPage2()),
+                                  // (Route<dynamic> route) => false,
+                                );
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -379,7 +361,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   'Đăng nhập',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0XFF6F3CD7),
+                                    color: Color(0xFF4F75FF),
                                   ),
                                 ),
                               ),

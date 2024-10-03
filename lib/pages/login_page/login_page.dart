@@ -53,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Color(0xe06f3cd7),
+                Color(0xFF6439FF),
               ],
               stops: [0.66],
               begin: Alignment.topCenter,
@@ -118,10 +118,10 @@ class _LoginPageState extends State<LoginPage> {
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Color(0xe06f3cd7),
-                    Color(0xe8cfb3f6),
+                    Color(0x0FF6439FF),
+                    Color(0xFFF7CF5FF),
                   ],
-                  stops: [0.66, 1],
+                  stops: [0.10, 1],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -256,7 +256,10 @@ class _LoginPageState extends State<LoginPage> {
                             width: 23,
                             height: 23,
                           ),
-                          label: const Text('Facebook'),
+                          label: const Text(
+                            'Facebook',
+                            style: TextStyle(color: Colors.black),
+                          ),
                         ),
                       ],
                     ),
@@ -289,7 +292,7 @@ class _LoginPageState extends State<LoginPage> {
                                 'Đăng ký',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0XFF6F3CD7),
+                                  color: Color(0xFF4F75FF),
                                 ),
                               ),
                             ),
@@ -330,11 +333,14 @@ class _LoginPageState extends State<LoginPage> {
             },
             style: TextButton.styleFrom(
               side: const BorderSide(
-                color: Color(0xe06f3cd7), // Màu viền
+                color: Color(0xFF4F75FF), // Màu viền
                 width: 1.0, // Độ dày viền
               ),
             ),
-            child: const Text('Quên mật khẩu?'),
+            child: const Text(
+              'Quên mật khẩu?',
+              style: TextStyle(color: Color(0xFF4F75FF)),
+            ),
           ),
         ),
       ],

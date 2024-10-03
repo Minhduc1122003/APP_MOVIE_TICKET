@@ -10,10 +10,11 @@ class MyTextfield extends StatefulWidget {
   final bool isPhone;
   final TextEditingController? controller;
   final String? placeHolder;
-  final bool? isCode; // Nullable boolean
-  final FocusNode? focusNode; // Thêm focusNode
-  final String? errorMessage; // Thêm errorMessage
-  final IconData? icon; // Changed from Icons? to IconData?
+  final bool? isCode;
+  final FocusNode? focusNode;
+  final String? errorMessage;
+  final IconData? icon;
+  final Color? focusColor; // Màu khi focus
 
   const MyTextfield({
     Key? key,
@@ -25,9 +26,10 @@ class MyTextfield extends StatefulWidget {
     this.controller,
     this.placeHolder = '',
     this.isCode,
-    this.focusNode, // Khởi tạo focusNode
+    this.focusNode,
     this.errorMessage,
     this.icon,
+    this.focusColor, // Thêm thuộc tính focusColor
   }) : super(key: key);
 
   @override
@@ -35,16 +37,28 @@ class MyTextfield extends StatefulWidget {
 }
 
 class _MyTextfieldState extends State<MyTextfield> {
+  FocusNode _focusNode = FocusNode();
   bool _obscureText = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() {
+      setState(() {}); // Rebuild UI khi focus thay đổi
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose(); // Giải phóng focus node khi không cần thiết
+    super.dispose();
+  }
 
   @override
   void didUpdateWidget(covariant MyTextfield oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (widget.isCode != oldWidget.isCode) {
-      // Perform actions if isCode has changed
-      print('isCode has changed: ${widget.isCode}');
-      // Update UI based on new isCode value
       setState(() {});
     }
   }
@@ -59,24 +73,42 @@ class _MyTextfieldState extends State<MyTextfield> {
           TextField(
             controller: widget.controller,
             obscureText: widget.isPassword ? _obscureText : false,
-            focusNode: widget.focusNode, // Sử dụng focusNode từ widget
+            focusNode: widget.focusNode,
             decoration: InputDecoration(
               border: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(8.0)),
               ),
               labelText: widget.placeHolder,
-              hintStyle: const TextStyle(color: Colors.black26),
-              fillColor: const Color(0xfff3f3f4),
+              hintStyle: const TextStyle(color: Color(0xFF4F75FF)),
+              labelStyle: TextStyle(
+                color: _focusNode
+                        .hasFocus // Kiểm tra nếu trường đang được focus
+                    ? const Color(0xFF4F75FF) // Màu khi được focus
+                    : (widget.controller?.text.isNotEmpty ??
+                            false) // Nếu trường không rỗng
+                        ? const Color(0xFF4F75FF) // Màu khi có text
+                        : Colors.grey, // Màu khi không có text và không focus
+              ),
+              // Các thuộc tính khác của InputDecoration
+              fillColor: const Color(0xFF4F75FF),
               filled: widget.isFill,
               prefixIcon: widget.icon != null
                   ? Icon(
                       widget.icon,
                       color: Colors.black.withOpacity(0.6),
-                      size: 20.0, // or FontWeight.bold, etc.
+                      size: 20.0,
                     )
-                  : null, // Add icon if provided
+                  : null,
               prefixText: widget.isPhone ? '+84 ' : null,
               prefixStyle: const TextStyle(color: Colors.black),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: widget.focusColor ?? const Color(0xFF4F75FF),
+                  // Màu khi focus
+                ),
+                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+              ),
+              focusColor: widget.focusColor ?? Color(0xFF4F75FF),
               suffixIcon: widget.isPassword
                   ? Padding(
                       padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
@@ -97,8 +129,7 @@ class _MyTextfieldState extends State<MyTextfield> {
                       ? Padding(
                           padding: const EdgeInsets.only(right: 10.0),
                           child: SizedBox(
-                            width:
-                                60, // Đặt kích thước cố định để tránh lỗi hit-test
+                            width: 60,
                             child: Align(
                               alignment: Alignment.centerRight,
                               child: MouseRegion(
@@ -142,10 +173,8 @@ class _MyTextfieldState extends State<MyTextfield> {
                                   ),
                                 )
                               : null,
-              // Không hiển thị gì nếu isCode là null
             ),
           ),
-          // Hiển thị thông báo lỗi nếu có
           if (widget.errorMessage != null) ...[
             const SizedBox(height: 5),
             Text(
