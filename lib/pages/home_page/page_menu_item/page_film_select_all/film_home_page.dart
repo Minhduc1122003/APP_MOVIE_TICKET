@@ -2,22 +2,26 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app_chat/auth/api_service.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_listViewCardIteam.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/film_hayDangChieu_screen.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/film_sapChieu_screen.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/film_information.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:page_transition/page_transition.dart';
+import 'package:throttling/throttling.dart';
 
 class FilmSelectionPage extends StatefulWidget {
   final List<MovieDetails> filmDangChieu;
   final List<MovieDetails> filmSapChieu;
-  const FilmSelectionPage(
-      {required this.filmDangChieu, required this.filmSapChieu, Key? key})
-      : super(key: key);
+  final ValueNotifier<double> scrollNotifier;
+
+  const FilmSelectionPage({
+    required this.filmDangChieu,
+    required this.filmSapChieu,
+    required this.scrollNotifier,
+    Key? key,
+  }) : super(key: key);
 
   @override
   _FilmSelectionPageState createState() => _FilmSelectionPageState();
@@ -31,7 +35,10 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
   late AnimationController _animationController;
   late Animation<double> _appBarHeightAnimation;
 
+  bool _isBottomNavVisible = true;
   final ScrollController _scrollController = ScrollController();
+  double _lastScrollPosition = 0.0;
+  final double _maxBottomNavHeight = 50.0;
 
   @override
   void initState() {
@@ -45,21 +52,26 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
     _appBarHeightAnimation =
         Tween<double>(begin: 120.0, end: 80.0).animate(_animationController);
 
-    _scrollController.addListener(() {
-      double scrollOffset = _scrollController.offset;
-      if (scrollOffset < 10) {
-        _animationController.animateTo(120.0);
-      } else if (scrollOffset >= 10) {
-        _animationController.animateTo(80.0);
-      }
-    });
+    _scrollController.addListener(_handleScroll);
+  }
+
+  final throttle = Throttling(duration: Duration(milliseconds: 300));
+
+  // Hàm xử lý sự kiện cuộn
+  void _handleScroll() {
+    double currentScroll = _scrollController.offset;
+    double scrollDelta = currentScroll - _lastScrollPosition;
+
+    double newScrollValue = (widget.scrollNotifier.value + scrollDelta)
+        .clamp(0.0, _maxBottomNavHeight);
+    widget.scrollNotifier.value = newScrollValue;
+
+    _lastScrollPosition = currentScroll;
   }
 
   void _startSlideshow() {
-    _timer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
-      setState(() {
-        _currentPage++;
-      });
+    setState(() {
+      _currentPage++;
     });
   }
 
@@ -68,6 +80,8 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
     _timer?.cancel();
     _scrollController.dispose();
     _animationController.dispose();
+    throttle.close();
+    _scrollController.removeListener(_handleScroll);
     super.dispose();
   }
 

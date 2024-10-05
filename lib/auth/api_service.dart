@@ -30,14 +30,8 @@ class ApiService {
     // baseUrl = 'http://172.19.201.236:8081';
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.1.176:8081';
 
-    //baseUrl = 'http://192.168.1.33:8081';
-
-    // wifi cty tuananh
-    //baseUrl = 'http://192.168.2.83:8081';
-
-    print(baseUrl);
+    baseUrl = 'http://192.168.1.74:8081';
   }
 
   Future<List<User>> fetchData() async {

@@ -125,16 +125,16 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   void dispose() {
-    _codeController.removeListener(_checkCode);
-    _checkPasswordFocusNode.dispose(); // Dispose of the focus node
-    _codeController.dispose();
-    isCodeNotifier.dispose();
-    _emailFocusNode.dispose();
-    _codeFocusNode.dispose();
-    _lastnameFocusNode.dispose();
-    _firstnameFocusNode.dispose();
-    _passwordFocusNode.dispose();
-    _checkPassword.dispose();
+    // _codeController.removeListener(_checkCode);
+    // _checkPasswordFocusNode.dispose(); // Dispose of the focus node
+    // _codeController.dispose();
+    // isCodeNotifier.dispose();
+    // _emailFocusNode.dispose();
+    // _codeFocusNode.dispose();
+    // _lastnameFocusNode.dispose();
+    // _firstnameFocusNode.dispose();
+    // _passwordFocusNode.dispose();
+    // _checkPassword.dispose();
     super.dispose();
   }
 

@@ -159,6 +159,11 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                                   ),
                                 ),
                               ),
+                              const Divider(
+                                height: 0,
+                                thickness: 2,
+                                color: Color(0xfff0f0f0),
+                              ),
                               const SizedBox(height: 10),
                               Row(
                                 mainAxisAlignment:

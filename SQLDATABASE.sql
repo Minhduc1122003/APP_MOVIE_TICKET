@@ -8,7 +8,7 @@ select * from Users
 select * from Cinemas
 select * from CinemaRoom
 select * from Genre
-select Age from Movies
+select * from Movies
 select * from MovieGenre
 select * from Rate
 select * from Favourite
@@ -26,9 +26,9 @@ CREATE TABLE Users (
     PhoneNumber INT NOT NULL,
     Photo VARCHAR(50),
     Role INT NOT NULL, -- Sử dụng TINYINT để lưu trữ nhiều giá trị, 0: khach hàng, 1: nhân viên, 2 quản lý, 3: admin
-	CreateDate Datetime not null,
-	Status NVARCHAR(20) not null, 
-	IsDelete BIT not null, -- 0: false, 1: true;
+        CreateDate Datetime not null,
+        Status NVARCHAR(20) not null, 
+        IsDelete BIT not null, -- 0: false, 1: true;
 );
 go
 
@@ -45,9 +45,9 @@ CREATE TABLE Cinemas(
 go
 
 CREATE TABLE CinemaRoom (
-	CinemaRoomID INT PRIMARY KEY,
+        CinemaRoomID INT PRIMARY KEY,
     CinemaID INT,  -- Mã rạp
-	FOREIGN KEY (CinemaID) REFERENCES Cinemas(CinemaID)
+        FOREIGN KEY (CinemaID) REFERENCES Cinemas(CinemaID)
 
 );
 go
@@ -64,7 +64,7 @@ go
 
 CREATE TABLE Movies (
     MovieID INT PRIMARY KEY IDENTITY(1,1),
-	CinemaID INT,
+        CinemaID INT,
     Title NVARCHAR(255) NOT NULL,
     Description NVARCHAR(MAX) NOT NULL,
     Duration INT NOT NULL,
@@ -72,18 +72,18 @@ CREATE TABLE Movies (
     PosterUrl VARCHAR(255),
     TrailerUrl VARCHAR(255),
     Age NVARCHAR(20)  NOT NULL,
-	SubTitle BIT,
-	Voiceover BIT,
-	StatusMovie NVARCHAR (20) NOT NULL,
-	Price float NOT NULL,
-	IsDelete BIT NOT NULL
-	CONSTRAINT FK_CinemaID FOREIGN KEY (CinemaID) REFERENCES Cinemas (CinemaID),
+        SubTitle BIT,
+        Voiceover BIT,
+        StatusMovie NVARCHAR (20) NOT NULL,
+        Price float NOT NULL,
+        IsDelete BIT NOT NULL
+        CONSTRAINT FK_CinemaID FOREIGN KEY (CinemaID) REFERENCES Cinemas (CinemaID),
 );
 go
 
 
 CREATE TABLE MovieGenre (
-	IdmovieGenre INT PRIMARY KEY IDENTITY(1,1),
+        IdmovieGenre INT PRIMARY KEY IDENTITY(1,1),
     MovieID INT NOT NULL,
     IdGenre INT NOT NULL,
     FOREIGN KEY (MovieID) REFERENCES Movies(MovieID),
@@ -112,7 +112,7 @@ CREATE TABLE Favourite (
 go
 CREATE TABLE BuyTicket (
     BuyTicketId INT PRIMARY KEY IDENTITY(1,1),
-	UserId INT NOT NULL,
+        UserId INT NOT NULL,
     MovieID INT NOT NULL,
     FOREIGN KEY (MovieID) REFERENCES Movies(MovieID),
     FOREIGN KEY (UserId) REFERENCES Users(UserId)
@@ -120,30 +120,30 @@ CREATE TABLE BuyTicket (
 go
 CREATE TABLE BuyTicketInfo (
     BuyTicketInfoId INT PRIMARY KEY IDENTITY(1,1),
-	BuyTicketId INT NOT NULL,
-	Quantity int NOT NULL,
-	CreateDate Datetime NOT NULL,
-	TotalPrice float NOT NULL,
-	ComboID int,
+        BuyTicketId INT NOT NULL,
+        Quantity int NOT NULL,
+        CreateDate Datetime NOT NULL,
+        TotalPrice float NOT NULL,
+        ComboID int,
     FOREIGN KEY (BuyTicketId) REFERENCES BuyTicket(BuyTicketId),
 );
 
 go
 CREATE TABLE ComBo (
     ComboID INT PRIMARY KEY IDENTITY(1,1),
-	BuyTicketInfoId INT NOT NULL,
-	Quantity int NOT NULL,
-	Price float NOT NULL,
+        BuyTicketInfoId INT NOT NULL,
+        Quantity int NOT NULL,
+        Price float NOT NULL,
     FOREIGN KEY (BuyTicketInfoId) REFERENCES BuyTicketInfo(BuyTicketInfoId),
 );
 
 go
 CREATE TABLE Ticket(
-	BuyTicketId INT NOT NULL,
-	Price float NOT NULL,
-	ChairCode Nvarchar(10),
-	CinemaRoomID INT PRIMARY KEY,
-	FOREIGN KEY (CinemaRoomID) REFERENCES CinemaRoom(CinemaRoomID),
+        BuyTicketId INT NOT NULL,
+        Price float NOT NULL,
+        ChairCode Nvarchar(10),
+        CinemaRoomID INT PRIMARY KEY,
+        FOREIGN KEY (CinemaRoomID) REFERENCES CinemaRoom(CinemaRoomID),
     FOREIGN KEY (BuyTicketId) REFERENCES BuyTicket(BuyTicketId),
 );
 go
@@ -296,7 +296,8 @@ VALUES
 (1, N'Đố Anh Còng Được Tôi', N'Các thanh tra kỳ cựu nổi tiếng đã hoạt động trở lại! Thám tử Seo Do-cheol (HWANG Jung-min) và đội điều tra tội phạm nguy hiểm của anh không ngừng truy lùng tội phạm cả ngày lẫn đêm, đặt cược cả cuộc sống cá nhân của họ. Nhận một vụ án sát hại một giáo sư, đội thanh tra nhận ra những mối liên hệ với các vụ án trong quá khứ và nảy sinh những nghi ngờ về một kẻ giết người hàng loạt. Điều này đã khiến cả nước rơi vào tình trạng hỗn loạn. Khi đội thanh tra đi sâu vào cuộc điều tra, kẻ sát nhân đã chế nhạo họ bằng cách công khai tung ra một đoạn giới thiệu trực tuyến, chỉ ra nạn nhân tiếp theo và làm gia tăng sự hỗn loạn. Để giải quyết mối đe dọa ngày càng leo thang, nhóm đã kết nạp một sĩ quan tân binh trẻ Park Sun-woo (JUNG Hae-in), dẫn đến những khúc mắc và đầy rẫy bất ngờ trong vụ án.', 122, '2024-09-27', 'doanhcongduoctoi.jpg', 'https://youtu.be/Mb3f6ZDSty0', '16', 1, 0,N'Sắp chiếu',60000,0),
 (1, N'Minh Hôn', N'Diễn ra sau khi mất vợ và con gái, Won Go Myeong – một pháp sư đầy hận thù, đãphát hiện ra gã tài phiệt đứng sau cái chết gia đình ông. Với ma thuật đen, Go Myeong đã gọi hồn, triệu vong vạch trần sự thật và khiến gã tài phiệt đền mạng. Thế nhưng, mọi chuyện chỉ là khởi đầu….', 122, '2024-09-27', 'minhhon.jpg', 'https://youtu.be/x7hgcR3u5xM', 'P', 1, 0,N'Sắp chiếu',70000,0),
 (1, N'Hẹn Hò Với Sát Nhân', N'Cheryl Bradshaw (Anna Kendrick thủ vai) tham gia chương trình truyền hình về hẹn hò - The Dating Game với khát khao được nổi tiếng. Tại đây, cô nàng đã gặp gỡ Rodney Alcala - tên sát nhân đội lốt một nhiếp ảnh gia lãng tử và đối đáp cực kỳ hài hước, thông minh trong chương trình hẹn hò. Quyết định kết đôi cùng Rodney Alcala, trong quá trình hẹn hò, Cheryl Bradshaw dần khám phá ra hàng loạt bí mật gây sốc được che giấu khéo léo bởi cái lốt người đàn ông hoàn hảo: đội lốt một gã sát nhân, kẻ biến thái đã chủ mưu rất nhiều vụ hiếp dâm và giết người man rợ.', 122, '2024-09-27', 'henhovoisatnhan.jpg', 'https://youtu.be/64ePhFIKUA4', '18', 1, 0,N'Sắp chiếu',59000,0),
-(1, N'Joker: Folie À Deux Điên Có Đôi', N'Không ngoa khi nói rằng, Joker là nhân vật phản diện nổi tiếng hàng đầu thế giới. Kẻ thù của Batman là cái tên mang tính biểu tượng từ truyện tranh đến màn ảnh rộng. Năm 2019, Todd Phillips và Joaquin Phoenix mang đến cho khán giả một Joker cực kì khác biệt, chưa từng có trong lịch sử. Phim thành công nhận 11 đề cử Oscar và thắng 2 giải, trong đó có Nam chính xuất sắc nhất cho Joaquin Phoenix. Lần này, Joker 2 trở lại, mang đến cho khán giả bộ đôi diễn viên trong mơ – Joaquin Phoenix tiếp tục trở thành Arthur Fleck còn vai diễn Harley Quinn thuộc về Lady Gaga. Chưa tham gia nhiều phim, nữ ca sĩ huyền thoại vẫn nhận được sự tin tưởng từ công chúng bởi diễn xuất chất lượng trong A Star Is Born (2018), House Of Gucci (2021). Folie À Deux là căn bệnh rối loạn tâm thần chia sẻ. Chứng bệnh khiến cả hai người cùng tiếp xúc với nguồn năng lực tiêu cực trong tâm trí. Dường như, ở Joker 2, gã hề đã “lây lan” căn bệnh đến Harley Quinn, khiến cả hai người họ “điên có đôi”. Tên phim đã khắc họa được một phần nội dung, xoáy sâu vào mối quan hệ độc hại giữa Joker và Harley Quinn. Ít nhất 15 bài hát nổi tiếng sẽ tái hiện lại trong Joker: Folie À Deux. Joker và Harley Quinn luôn đi kèm âm thanh từ bản nhạc bất hủ Close To You, What The World Needs Now,… Có lẽ, chỉ có âm nhạc mới thể hiện nổi sự điên loạn và chứng rối loạn ảo tưởng. Ngoài ra, âm nhạc còn giúp Joker: Folie À Deux khác biệt với tác phẩm thuộc DC Comic từ trước tới nay cũng như phát huy sở trường của Lady Gaga. Tất nhiên, dù hát ca nhiều bao nhiêu, phim vẫn dán nhãn R, tràn ngập bạo lực.', 122, '2024-10-04', 'joker_folieadeuxdiencodoi.jpg', 'https://youtu.be/n2k54qx9YkE', '13', 1, 0,N'Sắp chiếu',55000,0);
+(1, N'Joker: Folie À Deux Điên Có Đôi', N'Không ngoa khi nói rằng, Joker là nhân vật phản diện nổi tiếng hàng đầu thế giới. Kẻ thù của Batman là cái tên mang tính biểu tượng từ truyện tranh đến màn ảnh rộng. Năm 2019, Todd Phillips và Joaquin Phoenix mang đến cho khán giả một Joker cực kì khác biệt, chưa từng có trong lịch sử. Phim thành công nhận 11 đề cử Oscar và thắng 2 giải, trong đó có Nam chính xuất sắc nhất cho Joaquin Phoenix. Lần này, Joker 2 trở lại, mang đến cho khán giả bộ đôi diễn viên trong mơ – Joaquin Phoenix tiếp tục trở thành Arthur Fleck còn vai diễn Harley Quinn thuộc về Lady Gaga. Chưa tham gia nhiều phim, nữ ca sĩ huyền thoại vẫn nhận được sự tin tưởng từ công chúng bởi diễn xuất chất lượng trong A Star Is Born (2018), House Of Gucci (2021). Folie À Deux là căn bệnh rối loạn tâm thần chia sẻ. Chứng bệnh khiến cả hai người cùng tiếp xúc với nguồn năng lực tiêu cực trong tâm trí. Dường như, ở Joker 2, gã hề đã “lây lan” căn bệnh đến Harley Quinn, khiến cả hai người họ “điên có đôi”. Tên phim đã khắc họa được một phần nội dung, xoáy sâu vào mối quan hệ độc hại giữa Joker và Harley Quinn. Ít nhất 15 bài hát nổi tiếng sẽ tái hiện lại trong Joker: Folie À Deux. Joker và Harley Quinn luôn đi kèm âm thanh từ bản nhạc bất hủ Close To You, What The World Needs Now,… Có lẽ, chỉ có âm nhạc mới thể hiện nổi sự điên loạn và chứng rối loạn ảo tưởng. Ngoài ra, âm nhạc còn giúp Joker: Folie À Deux khác biệt với tác phẩm thuộc DC Comic từ trước tới nay cũng như phát huy sở trường của Lady Gaga. Tất nhiên, dù hát ca nhiều bao nhiêu, phim vẫn dán nhãn R, tràn ngập bạo lực.', 122, '2024-10-04', 'joker_folieadeuxdiencodoi.jpg', 'https://youtu.be/n2k54qx9YkE', '13', 1, 0,N'Sắp chiếu',55000,0),
+(1, N'Joker: Folie À Deux', N'Không ngoa khi nói rằng, Joker là nhâ đến mànmang đến cho khán giả một Joker cực kì khác biệt, chưa từng có trong lịch sử. Phim thành công nhận 11 đề cử Oscar và thắng 2 giải, trong đó có Nam chính xuất sắc nhất cho Joaquin Phoenix. Lần này, Joker 2 trở lại, mang đến cho khán giả bộ đôi diễn viên trong mơ – Joaquin Phoenix tiếp tục trở thành Arthur Fleck còn vai diễn Harley Quinn thuộc về Lady Gaga. Chưa tham gia nhiều phim, nữ ca sĩ huyền thoại vẫn nhận được sự tin tưởng từ công chúng bởi diễn xuất chất lượng trong A Star Is Born (2018), House Of Gucci (2021). Folie À Deux là căn bệnh rối loạn tâm thần chia sẻ. Chứng bệnh khiến cả hai người cùng tiếp xúc với nguồn năng lực tiêu cực trong tâm trí. Dường như, ở Joker 2, gã hề đã “lây lan” căn bệnh đến Harley Quinn, khiến cả hai người họ “điên có đôi”. Tên phim đã khắc họa được một phần nội dung, xoáy sâu vào mối quan hệ độc hại giữa Joker và Harley Quinn. Ít nhất 15 bài hát nổi tiếng sẽ tái hiện lại trong Joker: Folie À Deux. Joker và Harley Quinn luôn đi kèm âm thanh từ bản nhạc bất hủ Close To You, What The World Needs Now,… Có lẽ, chỉ có âm nhạc mới thể hiện nổi sự điên loạn và chứng rối loạn ảo tưởng. Ngoài ra, âm nhạc còn giúp Joker: Folie À Deux khác biệt với tác phẩm thuộc DC Comic từ trước tới nay cũng như phát huy sở trường của Lady Gaga. Tất nhiên, dù hát ca nhiều bao nhiêu, phim vẫn dán nhãn R, tràn ngập bạo lực.', 122, '2024-12-04', 'joker_folieadeuxdiencodoi.jpg', 'https://www.youtube.com/watch?v=9j5RuZi1FzA', '18', 1, 0,N'Sắp chiếu',556000,0);
 go
 
 -- insert bảng phim - thể loại
@@ -344,6 +345,7 @@ VALUES
 (16, 4),
 (17, 2),
 (17, 1),
+(18, 1),
 (17, 6);
 go
 
@@ -549,13 +551,13 @@ WHERE
 ORDER BY 
     S.StartTime;
 
-	
+        
  SELECT 
           s.SeatID,
-		  s.CinemaRoomID,
+                  s.CinemaRoomID,
           s.ChairCode,
-		  s.DefectiveChair, 
-		 
+                  s.DefectiveChair, 
+                 
           COALESCE(sr.Status, 0) AS ReservationStatus
         FROM 
           Seats s
@@ -567,7 +569,7 @@ ORDER BY
           s.SeatID;
 
 
-		  ----new 23/09 5:43 ---
+                  ----new 23/09 5:43 ---
 
 DECLARE @RoomID INT = 1;  -- RoomID của phòng chiếu bắt đầu
 DECLARE @Row CHAR(1);  -- Hàng ghế (A, B, C,...)
@@ -601,7 +603,7 @@ BEGIN
     SET @RoomID = @RoomID + 1;
 END;
 GO
-	*/
+        */
 
 
 
@@ -761,4 +763,4 @@ LEFT JOIN
     Genre g ON mg.IdGenre = g.IdGenre
 LEFT JOIN 
     Cinemas c ON m.CinemaID = c.CinemaID
-	*/
+        */

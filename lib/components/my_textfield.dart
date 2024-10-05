@@ -14,7 +14,7 @@ class MyTextfield extends StatefulWidget {
   final FocusNode? focusNode;
   final String? errorMessage;
   final IconData? icon;
-  final Color? focusColor; // Màu khi focus
+  final Color? focusColor;
 
   const MyTextfield({
     Key? key,
@@ -29,7 +29,7 @@ class MyTextfield extends StatefulWidget {
     this.focusNode,
     this.errorMessage,
     this.icon,
-    this.focusColor, // Thêm thuộc tính focusColor
+    this.focusColor,
   }) : super(key: key);
 
   @override
@@ -39,18 +39,30 @@ class MyTextfield extends StatefulWidget {
 class _MyTextfieldState extends State<MyTextfield> {
   FocusNode _focusNode = FocusNode();
   bool _obscureText = true;
+  bool hasText = false;
 
   @override
   void initState() {
     super.initState();
+
     _focusNode.addListener(() {
-      setState(() {}); // Rebuild UI khi focus thay đổi
+      setState(() {}); // Rebuild UI when focus changes
+    });
+
+    // Listen to the text controller for changes
+    widget.controller?.addListener(() {
+      setState(() {
+        hasText = widget.controller?.text.isNotEmpty ?? false;
+      });
     });
   }
 
   @override
   void dispose() {
-    _focusNode.dispose(); // Giải phóng focus node khi không cần thiết
+    _focusNode.dispose(); // Release focus node when not needed
+    widget.controller
+        ?.removeListener(() {}); // Remove listener to avoid memory leaks
+
     super.dispose();
   }
 
@@ -65,6 +77,7 @@ class _MyTextfieldState extends State<MyTextfield> {
 
   @override
   Widget build(BuildContext context) {
+    bool isFocused = _focusNode.hasFocus; // Check if focused
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 0),
       child: Column(
@@ -73,7 +86,7 @@ class _MyTextfieldState extends State<MyTextfield> {
           TextField(
             controller: widget.controller,
             obscureText: widget.isPassword ? _obscureText : false,
-            focusNode: widget.focusNode,
+            focusNode: _focusNode, // Use internal focus node
             decoration: InputDecoration(
               border: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(8.0)),
@@ -81,21 +94,18 @@ class _MyTextfieldState extends State<MyTextfield> {
               labelText: widget.placeHolder,
               hintStyle: const TextStyle(color: Color(0xFF4F75FF)),
               labelStyle: TextStyle(
-                color: _focusNode
-                        .hasFocus // Kiểm tra nếu trường đang được focus
-                    ? const Color(0xFF4F75FF) // Màu khi được focus
-                    : (widget.controller?.text.isNotEmpty ??
-                            false) // Nếu trường không rỗng
-                        ? const Color(0xFF4F75FF) // Màu khi có text
-                        : Colors.grey, // Màu khi không có text và không focus
+                color: isFocused || hasText
+                    ? widget.focusColor ?? const Color(0xFF4F75FF)
+                    : Colors.grey,
               ),
-              // Các thuộc tính khác của InputDecoration
               fillColor: const Color(0xFF4F75FF),
               filled: widget.isFill,
               prefixIcon: widget.icon != null
                   ? Icon(
                       widget.icon,
-                      color: Colors.black.withOpacity(0.6),
+                      color: isFocused
+                          ? widget.focusColor ?? const Color(0xFF4F75FF)
+                          : Colors.black.withOpacity(0.6),
                       size: 20.0,
                     )
                   : null,
@@ -104,11 +114,16 @@ class _MyTextfieldState extends State<MyTextfield> {
               focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(
                   color: widget.focusColor ?? const Color(0xFF4F75FF),
-                  // Màu khi focus
+                  width: 1.0, // You can adjust the thickness here
                 ),
                 borderRadius: const BorderRadius.all(Radius.circular(8.0)),
               ),
-              focusColor: widget.focusColor ?? Color(0xFF4F75FF),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Colors.grey.shade400, // Border when not focused
+                ),
+                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+              ),
               suffixIcon: widget.isPassword
                   ? Padding(
                       padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
