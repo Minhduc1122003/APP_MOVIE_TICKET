@@ -13,7 +13,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 
-class ChooseseatsPage extends StatefulWidget {
+class BillTicketScreen extends StatefulWidget {
   final int movieID;
   final int cinemaRoomID;
   final int showTimeID;
@@ -21,7 +21,7 @@ class ChooseseatsPage extends StatefulWidget {
   final String startTime;
   final String endTime;
 
-  const ChooseseatsPage({
+  const BillTicketScreen({
     Key? key,
     required this.movieID,
     required this.cinemaRoomID,
@@ -32,15 +32,15 @@ class ChooseseatsPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _ChooseseatsPageState createState() => _ChooseseatsPageState();
+  _BillTicketScreenState createState() => _BillTicketScreenState();
 }
 
-class _ChooseseatsPageState extends State<ChooseseatsPage>
+class _BillTicketScreenState extends State<BillTicketScreen>
     with AutomaticKeepAliveClientMixin {
   late ApiService _apiService;
   late List<ChairModel> _chairs = [];
-  MovieDetails? _movieDetails; // New variable for movie details
-  late int selectedCount = 0; // This will track the number of selected seats
+  MovieDetails? _movieDetails;
+  late int selectedCount = 0;
 
   @override
   void initState() {
@@ -391,7 +391,10 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                                     Navigator.of(context).pop();
                                     Navigator.push(
                                       context,
-                                      SlideFromLeftPageRoute(page: LoginPage()),
+                                      SlideFromLeftPageRoute(
+                                          page: LoginPage(
+                                        isBack: true,
+                                      )),
                                     );
                                   },
                                   child: const Text(
@@ -408,6 +411,7 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                         );
                       } else {
                         // Nếu đã đăng nhập, chuyển đến trang đặt vé
+
                         Navigator.push(
                           context,
                           SlideFromRightPageRoute(

@@ -15,9 +15,8 @@ import '../../components/my_textfield.dart';
 import '../register_page/register_page.dart';
 
 class LoginPage extends StatefulWidget {
-  final bool isBack; // Add the isBack attribute
+  final bool isBack;
 
-  // Constructor with optional isBack parameter
   LoginPage({this.isBack = false});
 
   @override
@@ -60,18 +59,16 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
-        leading: widget.isBack // Correct usage of widget.isBack
-            ? Text('')
-            : IconButton(
-                icon: Icon(
-                  Icons.arrow_back_ios_new_outlined,
-                  color: Colors.white,
-                  size: 24,
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new_outlined,
+            color: Colors.white,
+            size: 24,
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
       ),
       body: BlocListener<LoginBloc, LoginState>(
         listener: (context, state) async {
@@ -84,28 +81,31 @@ class _LoginPageState extends State<LoginPage> {
           } else if (state is LoginSuccess) {
             // Fetch data after successful login
             hideLoadingSpinner(context);
-
-            ApiService apiService = ApiService();
-            final moviesDangChieu = await apiService.getMoviesDangChieu();
-            final moviesSapChieu = await apiService.getMoviesSapChieu();
-
-            if (UserManager.instance.user?.role == 0) {
-              Navigator.pushAndRemoveUntil(
-                context,
-                ZoomPageRoute(
-                  page: HomePage(
-                    filmDangChieu: moviesDangChieu,
-                    filmSapChieu: moviesSapChieu,
-                  ),
-                ),
-                (Route<dynamic> route) => false,
-              );
+            if (widget.isBack) {
+              Navigator.of(context).pop();
             } else {
-              Navigator.pushAndRemoveUntil(
-                context,
-                ZoomPageRoute(page: HomeTab()),
-                (Route<dynamic> route) => false,
-              );
+              ApiService apiService = ApiService();
+              final moviesDangChieu = await apiService.getMoviesDangChieu();
+              final moviesSapChieu = await apiService.getMoviesSapChieu();
+
+              if (UserManager.instance.user?.role == 0) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  ZoomPageRoute(
+                    page: HomePage(
+                      filmDangChieu: moviesDangChieu,
+                      filmSapChieu: moviesSapChieu,
+                    ),
+                  ),
+                  (Route<dynamic> route) => false,
+                );
+              } else {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  ZoomPageRoute(page: HomeTab()),
+                  (Route<dynamic> route) => false,
+                );
+              }
             }
           }
         },

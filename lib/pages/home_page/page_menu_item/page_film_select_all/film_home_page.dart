@@ -64,6 +64,7 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
 
     double newScrollValue = (widget.scrollNotifier.value + scrollDelta)
         .clamp(0.0, _maxBottomNavHeight);
+    print('newScrollValue: $newScrollValue');
     widget.scrollNotifier.value = newScrollValue;
 
     _lastScrollPosition = currentScroll;
