@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
+import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/my_tickets_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/history_page.dart';
 import 'package:flutter_app_chat/pages/home_page/check_user_page.dart';
@@ -203,23 +204,40 @@ class _HomePage extends State<HomePage> {
 
   List<Widget> get _navigatorItems {
     return [
-      _buildNavItem(Icons.movie, 'Chọn phim', 0),
-      _buildNavItem(Icons.confirmation_number, 'Vé của tôi', 1),
-      _buildNavItem(Icons.history, 'Lịch sử', 2),
-      _buildNavItem(Icons.person, 'Tôi', 3),
+      _buildNavItem(Icons.movie, 'Chọn phim', 0, false),
+      _buildNavItem(Icons.confirmation_number, 'Vé của tôi', 1, false),
+      _buildNavItem(Icons.history, 'Lịch sử', 2, false),
+      _buildNavItem(Icons.person, 'Tôi', 3, true),
     ];
   }
 
-  Widget _buildNavItem(IconData icon, String label, int index) {
+  Widget _buildNavItem(IconData icon, String label, int index, bool? isLogin) {
     bool isSelected = index == _page;
+
+    // Kiểm tra người dùng có tồn tại không
+    bool isUserLoggedIn = UserManager.instance.user != null;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          icon,
-          size: isSelected ? 20 : 18,
-          color: isSelected ? Color(0XFF6F3CD7) : Colors.black,
-        ),
+        (isUserLoggedIn && isLogin == true)
+            ? Container(
+                width: isSelected ? 30 : 25, // Kích thước cho avatar
+                height: isSelected ? 30 : 25,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: AssetImage(
+                        'assets/images/${UserManager.instance.user!.photo ?? 'avatar.jpg'}'),
+                    fit: BoxFit.cover, // Điều chỉnh hình ảnh
+                  ),
+                ),
+              )
+            : Icon(
+                icon,
+                size: isSelected ? 20 : 18,
+                color: isSelected ? Color(0XFF6F3CD7) : Colors.black,
+              ),
         Text(
           label,
           style: TextStyle(

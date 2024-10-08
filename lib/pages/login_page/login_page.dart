@@ -87,7 +87,7 @@ class _LoginPageState extends State<LoginPage> {
               ApiService apiService = ApiService();
               final moviesDangChieu = await apiService.getMoviesDangChieu();
               final moviesSapChieu = await apiService.getMoviesSapChieu();
-
+              print('${UserManager.instance.token}');
               if (UserManager.instance.user?.role == 0) {
                 Navigator.pushAndRemoveUntil(
                   context,

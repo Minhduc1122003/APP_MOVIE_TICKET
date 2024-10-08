@@ -1,26 +1,129 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app_chat/auth/api_network.dart';
 import 'package:flutter_app_chat/models/Chair_modal.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/ShowTime_modal.dart';
 import 'package:flutter_app_chat/models/chat_item_model.dart';
+import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 
 class ApiService {
   late String baseUrl;
-
   ApiService() {
-    // Khởi tạo baseUrl trong constructor async
     _initBaseUrl();
   }
-
   Future<void> _initBaseUrl() async {
     final info = NetworkInfo();
-    
+    // String? ip = await info.getWifiIP(); // 192.168.1.43
+    // wifi trọ tuan anh:
+    // baseUrl = 'http://192.168.1.7:8081';
+
+    // wifi trọ của đức:
+    //baseUrl = 'http://192.168.100.24:8081';
+
+    // wifi cty minhduc
+    // baseUrl = 'http://172.19.201.236:8081';
+
+    // wifi cf24/24
+
     baseUrl = 'http://192.168.1.74:8081';
+  }
+
+  late Response response;
+  String connErr = 'Please check your internet connection and try again';
+  Future<Response> getConnect(String url, String token) async {
+    var headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    try {
+      return await get(Uri.parse(url), headers: headers);
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+
+  // POST request with error handling
+  Future<Response> postConnect(
+      String url, Map<String, dynamic> map, String? token) async {
+    var headers = {
+      'Content-Type': 'application/json',
+    };
+
+    // Chỉ thêm Authorization header nếu token không null
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+
+    final uri = Uri.parse(url);
+    var body = jsonEncode(map);
+
+    try {
+      return await post(
+        uri,
+        headers: headers,
+        body: utf8.encode(body), // Sử dụng UTF-8 encoding cho body
+      );
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+
+  Future<User?> login(String username, String password, String token) async {
+    var postData = {'username': username, 'password': password};
+    response = await postConnect(loginAPI, postData, token);
+    var decodedBody = utf8.decode(response.bodyBytes);
+    print(decodedBody);
+
+    if (response.statusCode == statusOk) {
+      var responseData = jsonDecode(decodedBody);
+      print(responseData);
+
+      // Truy cập phần 'user' trong JSON
+      var userData = responseData['user'];
+      String token = responseData['token'];
+      print(userData);
+
+      // Map dữ liệu user thành model User
+      User model = User.fromJson(userData);
+      UserManager.instance.setUser(model, token);
+      return model;
+    } else {
+      print('Login API failed with status: ${response.statusCode}');
+      return null;
+    }
+  }
+
+  Future<User?> createAccount(String email, String password, String username,
+      String fullname, int phoneNumber, String photo) async {
+    var postDataAccount = {
+      'email': email,
+      'password': password,
+      'username': username,
+      'fullname': fullname,
+      'phoneNumber': phoneNumber,
+      'photo': photo
+    };
+    response = await postConnect(loginAPI, postDataAccount, '');
+    print(response.statusCode);
+    var decodedBody = utf8.decode(response.bodyBytes);
+    print(decodedBody);
+
+    if (response.statusCode == statusOk) {
+      var responseData = jsonDecode(decodedBody);
+      print(responseData);
+      User model = User.fromJson(responseData);
+
+      return model;
+    } else {
+      print('Login API failed with status: ${response.statusCode}');
+      return null;
+    }
   }
 
   Future<List<User>> fetchData() async {
@@ -37,57 +140,6 @@ class ApiService {
       return users;
     } else {
       throw Exception('Failed to load data');
-    }
-  }
-
-  Future<Map<String, dynamic>> login(String username, String password) async {
-    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
-
-    final response = await http.post(
-      Uri.parse('$baseUrl/findByViewID'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'username': username,
-        'password': password,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      // Nếu server trả về một response thành công
-      return jsonDecode(response.body);
-    } else {
-      // Nếu server trả về một lỗi
-      throw Exception('Failed to login');
-    }
-  }
-
-  Future<Map<String, dynamic>> createAccount(String email, String password,
-      String username, String fullname, int phoneNumber, String photo) async {
-    await _initBaseUrl(); // Ensure baseUrl is initialized
-    print('Entering API_Service: $phoneNumber');
-
-    final response = await http.post(
-      Uri.parse('$baseUrl/createAccount'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, dynamic>{
-        'email': email,
-        'password': password,
-        'username': username,
-        'fullname': fullname,
-        'phoneNumber': phoneNumber,
-        'photo': photo,
-        // Note: The server will handle CreateDate, UpdateDate, UpdateBy, Status, and IsDelete
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to create account: ${response.body}');
     }
   }
 

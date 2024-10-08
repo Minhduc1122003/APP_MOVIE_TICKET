@@ -21,37 +21,20 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       // Lấy thông tin từ event
       final String username = event.username;
       final String password = event.password;
+      final String token = "";
       print('Username: $username');
       print('Password: $password');
 
       // Gọi API để xác thực người dùng
       final ApiService apiService = ApiService();
-      final Map<String, dynamic> response =
-          await apiService.login(username, password);
+      final User? user = await apiService.login(username, password, token);
 
-      // Kiểm tra response có tồn tại và hợp lệ không
-      if (response != null &&
-          response.containsKey('message') &&
-          response.containsKey('user')) {
-        final String message = response['message'];
-        final Map<String, dynamic> userMap = response['user'];
+      // Kiểm tra user có tồn tại và hợp lệ không
+      if (user != null) {
 
-        // Chuyển đổi dữ liệu userMap thành đối tượng User
-        final User user = User.fromJson(userMap);
-
-        print('Response message: $message');
-        print('User: ${user.email}');
-
-        // Kiểm tra điều kiện đăng nhập thành công
-        if (message == 'Login successful' && user != null) {
-          UserManager.instance.setUser(user);
-
-          emit(LoginSuccess()); // Truyền đối tượng user khi emit LoginSuccess
-        } else {
-          emit(LoginError()); // Truyền thông báo lỗi nếu có
-        }
+        emit(LoginSuccess()); // Truyền đối tượng user khi emit LoginSuccess
       } else {
-        emit(LoginError()); // Thông báo lỗi nếu định dạng phản hồi không hợp lệ
+        emit(LoginError()); // Thông báo lỗi nếu đăng nhập thất bại
       }
     } catch (e) {
       print('Login error: $e');
