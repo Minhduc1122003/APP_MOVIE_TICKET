@@ -230,9 +230,8 @@ class ApiService {
     }
   }
 
-  // Giả sử bạn đã có sẵn model MovieDetails
   Future<List<MovieDetails>> getMoviesDangChieu() async {
-    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    await _initBaseUrl();
 
     try {
       // Gửi yêu cầu GET đến API
@@ -448,6 +447,37 @@ class ApiService {
     } catch (e) {
       print('Error: $e');
       throw Exception('Failed to get showtimes');
+    }
+  }
+
+  Future<Map<String, dynamic>> insertBuyTicket(
+      int buyTicketId,
+      String userId,
+      int movieId,
+      int quantity,
+      double totalPrice,
+      int showtimeId,
+      List<int> seatIDs) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/insertBuyTicket'), // Đổi URL thành endpoint của bạn
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'buyTicketId': buyTicketId,
+        'userId': userId,
+        'movieId': movieId,
+        'quantity': quantity,
+        'totalPrice': totalPrice, // Lỗi trước đây đã được sửa
+        'showtimeId': showtimeId,
+        'seatIDs': seatIDs
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to send data');
     }
   }
 

@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/models/Chair_modal.dart';
-import 'package:fluttertoast/fluttertoast.dart'; // Ensure this import is present
-import 'dart:async'; // Import the dart:async library for Timer
+import 'package:fluttertoast/fluttertoast.dart';
+import 'dart:async';
 
 class CinemaSeatGrid extends StatefulWidget {
   final List<ChairModel> chairs;
   final int numberOfColumns;
   final Function(int) onCountChanged;
+  final Function(int, String)
+      onChairSelected; // Callback for selected chair info
 
   const CinemaSeatGrid({
     Key? key,
     required this.chairs,
     this.numberOfColumns = 14,
     required this.onCountChanged,
+    required this.onChairSelected, // Include the new parameter
   }) : super(key: key);
 
   @override
@@ -21,6 +24,7 @@ class CinemaSeatGrid extends StatefulWidget {
 
 class _CinemaSeatGridState extends State<CinemaSeatGrid> {
   Set<int> selectedChairs = {};
+  List<int> seatIDList = []; // Khai báo seatIDList
   Timer? _toastTimer; // Timer for debounce
 
   @override
@@ -73,13 +77,17 @@ class _CinemaSeatGridState extends State<CinemaSeatGrid> {
               onTap: () {
                 setState(() {
                   if (chair.reservationStatus) {
-                    return; // Do nothing if the seat is reserved
+                    return; // Không làm gì nếu ghế đã được đặt
                   } else if (selectedChairs.contains(index)) {
+                    // Xóa ghế đã chọn
                     selectedChairs.remove(index);
-                    widget.onCountChanged(-1); // Decrease count
+                    widget.onCountChanged(-1); // Giảm số ghế đã chọn
+                    widget.onChairSelected(chair.seatID,
+                        chair.chairCode); // Gửi thông tin ghế để hủy chọn
+                    seatIDList.remove(chair.seatID); // Xóa ID khỏi seatIDList
                   } else {
+                    // Kiểm tra xem có thể thêm ghế khác không
                     if (selectedChairs.length >= 5) {
-                      // Show toast if the limit is exceeded and debounce logic
                       if (_toastTimer == null || !_toastTimer!.isActive) {
                         Fluttertoast.showToast(
                           msg: "Chỉ được tối đa 5 ghế trong 1 lần đặt vé!",
@@ -90,16 +98,18 @@ class _CinemaSeatGridState extends State<CinemaSeatGrid> {
                           textColor: Colors.white,
                           fontSize: 16.0,
                         );
-
-                        // Start the timer for 2 seconds
                         _toastTimer = Timer(Duration(seconds: 2), () {
-                          _toastTimer = null; // Reset the timer
+                          _toastTimer = null;
                         });
                       }
-                      return; // Do not add more chairs if limit is exceeded
+                      return; // Không làm gì nếu đã chọn tối đa ghế
                     }
+                    // Thêm ghế đã chọn
                     selectedChairs.add(index);
-                    widget.onCountChanged(1); // Increase count
+                    widget.onCountChanged(1); // Tăng số ghế đã chọn
+                    widget.onChairSelected(
+                        chair.seatID, chair.chairCode); // Gửi thông tin ghế
+                    seatIDList.add(chair.seatID); // Thêm ID vào seatIDList
                   }
                 });
               },

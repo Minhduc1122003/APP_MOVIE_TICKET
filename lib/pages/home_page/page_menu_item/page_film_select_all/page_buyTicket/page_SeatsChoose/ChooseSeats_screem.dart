@@ -8,6 +8,7 @@ import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/buyTicket_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/cinema_seat_grid.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_billTicket/bill_Ticket_Screen.dart';
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -41,7 +42,9 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
   late List<ChairModel> _chairs = [];
   MovieDetails? _movieDetails; // New variable for movie details
   late int selectedCount = 0; // This will track the number of selected seats
-
+  List<Map<String, dynamic>> selectedChairsInfo =
+      []; // List to store selected chair info
+  List<int> seatIDList = [];
   @override
   void initState() {
     super.initState();
@@ -154,6 +157,44 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                                           selectedCount +=
                                               change; // Update selectedCount based on change
                                         });
+                                      },
+                                      // Update the onChairSelected callback to handle selection/deselection
+                                      onChairSelected: (chairId, chairCode) {
+                                        if (chairId == 0) {
+                                          // Nếu ghế bị bỏ chọn (id = 0), xóa nó khỏi danh sách
+                                          selectedChairsInfo.removeWhere(
+                                              (chair) =>
+                                                  chair['id'] == chairId);
+                                          seatIDList.remove(
+                                              chairId); // Xóa ID khỏi seatIDList
+                                        } else {
+                                          // Kiểm tra nếu ghế đã được chọn trước đó
+                                          if (selectedChairsInfo.any((chair) =>
+                                              chair['id'] == chairId)) {
+                                            // Nếu ghế đã được chọn, bỏ chọn nó
+                                            selectedChairsInfo.removeWhere(
+                                                (chair) =>
+                                                    chair['id'] == chairId);
+                                            seatIDList.remove(
+                                                chairId); // Xóa ID khỏi seatIDList
+                                          } else {
+                                            // Nếu ghế chưa được chọn, thêm nó vào danh sách
+                                            selectedChairsInfo.add({
+                                              'id': chairId,
+                                              'code': chairCode,
+                                            });
+                                            seatIDList.add(
+                                                chairId); // Thêm ID vào seatIDList
+                                          }
+                                        }
+
+                                        // Ghi log thông tin ghế đã chọn
+                                        for (var chair in selectedChairsInfo) {
+                                          print('id: ${chair['id']}');
+                                        }
+
+                                        // Ghi log seatIDList để xem cập nhật
+                                        print('Selected seat IDs: $seatIDList');
                                       },
                                     ),
                                   ),
@@ -410,12 +451,16 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                           },
                         );
                       } else {
-                        // Nếu đã đăng nhập, chuyển đến trang đặt vé
-
                         Navigator.push(
                           context,
                           SlideFromRightPageRoute(
-                            page: BuyTicketPage(movieId: 1),
+                            page: BillTicketScreen(
+                                movieID: widget.movieID,
+                                quantity: selectedCount,
+                                sumPrice:
+                                    (_movieDetails!.price! * selectedCount),
+                                showTimeID: widget.showTimeID,
+                                seatCodes: seatIDList),
                           ),
                         );
                       }
