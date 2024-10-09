@@ -31,7 +31,7 @@ class ApiService {
 
     // wifi cf24/24
 
-    baseUrl = 'http://192.168.1.74:8081';
+    baseUrl = 'http://192.168.10.31:8081';
   }
 
   late Response response;
@@ -74,28 +74,62 @@ class ApiService {
     }
   }
 
-  Future<User?> login(String username, String password, String token) async {
-    var postData = {'username': username, 'password': password};
-    response = await postConnect(loginAPI, postData, token);
-    var decodedBody = utf8.decode(response.bodyBytes);
-    print(decodedBody);
+  // Future<User?> login(String username, String password, String token) async {
+  //   var postData = {'username': username, 'password': password};
+  //   response = await postConnect(loginAPI, postData, token);
+  //   var decodedBody = utf8.decode(response.bodyBytes);
+  //   print(decodedBody);
+  //
+  //   if (response.statusCode == statusOk) {
+  //     var responseData = jsonDecode(decodedBody);
+  //     print(responseData);
+  //
+  //     // Truy cập phần 'user' trong JSON
+  //     var userData = responseData['user'];
+  //     String token = responseData['token'];
+  //     print(userData);
+  //
+  //     // Map dữ liệu user thành model User
+  //     User model = User.fromJson(userData);
+  //     UserManager.instance.setUser(model, token);
+  //     return model;
+  //   } else {
+  //     print('Login API failed with status: ${response.statusCode}');
+  //     return null;
+  //   }
+  // }
 
-    if (response.statusCode == statusOk) {
-      var responseData = jsonDecode(decodedBody);
-      print(responseData);
+  Future<User?> login(String username, String password) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    final response = await http.post(
+      Uri.parse('$baseUrl/findByViewID'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'username': username,
+        'password': password,
+      }),
+    );
 
-      // Truy cập phần 'user' trong JSON
-      var userData = responseData['user'];
-      String token = responseData['token'];
-      print(userData);
+    if (response.statusCode == 200) {
+      // Giải mã response body
+      final Map<String, dynamic> data = jsonDecode(response.body);
 
-      // Map dữ liệu user thành model User
+      // Truy cập vào phần 'user' từ dữ liệu response
+      final Map<String, dynamic> userData = data['user'];
+
+      // Chuyển đổi dữ liệu user thành đối tượng User
       User model = User.fromJson(userData);
-      UserManager.instance.setUser(model, token);
+
+      // Lưu user và token (nếu có trong response)
+      // String token = data['token']; // Giả sử token được trả về trong phần body
+      UserManager.instance.setUser(model, 'token');
+
       return model;
     } else {
-      print('Login API failed with status: ${response.statusCode}');
-      return null;
+      // Nếu server trả về lỗi
+      throw Exception('Failed to login');
     }
   }
 

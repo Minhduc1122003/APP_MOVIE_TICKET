@@ -25,38 +25,38 @@ class User {
   });
 
   // Factory constructor to create a User instance from JSON
-  // Factory constructor to create a User instance from JSON
+  // java server:
+  // factory User.fromJson(Map<String, dynamic> json) {
+  //   return User(
+  //     userId: json['userId'] as int,
+  //     userName: json['userName'] as String,
+  //     email: json['email'] as String,
+  //     fullName: json['fullName'] as String,
+  //     phoneNumber: json['phoneNumber'] is int
+  //         ? json['phoneNumber'] as int
+  //         : int.tryParse(json['phoneNumber'].toString()) ?? 0,
+  //     photo: json['photo'] as String?, // Cập nhật để có thể là null
+  //     role: json['role'] as int,
+  //     createDate: DateTime.parse(json['createDate'] as String),
+  //     status: json['status'] as String,
+  //     isDelete: json['isDelete'] as bool,
+  //   );
+  // }
+
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      userId: json['userId'] as int,
-      userName: json['userName'] as String,
-      email: json['email'] as String,
-      fullName: json['fullName'] as String,
-      phoneNumber: json['phoneNumber'] is int
-          ? json['phoneNumber'] as int
-          : int.tryParse(json['phoneNumber'].toString()) ?? 0,
-      photo: json['photo'] as String?, // Cập nhật để có thể là null
-      role: json['role'] as int,
-      createDate: DateTime.parse(json['createDate'] as String),
-      status: json['status'] as String,
-      isDelete: json['isDelete'] as bool,
+      userId: json['UserId'] as int,
+      userName: json['UserName'] as String,
+      email: json['Email'] as String,
+      fullName: json['FullName'] as String,
+      phoneNumber: json['PhoneNumber'] is int
+          ? json['PhoneNumber'] as int
+          : int.tryParse(json['PhoneNumber'].toString()) ?? 0,
+      photo: json['Photo'] as String?, // Cập nhật để có thể là null
+      role: json['Role'] as int,
+      createDate: DateTime.parse(json['CreateDate'] as String),
+      status: json['Status'] as String,
+      isDelete: json['IsDelete'] as bool,
     );
   }
-
-  // Map<String, dynamic> toJson() {
-  //   return {
-  //     'UserId': userId,
-  //     'UserName': userName,
-  //     'Password': password,
-  //     'Email': email,
-  //     'FullName': fullName,
-  //     'PhoneNumber': phoneNumber.toString(),
-  //     'Photo': photo,
-  //     'Role': role,
-  //     'CreateDate': createDate.toIso8601String(),
-  //     'UpdateDate': updateDate.toIso8601String(),
-  //     'UpdateBy': updateBy,
-  //     'Status': status,
-  //   };
-  // }
 }

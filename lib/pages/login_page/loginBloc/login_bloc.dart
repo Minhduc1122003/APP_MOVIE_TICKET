@@ -27,11 +27,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
       // Gọi API để xác thực người dùng
       final ApiService apiService = ApiService();
-      final User? user = await apiService.login(username, password, token);
+      // final User? user = await apiService.login(username, password, token);
+      final User? user = await apiService.login(username, password);
 
       // Kiểm tra user có tồn tại và hợp lệ không
       if (user != null) {
-
         emit(LoginSuccess()); // Truyền đối tượng user khi emit LoginSuccess
       } else {
         emit(LoginError()); // Thông báo lỗi nếu đăng nhập thất bại
