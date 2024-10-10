@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/chat_service.dart';
 import 'package:flutter_app_chat/components/my_customIcon_keyboad_left.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
+import 'package:flutter_app_chat/pages/home_page/home_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_chat/chat_online_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_profile/admin_user_manager/admin_user_manager_page.dart';
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
@@ -326,12 +327,12 @@ class _ProfilePage extends State<ProfilePage> {
                                               onPressed: () async {
                                                 UserManager.instance
                                                     .clearUser();
-                                                print(
-                                                    'User đã clear: ${UserManager.instance.user?.email}');
-                                                Navigator.pushReplacement(
+                                                Navigator.pushAndRemoveUntil(
                                                   context,
                                                   SlideFromLeftPageRoute(
-                                                      page: LoginPage()),
+                                                      page: HomePage()),
+                                                  (Route<dynamic> route) =>
+                                                      false, // Xóa tất cả các route trước đó
                                                 );
                                               },
                                               child: const Text(

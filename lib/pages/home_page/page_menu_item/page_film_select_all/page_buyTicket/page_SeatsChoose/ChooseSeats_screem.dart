@@ -425,10 +425,6 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                                 ),
                                 TextButton(
                                   onPressed: () async {
-                                    EasyLoading.show();
-                                    await Future.delayed(
-                                        const Duration(milliseconds: 200));
-                                    EasyLoading.dismiss();
                                     Navigator.of(context).pop();
                                     Navigator.push(
                                       context,

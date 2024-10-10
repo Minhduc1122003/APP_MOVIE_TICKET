@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/home_page.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/buyTicket_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/bloc/hometab_bloc.dart';
+import 'package:flutter_app_chat/pages/manager_page/movie_manager_page/movie_manager_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/showtime_manager_page/showtime_manager_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -355,7 +358,7 @@ class _HomeTabState extends State<HomeTab> {
               // Thêm sự kiện khi tap vào Đơn từ
             }),
             _buildGridItem('Lịch sử', 'Lịch sử đặt vé/combo', state.count,
-                Icons.history, Colors.purple, () {
+                Icons.history, Colors.blue, () {
               // Thêm sự kiện khi tap vào Cuộc họp
             }),
             _buildGridItem('Tạo mã', 'Tạo mã vào ca/ra ca', state.count,
@@ -365,6 +368,16 @@ class _HomeTabState extends State<HomeTab> {
             _buildGridItem('Nhân Sự', 'Quản lý nhân sự', state.count,
                 Icons.people_alt_outlined, Colors.purple, () {
               // Thêm sự kiện khi tap vào Cuộc họp
+            }),
+            _buildGridItem('Phim', 'Quản lý phim', state.count,
+                Icons.local_movies_outlined, Colors.purple, () {
+              Navigator.push(
+                  context, SlideFromRightPageRoute(page: MovieManagerPage()));
+            }),
+            _buildGridItem('Lịch chiếu', 'Quản lý lịch chiếu', state.count,
+                Icons.calendar_today, Colors.purple, () {
+              Navigator.push(context,
+                  SlideFromRightPageRoute(page: ShowtimeManagerPage()));
             }),
             _buildGridItem('Thống kê', 'Thống kê doanh thu', state.count,
                 Icons.bar_chart, Colors.purple, () {

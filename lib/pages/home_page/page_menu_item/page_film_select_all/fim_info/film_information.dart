@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
@@ -7,13 +6,9 @@ import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/bloc/film_info_Bloc.dart';
-import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/trailer_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/buyTicket_page.dart';
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
-import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:intl/intl.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:lottie/lottie.dart'; // Import package
 
@@ -272,16 +267,14 @@ class _MovieHeaderState extends State<MovieHeader>
                                                 ),
                                                 TextButton(
                                                   onPressed: () async {
-                                                    EasyLoading.show();
-                                                    await Future.delayed(
-                                                        const Duration(
-                                                            milliseconds: 200));
-                                                    EasyLoading.dismiss();
                                                     Navigator.of(context).pop();
                                                     Navigator.push(
-                                                        context,
-                                                        SlideFromLeftPageRoute(
-                                                            page: LoginPage()));
+                                                      context,
+                                                      SlideFromLeftPageRoute(
+                                                          page: LoginPage(
+                                                        isBack: true,
+                                                      )),
+                                                    );
                                                   },
                                                   child: const Text(
                                                     'Đăng Nhập',
@@ -522,14 +515,14 @@ class RatingSection extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.star,
+                                const Icon(Icons.star,
                                     color: Colors.orange, size: 30),
                                 Text('${state.movieDetails?.averageRating}',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.orange)),
-                                Text(' /10',
+                                const Text(' /10',
                                     style: TextStyle(
                                         color: Colors.black, fontSize: 16)),
                               ],
@@ -537,7 +530,7 @@ class RatingSection extends StatelessWidget {
                             SizedBox(height: 5),
                             Text(
                                 '(${state.movieDetails?.reviewCount} đánh giá)',
-                                style: TextStyle(
+                                style: const TextStyle(
                                     color: Colors.black, fontSize: 12)),
                           ],
                         ),

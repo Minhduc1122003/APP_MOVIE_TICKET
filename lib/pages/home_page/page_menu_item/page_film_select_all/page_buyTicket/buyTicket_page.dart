@@ -152,43 +152,6 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
   bool get wantKeepAlive => true; // Giữ trạng thái của trang
 }
 
-class _PersistentHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
-
-  _PersistentHeaderDelegate({required this.child});
-
-  @override
-  double get minExtent => _getHeight(child);
-
-  @override
-  double get maxExtent => _getHeight(child);
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return SizedBox.expand(child: child);
-  }
-
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return true; // Luôn tái xây dựng
-  }
-
-  double _getHeight(Widget widget) {
-    // Tính chiều cao của widget bằng cách sử dụng GlobalKey
-    final key = GlobalKey();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final renderBox = key.currentContext?.findRenderObject() as RenderBox?;
-      if (renderBox != null) {
-        final height = renderBox.size.height;
-        // Cập nhật kích thước nếu cần
-      }
-    });
-    // Giá trị mặc định
-    return 180.0; // Thay đổi thành chiều cao của widget
-  }
-}
-
 class MovieHeader extends StatefulWidget {
   final int movieId;
 
@@ -686,125 +649,129 @@ Widget _buildCinemaItem(BuildContext context, int movieID, String cinemaName,
       decoration: BoxDecoration(
         color: Colors.white, // Nền trắng
         border: Border.all(
-          color: Colors.black, // Màu đường viền đen
+          color: Colors.blue, // Luôn luôn màu viền xanh
           width: 1, // Độ dày đường viền 1px
         ),
         borderRadius: BorderRadius.circular(10), // Bo tròn các góc
       ),
-      child: ExpansionTile(
-        title: Column(
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          dividerColor:
+              Colors.transparent, // Loại bỏ đường viền giữa các phần tử
+        ),
+        child: ExpansionTile(
+          title: Column(
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.local_movies,
+                      size: 50, color: Color(0XFF6F3CD7)),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          cinemaName,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: 4),
+                        AutoSizeText(
+                          '$distance',
+                          style: TextStyle(color: Colors.grey, fontSize: 14),
+                          minFontSize: 12,
+                          maxLines: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.favorite_border_sharp),
+                    onPressed: () {},
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          backgroundColor:
+              Colors.transparent, // Không thay đổi màu nền khi mở rộng
+          clipBehavior: Clip.none, // Giữ nguyên border khi mở rộng
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.local_movies, size: 50, color: Color(0XFF6F3CD7)),
-                SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        cinemaName,
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white, // Nền trắng
+                borderRadius: BorderRadius.circular(10), // Bo góc
+              ),
+              child: Column(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
+                    child: Align(
+                      alignment: Alignment.centerLeft, // Căn trái
+                      child: Text(
+                        'Chọn suất chiếu',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: 4),
-                      AutoSizeText(
-                        '$distance',
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
-                        minFontSize: 12,
-                        maxLines: 1,
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.favorite_border_sharp),
-                  onPressed: () {},
-                  color: Colors.grey,
-                ),
-              ],
-            ),
-          ],
-        ),
-        // Thiết lập màu nền khi đang mở
-        backgroundColor: Colors.white, // Màu nền khi mở
-
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white, // Màu nền trắng
-              borderRadius: BorderRadius.circular(10), // Bo tròn các góc 10px
-            ),
-            child: Column(
-              children: [
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
-                  child: Align(
-                    alignment: Alignment.centerLeft, // Căn trái
-                    child: Text(
-                      'Chọn suất chiếu',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Wrap(
-                    spacing: 8.0, // Khoảng cách giữa các mục
-                    runSpacing: 8.0, // Khoảng cách giữa các hàng
-                    children: List.generate(timeSlots.length, (index) {
-                      return Container(
-                        width: (timeSlots.length > 1)
-                            ? (MediaQuery.of(context).size.width - 48 - 16) /
-                                3 // Tính chiều rộng cho mỗi mục
-                            : null, // Nếu chỉ có 1 mục thì không giới hạn chiều rộng
-                        child: Align(
-                          alignment: Alignment.centerLeft, // Căn trái
-                          child: _buildTimeSlot(
-                            timeSlots[index]
-                                .getFormattedTime(), // Lấy thời gian bắt đầu
-                            timeSlots[index]
-                                .getFormattedEndTime(), // Lấy thời gian kết thúc
-                            onTap: () {
-                              print(
-                                  'Nhấp vào suất chiếu có ID: ${timeSlots[index].showTimeID}');
-                              Navigator.push(
-                                context,
-                                SlideFromRightPageRoute(
-                                  page: ChooseseatsPage(
-                                    movieID: movieID,
-                                    cinemaRoomID: timeSlots[index].cinemaRoomID,
-                                    showTimeID: timeSlots[index].showTimeID,
-                                    showtimeDate:
-                                        timeSlots[index].getFormattedDate(),
-                                    startTime:
-                                        timeSlots[index].getFormattedTime(),
-                                    endTime:
-                                        timeSlots[index].getFormattedEndTime(),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Wrap(
+                      spacing: 8.0, // Khoảng cách giữa các mục
+                      runSpacing: 8.0, // Khoảng cách giữa các hàng
+                      children: List.generate(timeSlots.length, (index) {
+                        return Container(
+                          width: (timeSlots.length > 1)
+                              ? (MediaQuery.of(context).size.width - 48 - 16) /
+                                  3
+                              : null, // Nếu chỉ có 1 mục thì không giới hạn chiều rộng
+                          child: Align(
+                            alignment: Alignment.centerLeft, // Căn trái
+                            child: _buildTimeSlot(
+                              timeSlots[index].getFormattedTime(),
+                              timeSlots[index].getFormattedEndTime(),
+                              onTap: () {
+                                print(
+                                    'Nhấp vào suất chiếu có ID: ${timeSlots[index].showTimeID}');
+                                Navigator.push(
+                                  context,
+                                  SlideFromRightPageRoute(
+                                    page: ChooseseatsPage(
+                                      movieID: movieID,
+                                      cinemaRoomID:
+                                          timeSlots[index].cinemaRoomID,
+                                      showTimeID: timeSlots[index].showTimeID,
+                                      showtimeDate:
+                                          timeSlots[index].getFormattedDate(),
+                                      startTime:
+                                          timeSlots[index].getFormattedTime(),
+                                      endTime: timeSlots[index]
+                                          .getFormattedEndTime(),
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
+                                );
+                              },
+                            ),
                           ),
-                        ),
-                      );
-                    }),
+                        );
+                      }),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
-        // Set clipBehavior to Clip.none to hide the border when expanded
-        clipBehavior: Clip.none,
+          ],
+        ),
       ),
     ),
   );

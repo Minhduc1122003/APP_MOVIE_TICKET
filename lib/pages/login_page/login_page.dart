@@ -84,20 +84,19 @@ class _LoginPageState extends State<LoginPage> {
             if (widget.isBack) {
               Navigator.of(context).pop();
             } else {
-              ApiService apiService = ApiService();
-              final moviesDangChieu = await apiService.getMoviesDangChieu();
-              final moviesSapChieu = await apiService.getMoviesSapChieu();
-              // print('${UserManager.instance.token}');
               if (UserManager.instance.user?.role == 0) {
+                ApiService apiService = ApiService();
+                final moviesDangChieu = await apiService.getMoviesDangChieu();
+                final moviesSapChieu = await apiService.getMoviesSapChieu();
                 Navigator.pushAndRemoveUntil(
                   context,
-                  ZoomPageRoute(
-                    page: HomePage(
-                      filmDangChieu: moviesDangChieu,
-                      filmSapChieu: moviesSapChieu,
-                    ),
-                  ),
-                  (Route<dynamic> route) => false,
+                  SlideFromLeftPageRoute(
+                      page: HomePage(
+                    filmDangChieu: moviesDangChieu,
+                    filmSapChieu: moviesSapChieu,
+                  )),
+                  (Route<dynamic> route) =>
+                      false, // Xóa tất cả các route trước đó
                 );
               } else {
                 Navigator.pushAndRemoveUntil(
