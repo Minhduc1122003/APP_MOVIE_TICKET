@@ -9,29 +9,67 @@ class ShowtimeManagerPage extends StatefulWidget {
 
 class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
   final List<String> cinemas = [
-    'Rạp 1',
-    'Rạp 2',
-    'Rạp 3',
-    'Rạp 4',
-    'Rạp 5',
-    'Rạp 6'
+    'Phòng 1',
+    'Phòng 2',
+    'Phòng 3',
+    'Phòng 4',
+    'Phòng 5',
+    'Phòng 6'
   ];
   final List<String> timeSlots = [];
   final List<List<String>> showtimes = [];
-  final ScrollController _verticalController = ScrollController();
-  final ScrollController _horizontalController = ScrollController();
+  final ScrollController _verticalController1 = ScrollController();
+  final ScrollController _verticalController2 = ScrollController();
+  final ScrollController _headerHorizontalController = ScrollController();
+  final ScrollController _showtimeHorizontalController = ScrollController();
+
+  bool isSearching = false;
+  TextEditingController _searchController = TextEditingController();
+  FocusNode _focusNode = FocusNode();
+  String _searchTerm = '';
 
   @override
   void initState() {
     super.initState();
     _initializeTimeSlots();
     _initializeShowtimes();
+
+    // Vertical scroll synchronization
+    _verticalController1.addListener(() {
+      if (_verticalController2.hasClients) {
+        _verticalController2.jumpTo(_verticalController1.offset);
+      }
+    });
+    _verticalController2.addListener(() {
+      if (_verticalController1.hasClients) {
+        _verticalController1.jumpTo(_verticalController2.offset);
+      }
+    });
+
+    // Horizontal scroll synchronization
+    _headerHorizontalController.addListener(() {
+      if (_showtimeHorizontalController.hasClients) {
+        _showtimeHorizontalController
+            .jumpTo(_headerHorizontalController.offset);
+      }
+    });
+
+    _showtimeHorizontalController.addListener(() {
+      if (_headerHorizontalController.hasClients) {
+        _headerHorizontalController
+            .jumpTo(_showtimeHorizontalController.offset);
+      }
+    });
   }
 
   @override
   void dispose() {
-    _verticalController.dispose();
-    _horizontalController.dispose();
+    _verticalController1.dispose();
+    _verticalController2.dispose();
+    _headerHorizontalController.dispose();
+    _showtimeHorizontalController.dispose();
+    _searchController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -55,6 +93,24 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
     }
   }
 
+  void _onSearchChanged(String value) {
+    setState(() {
+      _searchTerm = value.toLowerCase(); // Store the search term in lower case
+    });
+  }
+
+  List<List<String>> _filteredShowtimes() {
+    if (_searchTerm.isEmpty) {
+      return showtimes;
+    } else {
+      return showtimes.map((row) {
+        return row.where((showtime) {
+          return showtime.toLowerCase().contains(_searchTerm);
+        }).toList();
+      }).toList();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,37 +126,159 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
             Navigator.of(context).pop();
           },
         ),
-        title: const Text(
-          'Lịch chiếu phim',
-          style: TextStyle(color: Colors.white, fontSize: 20),
+        title: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: SizeTransition(
+                sizeFactor: animation,
+                axis: Axis.horizontal,
+                child: child,
+              ),
+            );
+          },
+          child: isSearching || _searchController.text.isNotEmpty
+              ? TextField(
+                  controller: _searchController,
+                  focusNode: _focusNode,
+                  autofocus: true,
+                  onChanged: _onSearchChanged,
+                  decoration: InputDecoration(
+                    hintText: 'Tìm kiếm lịch chiếu...',
+                    hintStyle: TextStyle(color: Colors.grey),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                  style: const TextStyle(color: Colors.black),
+                )
+              : const Text(
+                  'Lịch chiếu phim',
+                  style: TextStyle(color: Colors.white, fontSize: 20),
+                ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search, color: Colors.white, size: 20),
+            onPressed: () {
+              setState(() {
+                if (isSearching || _searchController.text.isNotEmpty) {
+                  _searchController.clear();
+                  _searchTerm = ''; // Clear search term
+                  isSearching = false;
+                } else {
+                  isSearching = true;
+                }
+              });
+            },
+          ),
+        ],
       ),
-      body: SafeArea(
-        child: Container(
-          height: 400,
-          child: Column(
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+              child: Column(
+                children: [
+                  Container(
+                    height: MediaQuery.of(context).size.height *
+                        (2.4 / 3), // Adjust height
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(
+                        color: Colors.grey,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 50,
+                          child: Row(
+                            children: [
+                              _buildTimeSlotHeader(),
+                              Expanded(
+                                child: _buildHeaderRow(),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 80,
+                                child: _buildTimeColumn(),
+                              ),
+                              Expanded(
+                                child: _buildShowtimeGrid(),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              SizedBox(
-                height: 50,
-                child: _buildHeaderRow(),
-              ),
-              Expanded(
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 80,
-                      child: _buildTimeColumn(),
-                    ),
-                    Expanded(
-                      child: _buildShowtimeGrid(),
-                    ),
-                  ],
-                ),
-              ),
+              _buildButton('Sửa lịch', Icons.edit, Colors.blue),
+              _buildButton('Thêm lịch', Icons.add, Colors.green),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildButton(String label, IconData icon, Color color) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 15.0, left: 20, right: 20),
+        child: ElevatedButton.icon(
+          onPressed: () {},
+          icon: Icon(icon, color: Colors.white),
+          label: Text(
+            label,
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            backgroundColor: color,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
         ),
+      ),
+    );
+  }
+
+  // Fixed header for time slots
+  Widget _buildTimeSlotHeader() {
+    return Container(
+      width: 80,
+      color: Colors.grey[200],
+      padding: const EdgeInsets.all(6.0),
+      alignment: Alignment.center,
+      child: const Text(
+        'Khung giờ',
+        style: TextStyle(fontWeight: FontWeight.bold),
+        textAlign: TextAlign.center,
       ),
     );
   }
@@ -108,41 +286,28 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
   Widget _buildHeaderRow() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      controller: _horizontalController,
+      controller: _headerHorizontalController,
       child: Row(
-        children: [
-          Container(
-            width: 80,
+        children: cinemas.map((cinema) {
+          return Container(
+            width: 120,
             color: Colors.grey[200],
             padding: const EdgeInsets.all(8.0),
             alignment: Alignment.center,
-            child: const Text(
-              'Khung giờ',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            child: Text(
+              cinema,
+              style: const TextStyle(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
-          ),
-          ...cinemas.map((cinema) {
-            return Container(
-              width: 120,
-              color: Colors.grey[200],
-              padding: const EdgeInsets.all(8.0),
-              alignment: Alignment.center,
-              child: Text(
-                cinema,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-            );
-          }).toList(),
-        ],
+          );
+        }).toList(),
       ),
     );
   }
 
   Widget _buildTimeColumn() {
     return SingleChildScrollView(
-      controller: _verticalController,
+      controller: _verticalController1,
       child: Column(
         children: timeSlots.map((timeSlot) {
           return Container(
@@ -163,29 +328,29 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
 
   Widget _buildShowtimeGrid() {
     return SingleChildScrollView(
+      controller: _showtimeHorizontalController,
       scrollDirection: Axis.horizontal,
-      controller: _horizontalController,
       child: SingleChildScrollView(
-        controller: _verticalController,
+        controller: _verticalController2,
         child: Column(
-          children: List.generate(timeSlots.length, (rowIndex) {
+          children: _filteredShowtimes().map((row) {
             return Row(
-              children: List.generate(cinemas.length, (colIndex) {
+              children: row.map((showtime) {
                 return Container(
                   width: 120,
-                  height: 60,
                   padding: const EdgeInsets.all(8.0),
+                  alignment: Alignment.center,
+                  child: Text(showtime,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.black)),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey),
-                  ),
-                  child: Text(
-                    showtimes[rowIndex][colIndex],
-                    textAlign: TextAlign.center,
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 );
-              }),
+              }).toList(),
             );
-          }),
+          }).toList(),
         ),
       ),
     );
