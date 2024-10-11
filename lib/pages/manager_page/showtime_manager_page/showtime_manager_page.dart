@@ -1,5 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app_chat/auth/api_service.dart';
+import 'package:flutter_app_chat/models/showTimeForAdmin_model.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 class ShowtimeManagerPage extends StatefulWidget {
@@ -24,7 +26,8 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
   final ScrollController _verticalController2 = ScrollController();
   final ScrollController _headerHorizontalController = ScrollController();
   final ScrollController _showtimeHorizontalController = ScrollController();
-
+  ApiService apiService = ApiService();
+  List<ShowtimeforadminModel> listShowtimeforadminModel = [];
   bool isSearching = false;
   TextEditingController _searchController = TextEditingController();
   FocusNode _focusNode = FocusNode();
@@ -38,7 +41,7 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
     super.initState();
     _initializeTimeSlots();
     _initializeShowtimes();
-
+    _fetchShowtimes();
     // Vertical scroll synchronization
     _verticalController1.addListener(() {
       if (_isVerticalSyncing) return;
@@ -102,10 +105,16 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
   }
 
   void _initializeShowtimes() {
+    showtimes.clear(); // Xóa dữ liệu cũ
     for (int i = 0; i < timeSlots.length; i++) {
-      List<String> row = [];
-      for (int j = 0; j < cinemas.length; j++) {
-        row.add('Phim ${j + 1}\n${timeSlots[i]}');
+      List<String> row = List.filled(cinemas.length, '');
+      for (var showtime in listShowtimeforadminModel) {
+        if (showtime.startTime == timeSlots[i]) {
+          int roomIndex = cinemas.indexOf('Phòng ${showtime.roomNumber}');
+          if (roomIndex != -1) {
+            row[roomIndex] = '${showtime.movieName}\n${showtime.startTime}';
+          }
+        }
       }
       showtimes.add(row);
     }
@@ -126,6 +135,18 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
           return showtime.toLowerCase().contains(_searchTerm);
         }).toList();
       }).toList();
+    }
+  }
+
+  Future<void> _fetchShowtimes() async {
+    try {
+      final showtimes = await apiService.getShowtimeListForAdmin();
+      setState(() {
+        listShowtimeforadminModel = showtimes;
+        _initializeShowtimes();
+      });
+    } catch (e) {
+      print('Error fetching showtimes: $e');
     }
   }
 
@@ -347,18 +368,19 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
   }
 
   Widget _buildHeaderRow() {
+    Set<String> uniqueCinemas =
+        listShowtimeforadminModel.map((s) => s.cinemaName).toSet();
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       controller: _headerHorizontalController,
       child: Row(
-        children: cinemas.map((cinema) {
+        children: uniqueCinemas.map((cinema) {
           return Row(
             children: [
               Container(
-                width:
-                    120, // Ensure this width matches the showtime grid item width
+                width: 120,
                 color: Colors.grey[200],
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(3.0),
                 alignment: Alignment.center,
                 child: Text(
                   cinema,
@@ -366,12 +388,11 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
                   textAlign: TextAlign.center,
                 ),
               ),
-              // Add a vertical divider only if it's not the last item
-              if (cinema != cinemas.last)
-                VerticalDivider(
+              if (cinema != uniqueCinemas.last)
+                const VerticalDivider(
                   width: 1,
                   color: Colors.grey,
-                  thickness: 1, // Ensure the thickness is consistent
+                  thickness: 1,
                 ),
             ],
           );
@@ -388,7 +409,7 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
           return Column(
             children: [
               Container(
-                height: 60,
+                height: 40,
                 color: Colors.grey[100],
                 padding: const EdgeInsets.all(8.0),
                 alignment: Alignment.center,
@@ -407,32 +428,40 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
   }
 
   Widget _buildShowtimeGrid() {
-    return InteractiveViewer(
-      constrained: false,
-      scaleEnabled: false, // Disable scaling if you only want to allow panning
-      child: Column(
-        children: _filteredShowtimes().map((row) {
-          return Row(
-            children: row.map((showtime) {
-              return Container(
-                width:
-                    120, // Ensure this width matches the header row item width
-                height: 60,
-                padding: const EdgeInsets.all(8.0),
-                alignment: Alignment.center,
-                child: Text(
-                  showtime,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.black),
+    return SingleChildScrollView(
+      controller: _showtimeHorizontalController,
+      scrollDirection: Axis.horizontal,
+      child: SingleChildScrollView(
+        controller: _verticalController2,
+        scrollDirection: Axis.vertical,
+        child: Column(
+          children: _filteredShowtimes().map((row) {
+            return Column(
+              children: [
+                Row(
+                  children: row.map((showtime) {
+                    return Container(
+                      width: 121,
+                      height: 40,
+                      padding: const EdgeInsets.all(8.0),
+                      alignment: Alignment.center,
+                      child: Text(
+                        showtime,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    );
+                  }).toList(),
                 ),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              );
-            }).toList(),
-          );
-        }).toList(),
+                Divider(height: 1, color: Colors.grey),
+              ],
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -445,6 +474,7 @@ class DiagonalPainter extends CustomPainter {
       ..color = Colors.black
       ..strokeWidth = 1.0;
 
+    // Draw a diagonal line from top-left to bottom-right
     canvas.drawLine(Offset(0, 0), Offset(size.width, size.height), paint);
   }
 

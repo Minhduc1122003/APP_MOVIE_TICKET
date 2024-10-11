@@ -44,8 +44,8 @@ class _MyAppState extends State<MyApp> {
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           builder: EasyLoading.init(),
-          //home: HomePage(),
-          home: ShowtimeManagerPage(),
+          home: HomePage(),
+          // home: ShowtimeManagerPage(),
         ));
   }
 }
