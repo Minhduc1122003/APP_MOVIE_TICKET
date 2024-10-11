@@ -1,28 +1,28 @@
 class ShowtimeforadminModel {
-  final String movieName;
-  final DateTime showtimeDate;
-  final String startTime;
-  final int movieDuration;
-  final int roomNumber;
-  final String cinemaName;
+  final String MovieName;
+  final DateTime ShowtimeDate;
+  final DateTime StartTime;
+  final int MovieDuration;
+  final int RoomNumber;
+  final String CinemaName;
 
   ShowtimeforadminModel({
-    required this.movieName,
-    required this.showtimeDate,
-    required this.startTime,
-    required this.movieDuration,
-    required this.roomNumber,
-    required this.cinemaName,
+    required this.MovieName,
+    required this.ShowtimeDate,
+    required this.StartTime,
+    required this.MovieDuration,
+    required this.RoomNumber,
+    required this.CinemaName,
   });
 
   factory ShowtimeforadminModel.fromJson(Map<String, dynamic> json) {
     return ShowtimeforadminModel(
-      movieName: json['MovieName'],
-      showtimeDate: DateTime.parse(json['ShowtimeDate']),
-      startTime: json['StartTime'],
-      movieDuration: json['MovieDuration'],
-      roomNumber: json['RoomNumber'],
-      cinemaName: json['CinemaName'],
+      MovieName: json['MovieName'],
+      ShowtimeDate: DateTime.parse(json['ShowtimeDate']),
+      StartTime: DateTime.parse(json['StartTime']),
+      MovieDuration: json['MovieDuration'],
+      RoomNumber: json['RoomNumber'],
+      CinemaName: json['CinemaName'],
     );
   }
 }
