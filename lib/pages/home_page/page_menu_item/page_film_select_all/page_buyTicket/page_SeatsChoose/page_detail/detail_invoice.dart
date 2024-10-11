@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../../../auth/api_service.dart';
+
 class DetailInvoice extends StatefulWidget {
-  const DetailInvoice({super.key});
+  final int movieID;
+  final int showTimeID;
+  final List<int> seatCodes;
+
+  const DetailInvoice({
+    Key? key,
+    required this.movieID,
+    required this.showTimeID,
+    required this.seatCodes, // Nhận danh sách ghế từ constructor
+  }) : super(key: key);
 
   @override
   _DetailInvoiceState createState() => _DetailInvoiceState();
@@ -9,9 +20,12 @@ class DetailInvoice extends StatefulWidget {
 
 class _DetailInvoiceState extends State<DetailInvoice>
     with AutomaticKeepAliveClientMixin {
+  late ApiService _apiService;
+
   @override
   void initState() {
     super.initState();
+    _apiService = ApiService();
   }
 
   @override
@@ -31,7 +45,7 @@ class _DetailInvoiceState extends State<DetailInvoice>
           },
         ),
         title: const Text(
-          'Thanh toán',
+          'Hóa đơn vé',
           style: TextStyle(color: Colors.white, fontSize: 20),
         ),
         centerTitle: true,
@@ -60,13 +74,14 @@ class _DetailInvoiceState extends State<DetailInvoice>
                               Row(
                                 children: [
                                   Container(
+                                    width: MediaQuery.of(context).size.width *
+                                        0.3, // Chiều rộng bằng 50% màn hình
+                                    // Chiều cao bằng 30% màn hình
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(
-                                          10), // Làm tròn góc cho ảnh bên trong
+                                          10), // Làm tròn góc cho ảnh
                                       child: Image.network(
-                                        'https://banghieuminhkhang.com/upload/sanpham/poster/poster-phim-10.jpg', // Đường dẫn tới ảnh
-                                        width: 100,
-                                        height: 150,
+                                        'https://banghieuminhkhang.com/upload/sanpham/poster/poster-phim-10.jpg',
                                         fit: BoxFit.cover,
                                       ),
                                     ),
@@ -79,21 +94,41 @@ class _DetailInvoiceState extends State<DetailInvoice>
                                         maxHeight: 130), // Giới hạn chiều cao
                                     alignment: Alignment
                                         .topLeft, // Căn chỉnh ở trên cùng bên trái
-                                    child: const Column(
+                                    child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
+                                        const Text(
                                           'Đất rừng phương nam',
                                           style: TextStyle(
                                               fontSize: 18,
                                               fontWeight: FontWeight.bold),
                                         ),
-                                        Text('2D PHỤ ĐỀ',
+                                        const Text('2D PHỤ ĐỀ',
                                             style: TextStyle(fontSize: 16)),
-                                        Text('T13',
+                                        Container(
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 3,
+                                              horizontal:
+                                                  5), // Tạo khoảng trống xung quanh chữ
+                                          decoration: BoxDecoration(
+                                            color: Colors
+                                                .deepOrange, // Nền màu vàng
+                                            borderRadius: BorderRadius.circular(
+                                                10), // Bo góc tròn
+                                          ),
+                                          child: Text(
+                                            'T13', // Nội dung chữ
                                             style: TextStyle(
-                                                color: Colors.orange)),
+                                              color:
+                                                  Colors.white, // Màu chữ trắng
+                                              fontSize:
+                                                  14, // Kích thước chữ lớn hơn
+                                              fontWeight: FontWeight
+                                                  .bold, // Tùy chọn: Chữ đậm hơn
+                                            ),
+                                          ),
+                                        )
                                       ],
                                     ),
                                   ),
@@ -180,66 +215,142 @@ class _DetailInvoiceState extends State<DetailInvoice>
                                 children: [
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment
+                                        .start, // Căn theo chiều dọc ở vị trí đầu (top)
                                     children: [
                                       Expanded(
                                         flex: 1,
-                                        child: Text('Ghế: '),
+                                        child: Align(
+                                          alignment: Alignment
+                                              .topCenter, // Đặt text ở góc trên bên trái
+                                          child: Text('Ghế: '),
+                                        ),
                                       ),
                                       Expanded(
                                         flex: 5,
-                                        child: Text(
-                                          'G5, G4 G5, G4G5, G4G5, G4G5, G4G5, G4G5, G4G5, G4',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold),
+                                        child: Align(
+                                          alignment: Alignment
+                                              .topLeft, // Đặt text ở góc trên bên trái
+                                          child: Text(
+                                            'G5, G4 ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                            textAlign: TextAlign
+                                                .left, // Căn văn bản sang trái
+                                          ),
                                         ),
                                       ),
                                       Expanded(
                                         flex: 2,
-                                        child: Text(
-                                          '110,000đ',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold),
+                                        child: Align(
+                                          alignment: Alignment
+                                              .topRight, // Đặt text ở góc trên bên trái
+                                          child: Text(
+                                            '110,000đ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                            textAlign: TextAlign
+                                                .left, // Căn văn bản sang trái
+                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
+                                  Divider(
+                                    color: Colors.grey, // Màu của đường kẻ
+                                    thickness: 1, // Độ dày của đường kẻ
+                                    indent: 10, // Khoảng cách từ trái
+                                    endIndent: 10, // Khoảng cách từ phải
+                                  ),
                                   Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment
+                                        .start, // Căn theo chiều dọc ở vị trí đầu (top)
                                     children: [
-                                      const Text('1x '),
-                                      const Text(
-                                        'iCombo 1 Big STD',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold),
+                                      Expanded(
+                                        flex: 1,
+                                        child: Align(
+                                          alignment: Alignment
+                                              .topCenter, // Đặt text ở góc trên bên trái
+                                          child: Text('1x '),
+                                        ),
                                       ),
-                                      const Text(
-                                        '69,000đ',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      )
+                                      Expanded(
+                                        flex: 5,
+                                        child: Align(
+                                          alignment: Alignment
+                                              .topLeft, // Đặt text ở góc trên bên trái
+                                          child: Text(
+                                            'iCombo 1 Big STD',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                            textAlign: TextAlign
+                                                .left, // Căn văn bản sang trái
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Align(
+                                          alignment: Alignment
+                                              .topRight, // Đặt text ở góc trên bên trái
+                                          child: Text(
+                                            '69,000đ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                            textAlign: TextAlign
+                                                .left, // Căn văn bản sang trái
+                                          ),
+                                        ),
+                                      ),
                                     ],
                                   )
                                 ],
                               ),
+                              Divider(
+                                color: Colors.grey, // Màu của đường kẻ
+                                thickness: 1, // Độ dày của đường kẻ
+                                indent: 10, // Khoảng cách từ trái
+                                endIndent: 10, // Khoảng cách từ phải
+                              ),
                               const SizedBox(height: 10),
                               Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text('Mã vé: 279942'),
-                                      const Text('Stars: 7'),
-                                    ],
-                                  ),
-                                  const Text(
-                                    'Thanh Toán: 209,000đ',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
+                                  const Text('Mã vé: 279942'),
                                 ],
                               ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment
+                                    .start, // Căn theo chiều dọc ở vị trí đầu (top)
+                                children: [
+                                  Expanded(
+                                    child: Align(
+                                      alignment: Alignment
+                                          .topLeft, // Đặt text ở góc trên bên trái
+                                      child: Text('Thanh toán: ',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 20)),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Align(
+                                      alignment: Alignment
+                                          .topRight, // Đặt text ở góc trên bên trái
+                                      child: Text(
+                                        '179,000đ',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 22,
+                                            color: Colors
+                                                .red), // Căn văn bản sang trái
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
                             ],
                           ),
                         ),

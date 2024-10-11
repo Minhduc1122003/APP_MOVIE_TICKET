@@ -1,7 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/models/Chair_modal.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'dart:async';
 
 class CinemaSeatGrid extends StatefulWidget {
   final List<ChairModel> chairs;
@@ -102,7 +103,6 @@ class _CinemaSeatGridState extends State<CinemaSeatGrid> {
                           _toastTimer = null;
                         });
                       }
-                      return; // Không làm gì nếu đã chọn tối đa ghế
                     }
                     // Thêm ghế đã chọn
                     selectedChairs.add(index);
