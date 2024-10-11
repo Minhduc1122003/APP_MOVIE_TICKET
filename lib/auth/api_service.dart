@@ -24,7 +24,7 @@ class ApiService {
 
     // wifi cf24/24
 
-    baseUrl = 'http://192.168.1.152:8081';
+    baseUrl = 'http://192.168.1.93:8081';
   }
 
   late Response response;
@@ -496,7 +496,6 @@ class ApiService {
     await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
     print('Base URL: $baseUrl');
     print('Đã vào getConversations gửi data với userId: $userId');
-
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/getConversations'),
