@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 class ShowtimeManagerPage extends StatefulWidget {
   const ShowtimeManagerPage({Key? key}) : super(key: key);
@@ -181,60 +182,79 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
       body: Stack(
         children: [
           SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
-              child: Column(
-                children: [
-                  Container(
-                    height: MediaQuery.of(context).size.height *
-                        (2.4 / 3), // Adjust height
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(
-                        color: Colors.grey,
-                        width: 2,
+            child: Column(
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 50,
+                        child: Row(
+                          children: [
+                            _buildTimeSlotHeader(),
+                            Expanded(
+                              child: _buildHeaderRow(),
+                            ),
+                          ],
+                        ),
                       ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: 50,
-                          child: Row(
-                            children: [
-                              _buildTimeSlotHeader(),
-                              Expanded(
-                                child: _buildHeaderRow(),
-                              ),
-                            ],
-                          ),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 80,
+                              child: _buildTimeColumn(),
+                            ),
+                            Expanded(
+                              child: _buildShowtimeGrid(),
+                            ),
+                          ],
                         ),
-                        Expanded(
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 80,
-                                child: _buildTimeColumn(),
-                              ),
-                              Expanded(
-                                child: _buildShowtimeGrid(),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 20, 20),
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: SpeedDial(
+                icon: Icons.add,
+                activeIcon: Icons.close,
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                activeBackgroundColor: Colors.red,
+                activeForegroundColor: Colors.white,
+                visible: true,
+                closeManually: false,
+                curve: Curves.bounceIn,
+                overlayColor: Colors.black,
+                overlayOpacity: 0.5,
+                onOpen: () => print('OPENING DIAL'),
+                onClose: () => print('DIAL CLOSED'),
+                elevation: 8.0,
+                shape: CircleBorder(),
+                children: [
+                  SpeedDialChild(
+                    child: Icon(Icons.calendar_today),
+                    backgroundColor: Colors.green,
+                    label: 'Thêm lịch',
+                    labelStyle: TextStyle(fontSize: 15.0),
+                    onTap: () => print('Thêm lịch'),
+                  ),
+                  SpeedDialChild(
+                    child: Icon(Icons.edit),
+                    backgroundColor: Colors.orange,
+                    label: 'Sửa lịch',
+                    labelStyle: TextStyle(fontSize: 15.0),
+                    onTap: () => print('Sửa lịch'),
                   ),
                 ],
               ),
             ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildButton('Sửa lịch', Icons.edit, Colors.blue),
-              _buildButton('Thêm lịch', Icons.add, Colors.green),
-            ],
           ),
         ],
       ),
