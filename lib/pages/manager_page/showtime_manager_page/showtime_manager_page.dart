@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
@@ -29,6 +30,9 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
   FocusNode _focusNode = FocusNode();
   String _searchTerm = '';
 
+  bool _isVerticalSyncing = false;
+  bool _isHorizontalSyncing = false;
+
   @override
   void initState() {
     super.initState();
@@ -37,29 +41,42 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
 
     // Vertical scroll synchronization
     _verticalController1.addListener(() {
+      if (_isVerticalSyncing) return;
+      _isVerticalSyncing = true;
       if (_verticalController2.hasClients) {
         _verticalController2.jumpTo(_verticalController1.offset);
       }
+      _isVerticalSyncing = false;
     });
+
     _verticalController2.addListener(() {
+      if (_isVerticalSyncing) return;
+      _isVerticalSyncing = true;
       if (_verticalController1.hasClients) {
         _verticalController1.jumpTo(_verticalController2.offset);
       }
+      _isVerticalSyncing = false;
     });
 
     // Horizontal scroll synchronization
     _headerHorizontalController.addListener(() {
+      if (_isHorizontalSyncing) return;
+      _isHorizontalSyncing = true;
       if (_showtimeHorizontalController.hasClients) {
         _showtimeHorizontalController
             .jumpTo(_headerHorizontalController.offset);
       }
+      _isHorizontalSyncing = false;
     });
 
     _showtimeHorizontalController.addListener(() {
+      if (_isHorizontalSyncing) return;
+      _isHorizontalSyncing = true;
       if (_headerHorizontalController.hasClients) {
         _headerHorizontalController
             .jumpTo(_showtimeHorizontalController.offset);
       }
+      _isHorizontalSyncing = false;
     });
   }
 
@@ -184,32 +201,26 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
           SafeArea(
             child: Column(
               children: [
+                SizedBox(
+                  height: 50,
+                  child: Row(
+                    children: [
+                      _buildTimeSlotHeader(),
+                      Expanded(
+                        child: _buildHeaderRow(),
+                      ),
+                    ],
+                  ),
+                ),
                 Expanded(
-                  child: Column(
+                  child: Row(
                     children: [
                       SizedBox(
-                        height: 50,
-                        child: Row(
-                          children: [
-                            _buildTimeSlotHeader(),
-                            Expanded(
-                              child: _buildHeaderRow(),
-                            ),
-                          ],
-                        ),
+                        width: 80,
+                        child: _buildTimeColumn(),
                       ),
                       Expanded(
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 80,
-                              child: _buildTimeColumn(),
-                            ),
-                            Expanded(
-                              child: _buildShowtimeGrid(),
-                            ),
-                          ],
-                        ),
+                        child: _buildShowtimeGrid(),
                       ),
                     ],
                   ),
@@ -250,7 +261,7 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
                     backgroundColor: Colors.orange,
                     label: 'Sửa lịch',
                     labelStyle: TextStyle(fontSize: 15.0),
-                    onTap: () => print('Sửa lịch'),
+                    onTap: () => print('Sửa '),
                   ),
                 ],
               ),
@@ -292,13 +303,45 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
   Widget _buildTimeSlotHeader() {
     return Container(
       width: 80,
+      height: 60, // Set a fixed height for the header
       color: Colors.grey[200],
-      padding: const EdgeInsets.all(6.0),
-      alignment: Alignment.center,
-      child: const Text(
-        'Khung giờ',
-        style: TextStyle(fontWeight: FontWeight.bold),
-        textAlign: TextAlign.center,
+      child: CustomPaint(
+        painter: DiagonalPainter(),
+        child: const Padding(
+          padding: EdgeInsets.all(6.0),
+          child: Stack(
+            children: [
+              Align(
+                alignment: Alignment.bottomLeft,
+                child: SizedBox(
+                  width: 30, // Set the maximum width for the text
+                  child: AutoSizeText(
+                    'Giờ',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.left,
+                    maxLines: 1,
+                    maxFontSize: 12,
+                    minFontSize: 1,
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.topRight,
+                child: SizedBox(
+                  width: 30, // Set the maximum width for the text
+                  child: AutoSizeText(
+                    'Phòng',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.right,
+                    maxLines: 1,
+                    maxFontSize: 12,
+                    minFontSize: 1,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -309,16 +352,28 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
       controller: _headerHorizontalController,
       child: Row(
         children: cinemas.map((cinema) {
-          return Container(
-            width: 120,
-            color: Colors.grey[200],
-            padding: const EdgeInsets.all(8.0),
-            alignment: Alignment.center,
-            child: Text(
-              cinema,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
+          return Row(
+            children: [
+              Container(
+                width:
+                    120, // Ensure this width matches the showtime grid item width
+                color: Colors.grey[200],
+                padding: const EdgeInsets.all(8.0),
+                alignment: Alignment.center,
+                child: Text(
+                  cinema,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              // Add a vertical divider only if it's not the last item
+              if (cinema != cinemas.last)
+                VerticalDivider(
+                  width: 1,
+                  color: Colors.grey,
+                  thickness: 1, // Ensure the thickness is consistent
+                ),
+            ],
           );
         }).toList(),
       ),
@@ -330,16 +385,21 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
       controller: _verticalController1,
       child: Column(
         children: timeSlots.map((timeSlot) {
-          return Container(
-            height: 60,
-            color: Colors.grey[100],
-            padding: const EdgeInsets.all(8.0),
-            alignment: Alignment.center,
-            child: Text(
-              timeSlot,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
+          return Column(
+            children: [
+              Container(
+                height: 60,
+                color: Colors.grey[100],
+                padding: const EdgeInsets.all(8.0),
+                alignment: Alignment.center,
+                child: Text(
+                  timeSlot,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Divider(height: 1, color: Colors.grey), // Add divider here
+            ],
           );
         }).toList(),
       ),
@@ -347,32 +407,49 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
   }
 
   Widget _buildShowtimeGrid() {
-    return SingleChildScrollView(
-      controller: _showtimeHorizontalController,
-      scrollDirection: Axis.horizontal,
-      child: SingleChildScrollView(
-        controller: _verticalController2,
-        child: Column(
-          children: _filteredShowtimes().map((row) {
-            return Row(
-              children: row.map((showtime) {
-                return Container(
-                  width: 120,
-                  padding: const EdgeInsets.all(8.0),
-                  alignment: Alignment.center,
-                  child: Text(showtime,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.black)),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                );
-              }).toList(),
-            );
-          }).toList(),
-        ),
+    return InteractiveViewer(
+      constrained: false,
+      scaleEnabled: false, // Disable scaling if you only want to allow panning
+      child: Column(
+        children: _filteredShowtimes().map((row) {
+          return Row(
+            children: row.map((showtime) {
+              return Container(
+                width:
+                    120, // Ensure this width matches the header row item width
+                height: 60,
+                padding: const EdgeInsets.all(8.0),
+                alignment: Alignment.center,
+                child: Text(
+                  showtime,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.black),
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              );
+            }).toList(),
+          );
+        }).toList(),
       ),
     );
+  }
+}
+
+class DiagonalPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.black
+      ..strokeWidth = 1.0;
+
+    canvas.drawLine(Offset(0, 0), Offset(size.width, size.height), paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
   }
 }
