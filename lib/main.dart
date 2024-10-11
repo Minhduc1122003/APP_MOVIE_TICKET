@@ -44,7 +44,7 @@ class _MyAppState extends State<MyApp> {
           debugShowCheckedModeBanner: false,
           builder: EasyLoading.init(),
           home: HomePage(),
-          // home: DetailInvoice(),
+          // home: ShowtimeManagerPage(),
         ));
   }
 }

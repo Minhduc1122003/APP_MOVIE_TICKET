@@ -35,12 +35,9 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
 
   bool _isVerticalSyncing = false;
   bool _isHorizontalSyncing = false;
-
   @override
   void initState() {
     super.initState();
-    _initializeTimeSlots();
-    _initializeShowtimes();
     _fetchShowtimes();
     // Vertical scroll synchronization
     _verticalController1.addListener(() {
@@ -94,30 +91,15 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
     super.dispose();
   }
 
-  void _initializeTimeSlots() {
-    DateTime startTime = DateTime(2024, 1, 1, 8, 0);
-    DateTime endTime = DateTime(2024, 1, 2, 0, 0);
-    while (startTime.isBefore(endTime)) {
-      timeSlots.add(
-          "${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}");
-      startTime = startTime.add(const Duration(minutes: 30));
+  void _initializeTimeSlots(List<ShowtimeforadminModel> apiData) {
+    Set<String> uniqueTimeSlots = {};
+    for (var showtime in apiData) {
+      String timeSlot =
+          "${showtime.StartTime.hour.toString().padLeft(2, '0')}:${showtime.StartTime.minute.toString().padLeft(2, '0')}";
+      uniqueTimeSlots.add(timeSlot);
     }
-  }
-
-  void _initializeShowtimes() {
-    showtimes.clear(); // Xóa dữ liệu cũ
-    for (int i = 0; i < timeSlots.length; i++) {
-      List<String> row = List.filled(cinemas.length, '');
-      for (var showtime in listShowtimeforadminModel) {
-        if (showtime.startTime == timeSlots[i]) {
-          int roomIndex = cinemas.indexOf('Phòng ${showtime.roomNumber}');
-          if (roomIndex != -1) {
-            row[roomIndex] = '${showtime.movieName}\n${showtime.startTime}';
-          }
-        }
-      }
-      showtimes.add(row);
-    }
+    timeSlots.clear();
+    timeSlots.addAll(uniqueTimeSlots.toList()..sort());
   }
 
   void _onSearchChanged(String value) {
@@ -138,12 +120,35 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
     }
   }
 
+  void _processApiData(List<ShowtimeforadminModel> apiData) {
+    _initializeTimeSlots(apiData);
+    showtimes.clear();
+
+    for (String timeSlot in timeSlots) {
+      List<String> row = List.filled(cinemas.length, '');
+
+      for (var showtime in apiData) {
+        String showtimeSlot =
+            "${showtime.StartTime.hour.toString().padLeft(2, '0')}:${showtime.StartTime.minute.toString().padLeft(2, '0')}";
+
+        if (showtimeSlot == timeSlot) {
+          int roomIndex = showtime.RoomNumber - 1;
+          if (roomIndex >= 0 && roomIndex < cinemas.length) {
+            row[roomIndex] = '${showtime.MovieName}\n$showtimeSlot';
+          }
+        }
+      }
+
+      showtimes.add(row);
+    }
+  }
+
   Future<void> _fetchShowtimes() async {
     try {
       final showtimes = await apiService.getShowtimeListForAdmin();
       setState(() {
         listShowtimeforadminModel = showtimes;
-        _initializeShowtimes();
+        _processApiData(showtimes);
       });
     } catch (e) {
       print('Error fetching showtimes: $e');
@@ -368,17 +373,16 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
   }
 
   Widget _buildHeaderRow() {
-    Set<String> uniqueCinemas =
-        listShowtimeforadminModel.map((s) => s.cinemaName).toSet();
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       controller: _headerHorizontalController,
       child: Row(
-        children: uniqueCinemas.map((cinema) {
+        children: cinemas.map((cinema) {
           return Row(
             children: [
               Container(
-                width: 120,
+                width:
+                    120, // Ensure this width matches the showtime grid item width
                 color: Colors.grey[200],
                 padding: const EdgeInsets.all(3.0),
                 alignment: Alignment.center,
@@ -388,11 +392,12 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
                   textAlign: TextAlign.center,
                 ),
               ),
-              if (cinema != uniqueCinemas.last)
+              // Add a vertical divider only if it's not the last item
+              if (cinema != cinemas.last)
                 const VerticalDivider(
                   width: 1,
                   color: Colors.grey,
-                  thickness: 1,
+                  thickness: 1, // Ensure the thickness is consistent
                 ),
             ],
           );
@@ -441,15 +446,14 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
                 Row(
                   children: row.map((showtime) {
                     return Container(
-                      width: 121,
+                      width:
+                          121, // Ensure this width matches the header row item width
                       height: 40,
                       padding: const EdgeInsets.all(8.0),
                       alignment: Alignment.center,
-                      child: Text(
-                        showtime,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.black),
-                      ),
+                      child: Text(showtime,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.black)),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey),
                         borderRadius: BorderRadius.circular(4),
@@ -457,7 +461,7 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
                     );
                   }).toList(),
                 ),
-                Divider(height: 1, color: Colors.grey),
+                Divider(height: 1, color: Colors.grey), // Add divider here
               ],
             );
           }).toList(),
