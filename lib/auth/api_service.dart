@@ -6,6 +6,7 @@ import 'package:flutter_app_chat/models/Chair_modal.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/ShowTime_modal.dart';
 import 'package:flutter_app_chat/models/chat_item_model.dart';
+import 'package:flutter_app_chat/models/showTimeForAdmin_model.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:http/http.dart' as http;
@@ -470,6 +471,23 @@ class ApiService {
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to send data');
+    }
+  }
+
+  Future<List<ShowtimeforadminModel>> getShowtimeListForAdmin() async {
+    await _initBaseUrl();
+    print('Connecting to API...');
+    final response =
+        await http.get(Uri.parse('$baseUrl/getShowtimeListForAdmin'));
+    print('API response received');
+    if (response.statusCode == 200) {
+      List<dynamic> jsonData = jsonDecode(response.body);
+      print('jsonData : $jsonData');
+      return jsonData
+          .map((json) => ShowtimeforadminModel.fromJson(json))
+          .toList();
+    } else {
+      throw Exception('Failed to load data: ${response.statusCode}');
     }
   }
 
