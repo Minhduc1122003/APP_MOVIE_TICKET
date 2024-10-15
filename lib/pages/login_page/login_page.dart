@@ -127,47 +127,50 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             // Welcome message
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(0, 0, 50, 0),
-              child: const Align(
-                child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start, // Căn về bên trái
 
-                  children: [
-                    Text(
-                      'Hello!',
-                      style: TextStyle(
-                        color: Color(0xf2ffffff),
-                        fontSize: 60,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
-                        height: 2.0,
-                        decoration: TextDecoration.none,
-                        fontStyle: FontStyle.italic,
+// Welcome message
+// Welcome message
+// Welcome message
+            Transform.translate(
+              offset: Offset(0, -150), // Di chuyển container lên 100px
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Column(
+                    children: [
+                      ColorFiltered(
+                        colorFilter:
+                            ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                        child: Image.asset(
+                          'assets/images/logoText.png',
+                          width: 450,
+                          height: 450,
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                      textAlign: TextAlign.left,
-                    ),
-                    Text(
-                      'Chào mừng bạn quay trở lại...',
-                      style: TextStyle(
-                        color: Color(0xf2ffffff),
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.1,
-                        height: 2.0,
-                        decoration: TextDecoration.none,
-                        fontStyle: FontStyle.italic,
+                      Transform.translate(
+                        offset: Offset(0, -170),
+                        child: const Text(
+                          'Chào mừng bạn quay trở lại...',
+                          style: TextStyle(
+                            color: Colors.white, // Đảm bảo màu sắc khác biệt
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.1,
+                            height: 2.0,
+                            decoration: TextDecoration.none,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          textAlign: TextAlign.center, // Căn giữa văn bản
+                        ),
                       ),
-                      textAlign: TextAlign.left,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-            // Main login form container
-
             Padding(
               padding: const EdgeInsets.only(top: 200.0),
               child: Container(

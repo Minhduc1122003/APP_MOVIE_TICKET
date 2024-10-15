@@ -191,7 +191,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Container(
-                    height: MediaQuery.of(context).size.height * 0.25,
+                    height: 240,
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -204,43 +204,46 @@ class _RegisterPageState extends State<RegisterPage> {
                         end: Alignment.bottomCenter,
                       ),
                     ),
-                    child: const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Column(
                       children: [
-                        Align(
-                          alignment: Alignment.center,
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(0, 20, 0, 10),
-                            child: Text(
-                              'Chào mừng bạn đến với',
-                              style: TextStyle(
-                                color: Color(0xe0ffffff),
-                                fontSize: 25,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.1,
-                                height: 1.5,
-                                fontStyle: FontStyle.italic,
+                        Transform.translate(
+                          offset:
+                              Offset(0, -80), // Di chuyển container lên 100px
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                            child: Align(
+                              alignment: Alignment.topCenter,
+                              child: Column(
+                                children: [
+                                  ColorFiltered(
+                                      colorFilter: ColorFilter.mode(
+                                          Colors.white, BlendMode.srcIn),
+                                      child: Image.asset(
+                                        'assets/images/logoText2.png',
+                                        width: 200, // Đặt chiều rộng tối đa
+                                        height: 200, // Đặt chiều rộng tối đa
+                                      )),
+                                  Transform.translate(
+                                    offset: Offset(0, -30),
+                                    child: const Text(
+                                      'Đăng ký tài khoản',
+                                      style: TextStyle(
+                                        color: Colors
+                                            .white, // Đảm bảo màu sắc khác biệt
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.1,
+                                        height: 2.0,
+                                        decoration: TextDecoration.none,
+                                        fontStyle: FontStyle.normal,
+                                      ),
+                                      textAlign:
+                                          TextAlign.center, // Căn giữa văn bản
+                                    ),
+                                  ),
+                                ],
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                        Align(
-                          alignment: Alignment.center,
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 5, 0,
-                                10), // Thêm padding đều cho tất cả các cạnh
-                            child: Text(
-                              'PANTHERs CINEMA!',
-                              style: TextStyle(
-                                color: Color(0xe0ffffff),
-                                fontSize: 25,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.1,
-                                height: 1.5,
-                                fontStyle: FontStyle.italic,
-                              ),
-                              textAlign: TextAlign.center,
                             ),
                           ),
                         ),
@@ -255,83 +258,84 @@ class _RegisterPageState extends State<RegisterPage> {
                         15,
                         20, // Điều chỉnh với chiều cao của bàn phím
                       ),
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: MyTextfield(
-                                    isPassword: false,
-                                    placeHolder: "Họ",
-                                    controller: _firstnameController,
-                                    sendCode: false,
-                                    focusNode: _firstnameFocusNode,
-                                    errorMessage: errorMessages['firstname'],
+                      child: Center(
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Column(
+                            children: <Widget>[
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: MyTextfield(
+                                      isPassword: false,
+                                      placeHolder: "Họ",
+                                      controller: _firstnameController,
+                                      sendCode: false,
+                                      focusNode: _firstnameFocusNode,
+                                      errorMessage: errorMessages['firstname'],
+                                    ),
                                   ),
-                                ),
-                                SizedBox(
-                                    width: 10), // Khoảng cách giữa 2 textfield
-                                Expanded(
-                                  child: MyTextfield(
-                                    isPassword: false,
-                                    placeHolder: "Tên",
-                                    controller: _lastnameController,
-                                    sendCode: false,
-                                    focusNode: _lastnameFocusNode,
-                                    errorMessage: errorMessages['lastname'],
+                                  SizedBox(
+                                      width:
+                                          10), // Khoảng cách giữa 2 textfield
+                                  Expanded(
+                                    child: MyTextfield(
+                                      isPassword: false,
+                                      placeHolder: "Tên",
+                                      controller: _lastnameController,
+                                      sendCode: false,
+                                      focusNode: _lastnameFocusNode,
+                                      errorMessage: errorMessages['lastname'],
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            MyTextfield(
-                              isPassword: false,
-                              placeHolder: "Email",
-                              controller: _emailController,
-                              focusNode: _emailFocusNode,
-                              errorMessage: errorMessages['email'],
-                              icon: Icons.email_outlined,
-                            ),
-                            const SizedBox(height: 10),
-                            MyTextfield(
-                              isPassword: true,
-                              placeHolder: "Mật khẩu",
-                              controller: _passwordController,
-                              sendCode: false,
-                              focusNode: _passwordFocusNode,
-                              errorMessage: errorMessages['password'],
-                              icon: Icons.lock_outline,
-                            ),
-                            const SizedBox(height: 10),
-                            MyTextfield(
-                              isPassword: true,
-                              placeHolder: "Nhập lại mật khẩu",
-                              controller: _checkPassword,
-                              sendCode: false,
-                              focusNode: _checkPasswordFocusNode,
-                              errorMessage: errorMessages['password'],
-                              icon: Icons.lock_outline,
-                            ),
-                            const SizedBox(height: 20),
-                            MyButton(
-                              fontsize: 16,
-                              paddingText: 16,
-                              text: 'Đăng ký',
-                              showIcon: false,
-                              onTap: () async {
-                                Navigator.push(
-                                  context,
-                                  SlideFromRightPageRoute(
-                                      page: RegisterPage2()),
-                                  // (Route<dynamic> route) => false,
-                                );
-                              },
-                            ),
-                          ],
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              MyTextfield(
+                                isPassword: false,
+                                placeHolder: "Email",
+                                controller: _emailController,
+                                focusNode: _emailFocusNode,
+                                errorMessage: errorMessages['email'],
+                                icon: Icons.email_outlined,
+                              ),
+                              const SizedBox(height: 10),
+                              MyTextfield(
+                                isPassword: true,
+                                placeHolder: "Mật khẩu",
+                                controller: _passwordController,
+                                sendCode: false,
+                                focusNode: _passwordFocusNode,
+                                errorMessage: errorMessages['password'],
+                                icon: Icons.lock_outline,
+                              ),
+                              const SizedBox(height: 10),
+                              MyTextfield(
+                                isPassword: true,
+                                placeHolder: "Nhập lại mật khẩu",
+                                controller: _checkPassword,
+                                sendCode: false,
+                                focusNode: _checkPasswordFocusNode,
+                                errorMessage: errorMessages['password'],
+                                icon: Icons.lock_outline,
+                              ),
+                              const SizedBox(height: 30),
+                              MyButton(
+                                fontsize: 16,
+                                paddingText: 16,
+                                text: 'Đăng ký',
+                                showIcon: false,
+                                onTap: () async {
+                                  Navigator.push(
+                                    context,
+                                    SlideFromRightPageRoute(
+                                        page: RegisterPage2()),
+                                    // (Route<dynamic> route) => false,
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

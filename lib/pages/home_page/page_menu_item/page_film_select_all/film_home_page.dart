@@ -4,6 +4,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
+import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_app_chat/components/my_listViewCardIteam.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/film_hayDangChieu_screen.dart';
@@ -93,34 +94,40 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
         controller: _scrollController,
         slivers: [
           SliverAppBar(
-            backgroundColor: Color(0XFF6F3CD7),
+            backgroundColor: mainColor,
             expandedHeight: _appBarHeightAnimation.value,
             floating: false,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              titlePadding: EdgeInsets.only(bottom: 16.0),
+              titlePadding: EdgeInsets.only(top: 5.0),
               title: Align(
                 alignment: Alignment.bottomCenter, // Căn giữa tiêu đề ở dưới
-                child: Text(
-                  'PANTHERs CINEMA',
-                  style: TextStyle(
-                    color: _appBarHeightAnimation.value <= 100
-                        ? Colors.white
-                        : Colors.black,
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: ColorFiltered(
+                    colorFilter:
+                        ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                    child: Image.asset(
+                      'assets/images/logoText2.png',
+                      width: 150, // Đặt chiều rộng tối đa
+                      height: 150, // Đặt chiều rộng tối đa
+                    )),
               ),
               centerTitle: true,
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.asset(
-                    'assets/images/background.png',
-                    fit: BoxFit.cover,
-                    color: Colors.white.withOpacity(0.6),
-                    colorBlendMode: BlendMode.dstATop,
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color(0x0FF6439FF), // Tím
+                          Color(0xFF4F75FF), // Xanh ngọc
+                          Color(0xFFFFFFFF), // Trắng
+                        ],
+                        stops: [0.0, 0.3, 1.0], // Phân bố đều hơn cho các màu
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
                   ),
                 ],
               ),

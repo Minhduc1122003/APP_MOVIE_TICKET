@@ -7,6 +7,7 @@ import 'package:flutter_app_chat/models/Chair_modal.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/cinema_seat_grid.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_billTicket/bill_Ticket_Screen.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_detail/detail_invoice.dart';
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -447,28 +448,28 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                           },
                         );
                       } else {
-                        Navigator.push(
-                          context,
-                          SlideFromRightPageRoute(
-                              page: DetailInvoice(
-                            movieID: widget.movieID,
-                            showTimeID: widget.showTimeID,
-                            seatCodes: seatIDList,
-                          )),
-                        );
-
                         // Navigator.push(
                         //   context,
                         //   SlideFromRightPageRoute(
-                        //     page: BillTicketScreen(
-                        //         movieID: widget.movieID,
-                        //         quantity: selectedCount,
-                        //         sumPrice:
-                        //             (_movieDetails!.price! * selectedCount),
-                        //         showTimeID: widget.showTimeID,
-                        //         seatCodes: seatIDList),
-                        //   ),
+                        //       page: DetailInvoice(
+                        //     movieID: widget.movieID,
+                        //     showTimeID: widget.showTimeID,
+                        //     seatCodes: seatIDList,
+                        //   )),
                         // );
+
+                        Navigator.push(
+                          context,
+                          SlideFromRightPageRoute(
+                            page: BillTicketScreen(
+                                movieID: widget.movieID,
+                                quantity: selectedCount,
+                                sumPrice:
+                                    (_movieDetails!.price! * selectedCount),
+                                showTimeID: widget.showTimeID,
+                                seatCodes: seatIDList),
+                          ),
+                        );
                       }
                     },
                   ),
