@@ -251,6 +251,9 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
                     ],
                   ),
                 ),
+                SizedBox(
+                  height: 80,
+                ),
               ],
             ),
           ),
@@ -441,28 +444,31 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
         scrollDirection: Axis.vertical,
         child: Column(
           children: _filteredShowtimes().map((row) {
-            return Column(
-              children: [
-                Row(
-                  children: row.map((showtime) {
-                    return Container(
-                      width:
-                          121, // Ensure this width matches the header row item width
-                      height: 40,
-                      padding: const EdgeInsets.all(8.0),
-                      alignment: Alignment.center,
-                      child: Text(showtime,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.black)),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                Divider(height: 1, color: Colors.grey), // Add divider here
-              ],
+            return Row(
+              children: row.map((showtime) {
+                return Container(
+                  width:
+                      121, // Ensure this width matches the header row item width
+                  height: 41,
+                  padding: const EdgeInsets.all(8.0),
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Colors.grey),
+                      right: BorderSide(color: Colors.grey),
+                    ),
+                  ),
+                  child: AutoSizeText(
+                    showtime,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.black),
+                    maxLines: 1,
+                    maxFontSize: 15,
+                    minFontSize: 10,
+                    overflow: TextOverflow.clip,
+                  ),
+                );
+              }).toList(),
             );
           }).toList(),
         ),
