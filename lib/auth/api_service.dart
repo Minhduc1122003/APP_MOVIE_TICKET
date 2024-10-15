@@ -24,7 +24,7 @@ class ApiService {
 
     // wifi cf24/24
 
-    baseUrl = 'http://192.168.1.29:8081';
+    baseUrl = 'http://192.168.1.10:8081';
   }
 
   late Response response;
