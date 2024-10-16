@@ -60,21 +60,28 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
   ];
 
   List<String> selectedGenres = [];
-  File? _image;
+  List<Map<String, dynamic>> _rows = [];
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
+    _addNewRow(); // Initialize with one row
   }
 
-  Future<void> _pickImage() async {
-    final ImagePicker _picker = ImagePicker();
+  Future<void> _pickImage(int index) async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() {
-        _image = File(image.path);
+        _rows[index]['image'] = File(image.path);
       });
     }
+  }
+
+  void _addNewRow() {
+    setState(() {
+      _rows.add({'image': null, 'name': TextEditingController()});
+    });
   }
 
   Future<void> _selectDate() async {
@@ -173,6 +180,7 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
                 TextButton(
                   child: Text('Xác nhận'),
                   onPressed: () {
+                    // Update the parent widget's state
                     setState(() {
                       selectedGenres = List.from(tempSelectedGenres);
                     });
@@ -184,7 +192,10 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
           },
         );
       },
-    );
+    ).then((_) {
+      // Ensure the parent widget's state is updated after the dialog is closed
+      setState(() {});
+    });
   }
 
   @override
@@ -225,13 +236,14 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
                             color: Colors.grey[200],
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: _image == null
+                          child: _rows.isEmpty || _rows[0]['image'] == null
                               ? Center(
                                   child: Icon(Icons.add,
                                       size: 40, color: Colors.grey[400]))
                               : ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
-                                  child: Image.file(_image!, fit: BoxFit.cover),
+                                  child: Image.file(_rows[0]['image'],
+                                      fit: BoxFit.cover),
                                 ),
                         ),
                         Positioned(
@@ -256,7 +268,7 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
                           right: 8,
                           child: IconButton(
                             icon: Icon(Icons.add_a_photo, color: Colors.white),
-                            onPressed: _pickImage,
+                            onPressed: () => _pickImage(0),
                           ),
                         ),
                       ],
@@ -289,64 +301,6 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
                                     contentPadding: EdgeInsets.symmetric(
                                         horizontal: 12, vertical: 8),
                                   ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey[300]!),
-                                  borderRadius: BorderRadius.circular(8),
-                                  color: Colors.white,
-                                ),
-                                child: InkWell(
-                                  onTap: _showMultiSelectDialog,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12.0, vertical: 11.0),
-                                    child: Row(
-                                      children: [
-                                        Text('Thể loại'),
-                                        Icon(Icons.add),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Wrap(
-                                  spacing: 5.0,
-                                  alignment: WrapAlignment.start,
-                                  children: selectedGenres.map((genre) {
-                                    return Container(
-                                      constraints: BoxConstraints(
-                                        maxWidth:
-                                            MediaQuery.of(context).size.width /
-                                                    2 -
-                                                10,
-                                      ),
-                                      child: Chip(
-                                        label: Text(
-                                          genre,
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                        ),
-                                        onDeleted: () {
-                                          setState(() {
-                                            selectedGenres.remove(genre);
-                                          });
-                                        },
-                                      ),
-                                    );
-                                  }).toList(),
                                 ),
                               ),
                             ],
@@ -416,6 +370,64 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
                               ],
                             ),
                           ),
+                          SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey[300]!),
+                                  borderRadius: BorderRadius.circular(8),
+                                  color: Colors.white,
+                                ),
+                                child: InkWell(
+                                  onTap: _showMultiSelectDialog,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12.0, vertical: 11.0),
+                                    child: Row(
+                                      children: [
+                                        Text('Thể loại'),
+                                        Icon(Icons.add),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Wrap(
+                                  spacing: 5.0,
+                                  alignment: WrapAlignment.start,
+                                  children: selectedGenres.map((genre) {
+                                    return Container(
+                                      constraints: BoxConstraints(
+                                        maxWidth:
+                                            MediaQuery.of(context).size.width /
+                                                    2 -
+                                                10,
+                                      ),
+                                      child: Chip(
+                                        label: Text(
+                                          genre,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        ),
+                                        onDeleted: () {
+                                          setState(() {
+                                            selectedGenres.remove(genre);
+                                          });
+                                        },
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -452,22 +464,55 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
                   maxLines: 3,
                 ),
                 SizedBox(height: 16),
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'Đạo diễn & Diễn viên',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
-                  ),
-                  maxLines: 2,
+                Column(
+                  children: _rows.asMap().entries.map((entry) {
+                    int index = entry.key;
+                    Map<String, dynamic> row = entry.value;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.add_a_photo),
+                            onPressed: () => _pickImage(index),
+                          ),
+                          if (row['image'] != null)
+                            Image.file(
+                              row['image'],
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                            ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: TextField(
+                              controller: row['name'],
+                              decoration: InputDecoration(
+                                hintText: 'Thêm tên',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                filled: true,
+                                fillColor: Colors.white,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.add),
+                            onPressed: _addNewRow,
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
                 ),
                 SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // Handle form submission
+                    },
                     child: Text('Hoàn tất'),
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.symmetric(vertical: 16),

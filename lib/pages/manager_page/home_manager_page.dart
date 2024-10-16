@@ -344,10 +344,7 @@ class _HomeTabState extends State<HomeTab> {
           physics: const NeverScrollableScrollPhysics(),
           children: [
             _buildGridItem('Đặt vé', 'Đặt vé', state.nhanSu, Icons.local_movies,
-                Colors.blue, () {
-              // Thêm sự kiện khi tap vào Nhân sự
-              // Xử lý logic hoặc điều hướng đến màn hình khác
-            }),
+                Colors.blue, () {}),
             _buildGridItem('Đặt combo', 'Thêm bắp/nước', state.tuyenDung,
                 Icons.fastfood, Colors.green, () {
               // Thêm sự kiện khi tap vào Tuyển dụng
@@ -398,74 +395,80 @@ class _HomeTabState extends State<HomeTab> {
           color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Stack(
-          children: [
-            Positioned(
-              child: Padding(
-                padding: const EdgeInsets.all(14.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AutoSizeText(
-                      title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                        fontSize: 16,
-                      ),
-                      minFontSize: 14,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    AutoSizeText(
-                      title2,
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
-                      minFontSize: 10, // Giảm kích thước chữ tối thiểu
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: AutoSizeText(
-                          count.length < 2 ? ' $count ' : count,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Calculate the icon size as a fraction of the container's width
+            double iconSize =
+                constraints.maxWidth * 0.35; // 20% of the container's width
+
+            return Stack(
+              children: [
+                Positioned(
+                  child: Padding(
+                    padding: const EdgeInsets.all(14.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AutoSizeText(
+                          title,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontSize: 14,
+                            color: color,
+                            fontSize: 16,
                           ),
-                          minFontSize: 12,
+                          minFontSize: 14,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                      ),
+                        AutoSizeText(
+                          title2,
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                          minFontSize: 10,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: AutoSizeText(
+                              count.length < 2 ? ' $count ' : count,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                              minFontSize: 10,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              child: Align(
-                alignment: Alignment.bottomRight,
-                child: SizedBox(
-                  width: 100,
-                  height: 100,
-                  child: Icon(
-                    icon,
-                    color: color,
-                    size: 50,
                   ),
                 ),
-              ),
-            ),
-          ],
+                Positioned(
+                  right: 10,
+                  bottom: 10,
+                  child: Align(
+                    alignment: Alignment.bottomRight,
+                    child: Icon(
+                      icon,
+                      color: color,
+                      size: iconSize, // Use calculated icon size
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
