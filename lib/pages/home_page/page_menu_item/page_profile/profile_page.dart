@@ -9,6 +9,7 @@ import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_profile/adm
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
+import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
@@ -49,316 +50,320 @@ class _ProfilePage extends State<ProfilePage> {
     double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     double statusBarHeight = MediaQuery.of(context).padding.top;
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color(0XFF6F3CD7),
-        automaticallyImplyLeading: false,
-        title: Text(
-          'Trang cá nhân',
-          style: TextStyle(color: Colors.white, fontSize: 20),
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: mainColor,
+          automaticallyImplyLeading: false,
+          title: Text(
+            'Trang cá nhân',
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          centerTitle: true,
         ),
-        centerTitle: true,
-      ),
-      backgroundColor: Colors.white,
-      body: BlocListener<SendCodeBloc, SendCodeState>(
-        listener: (context, state) async {
-          if (state is SendCodeError) {
-            print('login LoginError');
-            EasyLoading.showError('Sai tài khoản hoặc mật khẩu');
-          } else if (state is SendCodeWaiting) {
-            EasyLoading.show(status: 'Loading...');
-          } else if (state is SendCodeSuccess) {
-            final codeIS = state.code;
-            setState(() {});
-            EasyLoading.showSuccess(
-                "Đã gửi mã đến địa chỉ ${_emailController?.text}!");
-            print('Mã code: $codeIS');
+        backgroundColor: Colors.white,
+        body: BlocListener<SendCodeBloc, SendCodeState>(
+          listener: (context, state) async {
+            if (state is SendCodeError) {
+              print('login LoginError');
+              EasyLoading.showError('Sai tài khoản hoặc mật khẩu');
+            } else if (state is SendCodeWaiting) {
+              EasyLoading.show(status: 'Loading...');
+            } else if (state is SendCodeSuccess) {
+              final codeIS = state.code;
+              setState(() {});
+              EasyLoading.showSuccess(
+                  "Đã gửi mã đến địa chỉ ${_emailController?.text}!");
+              print('Mã code: $codeIS');
 
-            await Future.delayed(Duration(milliseconds: 150));
-          }
-        },
-        child: Stack(
-          children: [
-            // Đặt hình ảnh nền với độ mờ 20%
-            Positioned.fill(
-              child: ColorFiltered(
-                colorFilter: ColorFilter.mode(
-                  Colors.white.withOpacity(0.7),
-                  BlendMode.srcOver,
-                ),
-                child: Image.asset(
-                  'assets/images/background.png',
-                  fit: BoxFit.cover,
+              await Future.delayed(Duration(milliseconds: 150));
+            }
+          },
+          child: Stack(
+            children: [
+              // Đặt hình ảnh nền với độ mờ 20%
+              Positioned.fill(
+                child: ColorFiltered(
+                  colorFilter: ColorFilter.mode(
+                    Colors.white.withOpacity(0.7),
+                    BlendMode.srcOver,
+                  ),
+                  child: Image.asset(
+                    'assets/images/background.png',
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
-            ),
-            // Positioned widget for header
-            // Main content
-            Positioned.fill(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: EdgeInsets.only(bottom: keyboardHeight),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            buildUserInfoCard(),
-                            UtilitySection(
-                              title: 'Tiện ích',
-                              buttons: [
-                                UtilityButton(
-                                  color: Colors.pink,
-                                  title: 'Chat trực tuyến',
-                                  icon: Icons
-                                      .support, // Đổi thành icon phù hợp với "Trung tâm trợ giúp"
-                                  onPressed: () {
-                                    _chatService
-                                        .connect(); // Kết nối khi khởi tạo
-
-                                    Navigator.push(
-                                      context,
-                                      SlideFromRightPageRoute(
-                                        page: ChatPage(
-                                            userId: UserManager
-                                                .instance.user!.userId),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                            if (UserManager.instance.user?.role == 3)
+              // Positioned widget for header
+              // Main content
+              Positioned.fill(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: EdgeInsets.only(bottom: keyboardHeight),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              buildUserInfoCard(),
                               UtilitySection(
-                                title: 'Quản trị',
+                                title: 'Tiện ích',
                                 buttons: [
                                   UtilityButton(
                                     color: Colors.pink,
-                                    title: 'Quản lý người dùng',
+                                    title: 'Chat trực tuyến',
                                     icon: Icons
-                                        .people_alt_outlined, // Đổi thành icon phù hợp với "Quản lý người dùng"
-                                    isExpandable: true,
-                                    expandedItems: [
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Thống kê người dùng',
-                                        icon: Icons
-                                            .bar_chart, // Đổi thành icon phù hợp với "Thống kê người dùng"
-                                        textStyle: TextStyle(fontSize: 16),
-                                        onPressed: () {},
-                                      ),
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Chi tiết người dùng',
-                                        icon: Icons
-                                            .account_box, // Đổi thành icon phù hợp với "Chi tiết người dùng"
-                                        textStyle: TextStyle(fontSize: 16),
-                                        onPressed: () {},
-                                      ),
-                                      // Add more sub-items here as needed
-                                    ],
-                                    onPressed:
-                                        () {}, // This will be called when the item is tapped, even if it's expandable
-                                  ),
-                                  UtilityButton(
-                                    color: Colors.pink,
-                                    title: 'Quản lý phim',
-                                    icon: Icons
-                                        .movie, // Đổi thành icon phù hợp với "Quản lý phim"
-                                    isExpandable: true,
-                                    expandedItems: [
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Thêm phim sắp chiếu',
-                                        icon: Icons
-                                            .add, // Đổi thành icon phù hợp với "Thêm phim sắp chiếu"
-                                        textStyle: TextStyle(fontSize: 16),
-                                        onPressed: () {},
-                                      ),
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Chỉnh sửa nội dung',
-                                        icon: Icons
-                                            .mode_edit_outline_rounded, // Đổi thành icon phù hợp với "Chỉnh sửa nội dung"
-                                        textStyle: TextStyle(fontSize: 16),
-                                        onPressed: () {},
-                                      ),
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Quản lý xuất chiếu',
-                                        icon: Icons
-                                            .event, // Đổi thành icon phù hợp với "Quản lý xuất chiếu"
-                                        textStyle: TextStyle(fontSize: 16),
-                                        onPressed: () {},
-                                      ),
-                                      // Add more sub-items here as needed
-                                    ],
-                                    onPressed:
-                                        () {}, // This will be called when the item is tapped, even if it's expandable
-                                  ),
-                                  UtilityButton(
-                                    color: Colors.pink,
-                                    title: 'Quản lý phòng chiếu',
-                                    icon: Icons
-                                        .account_box, // Đổi thành icon phù hợp với "Chi tiết người dùng"
-                                    onPressed: () {},
-                                  ),
-                                  UtilityButton(
-                                    color: Colors.pink,
-                                    title: 'Báo cáo &  thống kê doanh thu',
-                                    icon: Icons
-                                        .account_box, // Đổi thành icon phù hợp với "Chi tiết người dùng"
-                                    onPressed: () {},
+                                        .support, // Đổi thành icon phù hợp với "Trung tâm trợ giúp"
+                                    onPressed: () {
+                                      _chatService
+                                          .connect(); // Kết nối khi khởi tạo
+
+                                      Navigator.push(
+                                        context,
+                                        SlideFromRightPageRoute(
+                                          page: ChatPage(
+                                              userId: UserManager
+                                                  .instance.user!.userId),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ],
                               ),
-                            UtilitySection(
-                              title: 'Trợ giúp & hỗ trợ',
-                              buttons: UserManager.instance.user?.role == true
-                                  ? [
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Tiếp nhận hỗ trợ',
-                                        icon: Icons.email_outlined,
-                                        onPressed: () {},
-                                      ),
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Tiếp nhận sự cố',
-                                        icon: Icons.warning_amber_outlined,
-                                        onPressed: () {},
-                                      ),
-                                    ]
-                                  : [
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Trung tâm trợ giúp',
-                                        icon: Icons
-                                            .help, // Đổi thành icon phù hợp với "Trung tâm trợ giúp"
-                                        onPressed: () {},
-                                      ),
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Hộp thư trợ',
-                                        icon: Icons
-                                            .support, // Giữ nguyên icon nếu cảm thấy phù hợp
-                                        onPressed: () {},
-                                      ),
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Báo cáo sự cố',
-                                        icon: Icons
-                                            .report, // Đổi thành icon phù hợp với "Báo cáo sự cố"
-                                        onPressed: () {},
-                                      ),
-                                      UtilityButton(
-                                        color: Colors.pink,
-                                        title: 'Điều khoản & chính sách',
-                                        icon: Icons
-                                            .description, // Đổi thành icon phù hợp với "Điều khoản & chính sách"
-                                        onPressed: () {},
-                                      ),
-                                    ],
-                            ),
-                            UtilitySection(
-                              title: 'Cài đặt & quyền riêng tư',
-                              buttons: [
-                                UtilityButton(
-                                  color: Colors.pink,
-                                  title: 'Trung tâm tài khoản',
-                                  icon: Icons
-                                      .account_circle_outlined, // Đổi thành icon phù hợp với "Trung tâm tài khoản"
-                                  onPressed: () {},
+                              if (UserManager.instance.user?.role == 3)
+                                UtilitySection(
+                                  title: 'Quản trị',
+                                  buttons: [
+                                    UtilityButton(
+                                      color: Colors.pink,
+                                      title: 'Quản lý người dùng',
+                                      icon: Icons
+                                          .people_alt_outlined, // Đổi thành icon phù hợp với "Quản lý người dùng"
+                                      isExpandable: true,
+                                      expandedItems: [
+                                        UtilityButton(
+                                          color: Colors.pink,
+                                          title: 'Thống kê người dùng',
+                                          icon: Icons
+                                              .bar_chart, // Đổi thành icon phù hợp với "Thống kê người dùng"
+                                          textStyle: TextStyle(fontSize: 16),
+                                          onPressed: () {},
+                                        ),
+                                        UtilityButton(
+                                          color: Colors.pink,
+                                          title: 'Chi tiết người dùng',
+                                          icon: Icons
+                                              .account_box, // Đổi thành icon phù hợp với "Chi tiết người dùng"
+                                          textStyle: TextStyle(fontSize: 16),
+                                          onPressed: () {},
+                                        ),
+                                        // Add more sub-items here as needed
+                                      ],
+                                      onPressed:
+                                          () {}, // This will be called when the item is tapped, even if it's expandable
+                                    ),
+                                    UtilityButton(
+                                      color: Colors.pink,
+                                      title: 'Quản lý phim',
+                                      icon: Icons
+                                          .movie, // Đổi thành icon phù hợp với "Quản lý phim"
+                                      isExpandable: true,
+                                      expandedItems: [
+                                        UtilityButton(
+                                          color: Colors.pink,
+                                          title: 'Thêm phim sắp chiếu',
+                                          icon: Icons
+                                              .add, // Đổi thành icon phù hợp với "Thêm phim sắp chiếu"
+                                          textStyle: TextStyle(fontSize: 16),
+                                          onPressed: () {},
+                                        ),
+                                        UtilityButton(
+                                          color: Colors.pink,
+                                          title: 'Chỉnh sửa nội dung',
+                                          icon: Icons
+                                              .mode_edit_outline_rounded, // Đổi thành icon phù hợp với "Chỉnh sửa nội dung"
+                                          textStyle: TextStyle(fontSize: 16),
+                                          onPressed: () {},
+                                        ),
+                                        UtilityButton(
+                                          color: Colors.pink,
+                                          title: 'Quản lý xuất chiếu',
+                                          icon: Icons
+                                              .event, // Đổi thành icon phù hợp với "Quản lý xuất chiếu"
+                                          textStyle: TextStyle(fontSize: 16),
+                                          onPressed: () {},
+                                        ),
+                                        // Add more sub-items here as needed
+                                      ],
+                                      onPressed:
+                                          () {}, // This will be called when the item is tapped, even if it's expandable
+                                    ),
+                                    UtilityButton(
+                                      color: Colors.pink,
+                                      title: 'Quản lý phòng chiếu',
+                                      icon: Icons
+                                          .account_box, // Đổi thành icon phù hợp với "Chi tiết người dùng"
+                                      onPressed: () {},
+                                    ),
+                                    UtilityButton(
+                                      color: Colors.pink,
+                                      title: 'Báo cáo &  thống kê doanh thu',
+                                      icon: Icons
+                                          .account_box, // Đổi thành icon phù hợp với "Chi tiết người dùng"
+                                      onPressed: () {},
+                                    ),
+                                  ],
                                 ),
-                                UtilityButton(
-                                  trailingIconType: TrailingIconType.toggle,
-                                  color: Colors.pink,
-                                  title: 'Chế độ tối',
-                                  icon: Icons
-                                      .nightlight_round, // Đổi thành icon phù hợp với "Chế độ tối"
-                                  onPressed: () {},
-                                ),
-                                UtilityButton(
-                                  trailingIconType: TrailingIconType
-                                      .toggle, // Sử dụng kiểu toggle cho icon phía sau
-                                  color: Colors.pink, // Màu của icon và toggle
-                                  title: 'Ngôn ngữ', // Tiêu đề của nút
-                                  icon: Icons
-                                      .translate, // Đổi thành icon phù hợp với "Ngôn ngữ"
-                                  isToggled: true,
-                                  onPressed: () {
-                                    print("Nút 'Ngôn ngữ' đã được nhấn");
-                                  },
-                                  onToggleChanged: (bool newState) {
-                                    print(
-                                        "Trạng thái toggle đã thay đổi: $newState");
-                                  },
-                                ),
-                                UtilityButton(
-                                  color: Colors.pink,
-                                  trailingIconType: TrailingIconType.none,
-                                  title: 'Đăng xuất',
-                                  icon: Icons
-                                      .exit_to_app, // Đổi thành icon phù hợp với "Đăng xuất"
-                                  onPressed: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title:
-                                              const Text('Xác nhận đăng xuất'),
-                                          content: const Text(
-                                              'Bạn có muốn đăng xuất không?'),
-                                          actions: <Widget>[
-                                            TextButton(
-                                              onPressed: () {
-                                                // Hành động khi người dùng nhấn "Không"
-                                                Navigator.of(context)
-                                                    .pop(); // Đóng hộp thoại
-                                              },
-                                              child: const Text('Hủy'),
-                                            ),
-                                            TextButton(
-                                              onPressed: () async {
-                                                UserManager.instance
-                                                    .clearUser();
-                                                Navigator.pushAndRemoveUntil(
-                                                  context,
-                                                  SlideFromLeftPageRoute(
-                                                      page: HomePage()),
-                                                  (Route<dynamic> route) =>
-                                                      false, // Xóa tất cả các route trước đó
-                                                );
-                                              },
-                                              child: const Text(
-                                                'Đăng xuất',
-                                                style: TextStyle(
-                                                    color: Colors.red),
+                              UtilitySection(
+                                title: 'Trợ giúp & hỗ trợ',
+                                buttons: UserManager.instance.user?.role == true
+                                    ? [
+                                        UtilityButton(
+                                          color: Colors.pink,
+                                          title: 'Tiếp nhận hỗ trợ',
+                                          icon: Icons.email_outlined,
+                                          onPressed: () {},
+                                        ),
+                                        UtilityButton(
+                                          color: Colors.pink,
+                                          title: 'Tiếp nhận sự cố',
+                                          icon: Icons.warning_amber_outlined,
+                                          onPressed: () {},
+                                        ),
+                                      ]
+                                    : [
+                                        UtilityButton(
+                                          color: Colors.pink,
+                                          title: 'Trung tâm trợ giúp',
+                                          icon: Icons
+                                              .help, // Đổi thành icon phù hợp với "Trung tâm trợ giúp"
+                                          onPressed: () {},
+                                        ),
+                                        UtilityButton(
+                                          color: Colors.pink,
+                                          title: 'Hộp thư trợ',
+                                          icon: Icons
+                                              .support, // Giữ nguyên icon nếu cảm thấy phù hợp
+                                          onPressed: () {},
+                                        ),
+                                        UtilityButton(
+                                          color: Colors.pink,
+                                          title: 'Báo cáo sự cố',
+                                          icon: Icons
+                                              .report, // Đổi thành icon phù hợp với "Báo cáo sự cố"
+                                          onPressed: () {},
+                                        ),
+                                        UtilityButton(
+                                          color: Colors.pink,
+                                          title: 'Điều khoản & chính sách',
+                                          icon: Icons
+                                              .description, // Đổi thành icon phù hợp với "Điều khoản & chính sách"
+                                          onPressed: () {},
+                                        ),
+                                      ],
+                              ),
+                              UtilitySection(
+                                title: 'Cài đặt & quyền riêng tư',
+                                buttons: [
+                                  UtilityButton(
+                                    color: Colors.pink,
+                                    title: 'Trung tâm tài khoản',
+                                    icon: Icons
+                                        .account_circle_outlined, // Đổi thành icon phù hợp với "Trung tâm tài khoản"
+                                    onPressed: () {},
+                                  ),
+                                  UtilityButton(
+                                    trailingIconType: TrailingIconType.toggle,
+                                    color: Colors.pink,
+                                    title: 'Chế độ tối',
+                                    icon: Icons
+                                        .nightlight_round, // Đổi thành icon phù hợp với "Chế độ tối"
+                                    onPressed: () {},
+                                  ),
+                                  UtilityButton(
+                                    trailingIconType: TrailingIconType
+                                        .toggle, // Sử dụng kiểu toggle cho icon phía sau
+                                    color:
+                                        Colors.pink, // Màu của icon và toggle
+                                    title: 'Ngôn ngữ', // Tiêu đề của nút
+                                    icon: Icons
+                                        .translate, // Đổi thành icon phù hợp với "Ngôn ngữ"
+                                    isToggled: true,
+                                    onPressed: () {
+                                      print("Nút 'Ngôn ngữ' đã được nhấn");
+                                    },
+                                    onToggleChanged: (bool newState) {
+                                      print(
+                                          "Trạng thái toggle đã thay đổi: $newState");
+                                    },
+                                  ),
+                                  UtilityButton(
+                                    color: Colors.pink,
+                                    trailingIconType: TrailingIconType.none,
+                                    title: 'Đăng xuất',
+                                    icon: Icons
+                                        .exit_to_app, // Đổi thành icon phù hợp với "Đăng xuất"
+                                    onPressed: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            title: const Text(
+                                                'Xác nhận đăng xuất'),
+                                            content: const Text(
+                                                'Bạn có muốn đăng xuất không?'),
+                                            actions: <Widget>[
+                                              TextButton(
+                                                onPressed: () {
+                                                  // Hành động khi người dùng nhấn "Không"
+                                                  Navigator.of(context)
+                                                      .pop(); // Đóng hộp thoại
+                                                },
+                                                child: const Text('Hủy'),
                                               ),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
+                                              TextButton(
+                                                onPressed: () async {
+                                                  UserManager.instance
+                                                      .clearUser();
+                                                  Navigator.pushAndRemoveUntil(
+                                                    context,
+                                                    SlideFromLeftPageRoute(
+                                                        page: HomePage()),
+                                                    (Route<dynamic> route) =>
+                                                        false, // Xóa tất cả các route trước đó
+                                                  );
+                                                },
+                                                child: const Text(
+                                                  'Đăng xuất',
+                                                  style: TextStyle(
+                                                      color: Colors.red),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    // Các phần tử cố định ở cuối màn hình
-                  ],
+                      // Các phần tử cố định ở cuối màn hình
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

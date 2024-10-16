@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_chat/models/user_manager.dart';
 
 import '../../../../../../../auth/api_service.dart';
 
@@ -6,12 +7,16 @@ class DetailInvoice extends StatefulWidget {
   final int movieID;
   final int showTimeID;
   final List<int> seatCodes;
+  final int quantity;
+  final double sumPrice;
 
   const DetailInvoice({
     Key? key,
     required this.movieID,
+    required this.quantity,
+    required this.sumPrice,
     required this.showTimeID,
-    required this.seatCodes, // Nhận danh sách ghế từ constructor
+    required this.seatCodes,
   }) : super(key: key);
 
   @override
@@ -26,6 +31,51 @@ class _DetailInvoiceState extends State<DetailInvoice>
   void initState() {
     super.initState();
     _apiService = ApiService();
+    _insertBuyTicket();
+  }
+
+  Future<void> _insertBuyTicket() async {
+    try {
+      // Cộng các chuỗi từ userId, quantity, showTimeID
+      String combinedString = UserManager.instance.user!.userId.toString() +
+          widget.quantity.toString() +
+          widget.showTimeID.toString();
+
+      String firstSeatCode =
+          widget.seatCodes.isNotEmpty ? widget.seatCodes[0].toString() : '';
+
+      combinedString += firstSeatCode;
+
+      int finalResult;
+      try {
+        finalResult = int.parse(combinedString);
+        print("finalResult: $finalResult");
+      } catch (e) {
+        print("Error: $e");
+        finalResult = 0; // Hoặc một giá trị mặc định khác
+      }
+
+// Gọi hàm insertBuyTicket với finalResult
+      final response = await _apiService.insertBuyTicket(
+        finalResult, // Sử dụng finalResult đã chuyển đổi
+        '${UserManager.instance.user?.userId}',
+        widget.movieID,
+        widget.quantity,
+        widget.sumPrice.toDouble(),
+        widget.showTimeID,
+        widget.seatCodes,
+      );
+
+      // Xử lý phản hồi
+      if (response != null) {
+        // Có thể hiển thị thông báo hoặc thực hiện hành động nào đó với dữ liệu nhận được
+        print("Thành công: $response");
+      } else {
+        print("Không nhận được dữ liệu từ API");
+      }
+    } catch (e) {
+      print("Lỗi khi gọi API: $e");
+    }
   }
 
   @override

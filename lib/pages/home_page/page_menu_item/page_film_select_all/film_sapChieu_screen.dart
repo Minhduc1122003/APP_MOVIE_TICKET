@@ -4,6 +4,7 @@ import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/my_listViewCardIteam.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
+import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:diacritic/diacritic.dart'; // Để xử lý loại bỏ dấu
@@ -77,7 +78,7 @@ class _FilmSapchieuScreenState extends State<FilmSapchieuScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: Colors.deepPurple,
+          backgroundColor: mainColor,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_outlined,
                 color: Colors.white, size: 16),
@@ -141,7 +142,7 @@ class _FilmSapchieuScreenState extends State<FilmSapchieuScreen> {
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple,
+                        color: mainColor,
                       ),
                     ),
                   ),

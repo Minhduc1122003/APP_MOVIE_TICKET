@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/models/Chair_modal.dart';
+import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class CinemaSeatGrid extends StatefulWidget {
@@ -61,7 +62,7 @@ class _CinemaSeatGridState extends State<CinemaSeatGrid> {
 
             // Set chair color based on its status
             if (selectedChairs.contains(index)) {
-              seatColor = Color(0xFF6F3CD7); // Selected seat color
+              seatColor = mainColor; // Selected seat color
               seatTextColor = Colors.white;
             } else if (chair.reservationStatus) {
               seatColor = Colors.red; // Reserved seat color
@@ -78,16 +79,33 @@ class _CinemaSeatGridState extends State<CinemaSeatGrid> {
               onTap: () {
                 setState(() {
                   if (chair.reservationStatus) {
-                    return; // Không làm gì nếu ghế đã được đặt
+                    // Show a toast message if the chair is already reserved
+                    if (_toastTimer == null || !_toastTimer!.isActive) {
+                      Fluttertoast.showToast(
+                        msg: "Ghế này đã được đặt trước!",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.CENTER,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.black.withOpacity(0.8),
+                        textColor: Colors.white,
+                        fontSize: 16.0,
+                      );
+                      _toastTimer = Timer(Duration(seconds: 2), () {
+                        _toastTimer = null;
+                      });
+                    }
+                    return; // Exit the function to prevent any further action
                   } else if (selectedChairs.contains(index)) {
-                    // Xóa ghế đã chọn
+                    // Remove the selected chair
                     selectedChairs.remove(index);
-                    widget.onCountChanged(-1); // Giảm số ghế đã chọn
+                    widget.onCountChanged(
+                        -1); // Decrease the count of selected chairs
                     widget.onChairSelected(chair.seatID,
-                        chair.chairCode); // Gửi thông tin ghế để hủy chọn
-                    seatIDList.remove(chair.seatID); // Xóa ID khỏi seatIDList
+                        chair.chairCode); // Send chair info for deselection
+                    seatIDList
+                        .remove(chair.seatID); // Remove ID from seatIDList
                   } else {
-                    // Kiểm tra xem có thể thêm ghế khác không
+                    // Check if another chair can be added
                     if (selectedChairs.length >= 5) {
                       if (_toastTimer == null || !_toastTimer!.isActive) {
                         Fluttertoast.showToast(
@@ -103,13 +121,15 @@ class _CinemaSeatGridState extends State<CinemaSeatGrid> {
                           _toastTimer = null;
                         });
                       }
+                      return; // Exit the function to prevent adding more seats
                     }
-                    // Thêm ghế đã chọn
+                    // Add the selected chair
                     selectedChairs.add(index);
-                    widget.onCountChanged(1); // Tăng số ghế đã chọn
+                    widget.onCountChanged(
+                        1); // Increase the count of selected chairs
                     widget.onChairSelected(
-                        chair.seatID, chair.chairCode); // Gửi thông tin ghế
-                    seatIDList.add(chair.seatID); // Thêm ID vào seatIDList
+                        chair.seatID, chair.chairCode); // Send chair info
+                    seatIDList.add(chair.seatID); // Add ID to seatIDList
                   }
                 });
               },
@@ -117,7 +137,7 @@ class _CinemaSeatGridState extends State<CinemaSeatGrid> {
                 decoration: BoxDecoration(
                   color: seatColor,
                   borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: Color(0xFF6F3CD7), width: 0.5),
+                  border: Border.all(color: mainColor, width: 0.5),
                 ),
                 child: Center(
                   child: Text(

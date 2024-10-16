@@ -8,6 +8,7 @@ import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/bloc/film_info_Bloc.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/buyTicket_page.dart';
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
+import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:lottie/lottie.dart'; // Import package
@@ -52,53 +53,56 @@ class _FilmInformationState extends State<FilmInformation>
           final movie = snapshot.data;
           return BlocProvider(
             create: (context) => FilmInfoBloc()..add(LoadData(movie)),
-            child: Scaffold(
-              appBar: AppBar(
-                backgroundColor: Color(0XFF6F3CD7),
-                leading: IconButton(
-                  icon: Icon(
-                    Icons.arrow_back_ios_new_outlined,
-                    color: Colors.white,
-                    size: 16,
+            child: SafeArea(
+              top: false,
+              child: Scaffold(
+                appBar: AppBar(
+                  backgroundColor: mainColor,
+                  leading: IconButton(
+                    icon: Icon(
+                      Icons.arrow_back_ios_new_outlined,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
                   ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
+                  title: Text(
+                    'Chi tiết phim',
+                    style: TextStyle(color: Colors.white, fontSize: 20),
+                  ),
+                  centerTitle: true,
                 ),
-                title: Text(
-                  'Chi tiết phim',
-                  style: TextStyle(color: Colors.white, fontSize: 20),
-                ),
-                centerTitle: true,
-              ),
-              backgroundColor: Colors.white,
-              body: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            MovieHeader(),
-                            MovieInfo(),
-                            RatingSection(),
-                            PlotSummary(),
-                            CastAndCrew(),
-                            BuyTicketButton(),
-                          ],
+                backgroundColor: Colors.white,
+                body: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              MovieHeader(),
+                              MovieInfo(),
+                              RatingSection(),
+                              PlotSummary(),
+                              CastAndCrew(),
+                              BuyTicketButton(),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: BuyTicketButton(),
-                  )
-                ],
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: BuyTicketButton(),
+                    )
+                  ],
+                ),
               ),
             ),
           );
@@ -312,7 +316,7 @@ class _MovieHeaderState extends State<MovieHeader>
                                 foregroundColor: Colors.black,
                                 side: const BorderSide(color: Colors.grey),
                                 padding: const EdgeInsets.only(
-                                    top: 0, left: 5, right: 5, bottom: 0),
+                                    top: 0, left: 0, right: 5, bottom: 0),
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -322,7 +326,7 @@ class _MovieHeaderState extends State<MovieHeader>
                                       Lottie.network(
                                         'https://lottie.host/e5a06743-9f9a-413a-a927-c7995c78aead/RX9Sv0FDU8.json',
                                         width:
-                                            30, // Điều chỉnh kích thước Lottie vừa với nội dung
+                                            25, // Điều chỉnh kích thước Lottie vừa với nội dung
                                         height: 30,
                                         fit: BoxFit
                                             .cover, // Đảm bảo Lottie vừa khít với kích thước đã đặt
@@ -338,7 +342,7 @@ class _MovieHeaderState extends State<MovieHeader>
                                           color:
                                               state.movieDetails?.favourite ==
                                                       true
-                                                  ? Color(0XFF6F3CD7)
+                                                  ? mainColor
                                                   : Colors.black,
                                         ),
                                       ),

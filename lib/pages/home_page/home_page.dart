@@ -10,6 +10,7 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'dart:async';
 
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/film_home_page.dart';
+import 'package:flutter_app_chat/themes/colorsTheme.dart';
 
 class HomePage extends StatefulWidget {
   final int initialPageIndex;
@@ -110,24 +111,28 @@ class _HomePage extends State<HomePage> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: _handleWillPop,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: _isLoading
-            ? Center(child: CircularProgressIndicator())
-            : IndexedStack(
-                index: _page,
-                children: [
-                  FilmSelectionPage(
-                    filmDangChieu: _filmDangChieu,
-                    filmSapChieu: _filmSapChieu,
-                    scrollNotifier: _scrollNotifier,
-                  ),
-                  MyTicketsPage(),
-                  HistoryPage(),
-                  CheckUserPage(),
-                ],
-              ),
-        bottomNavigationBar: _buildAnimatedBottomNavBar(),
+      child: SafeArea(
+        top: false, // Không áp dụng padding cho phần trên
+
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          body: _isLoading
+              ? Center(child: CircularProgressIndicator())
+              : IndexedStack(
+                  index: _page,
+                  children: [
+                    FilmSelectionPage(
+                      filmDangChieu: _filmDangChieu,
+                      filmSapChieu: _filmSapChieu,
+                      scrollNotifier: _scrollNotifier,
+                    ),
+                    MyTicketsPage(),
+                    HistoryPage(),
+                    CheckUserPage(),
+                  ],
+                ),
+          bottomNavigationBar: _buildAnimatedBottomNavBar(),
+        ),
       ),
     );
   }
@@ -236,14 +241,14 @@ class _HomePage extends State<HomePage> {
             : Icon(
                 icon,
                 size: isSelected ? 20 : 18,
-                color: isSelected ? Color(0XFF6F3CD7) : Colors.black,
+                color: isSelected ? mainColor : Colors.black,
               ),
         Text(
           label,
           style: TextStyle(
             fontWeight: FontWeight.w500,
             fontSize: isSelected ? 10 : 8,
-            color: isSelected ? Color(0XFF6F3CD7) : Colors.black,
+            color: isSelected ? mainColor : Colors.black,
           ),
         ),
       ],

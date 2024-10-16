@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:auto_size_text/auto_size_text.dart'; // Import package
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter_app_chat/themes/colorsTheme.dart'; // Import package
 
 class ExpandableInfoCard extends StatefulWidget {
   final String title;
@@ -66,7 +67,7 @@ class _ExpandableInfoCardState extends State<ExpandableInfoCard>
           borderRadius: BorderRadius.circular(10),
           border: Border(
             bottom: BorderSide(
-              color: Color(0XFF6F3CD7),
+              color: mainColor,
               width: 5.0,
             ),
           ),
@@ -130,7 +131,7 @@ class _ExpandableInfoCardState extends State<ExpandableInfoCard>
                         child: Text(
                           _isExpanded ? '<< Rút gọn' : 'Xem thêm >>',
                           style: const TextStyle(
-                            color: Color(0XFF6F3CD7),
+                            color: mainColor,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

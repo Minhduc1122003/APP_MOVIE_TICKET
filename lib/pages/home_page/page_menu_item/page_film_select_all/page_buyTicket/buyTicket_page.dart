@@ -10,6 +10,7 @@ import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/film_information.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/bloc/buyTicket_Bloc.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/ChooseSeats_screem.dart';
+import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
@@ -67,83 +68,86 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => BuyticketBloc()..add(LoadData1([])),
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Color(0XFF6F3CD7),
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_new_outlined,
-              color: Colors.white,
-              size: 16,
+      child: SafeArea(
+        top: false,
+        child: Scaffold(
+          appBar: AppBar(
+            backgroundColor: mainColor,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back_ios_new_outlined,
+                color: Colors.white,
+                size: 16,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
             ),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
+            title: Text(
+              'Trung Tâm Đặt Vé',
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+            centerTitle: true,
           ),
-          title: Text(
-            'Trung Tâm Đặt Vé',
-            style: TextStyle(color: Colors.white, fontSize: 20),
-          ),
-          centerTitle: true,
-        ),
-        backgroundColor: Colors.white,
-        body: SingleChildScrollView(
-            child: FutureBuilder<MovieDetails?>(
-                future: _loadMovieDetails(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Lỗi: ${snapshot.error}'));
-                  } else if (!snapshot.hasData) {
-                    return Center(child: Text('Không có dữ liệu'));
-                  }
+          backgroundColor: Colors.white,
+          body: SingleChildScrollView(
+              child: FutureBuilder<MovieDetails?>(
+                  future: _loadMovieDetails(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Lỗi: ${snapshot.error}'));
+                    } else if (!snapshot.hasData) {
+                      return Center(child: Text('Không có dữ liệu'));
+                    }
 
-                  final movieDetails = snapshot.data!;
+                    final movieDetails = snapshot.data!;
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      MovieHeader(
-                        movieId: widget.movieId,
-                        apiService: _APIService,
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      const Divider(
-                        height: 0,
-                        thickness: 6,
-                        color: Color(0xfff0f0f0),
-                      ),
-                      DateSelector(),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const Divider(
-                        height: 2,
-                        thickness: 6,
-                        color: Color(0xfff0f0f0),
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
-                        child: Text(
-                          'Chọn rạp',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        MovieHeader(
+                          movieId: widget.movieId,
+                          apiService: _APIService,
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        const Divider(
+                          height: 0,
+                          thickness: 6,
+                          color: Color(0xfff0f0f0),
+                        ),
+                        DateSelector(),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const Divider(
+                          height: 2,
+                          thickness: 6,
+                          color: Color(0xfff0f0f0),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
+                          child: Text(
+                            'Chọn rạp',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                      _buildCinemaItem(
-                          context,
-                          widget.movieId,
-                          '${movieDetails.cinemaName}',
-                          '${movieDetails.cinemaAddress}',
-                          _showtimes),
-                    ],
-                  );
-                })),
+                        _buildCinemaItem(
+                            context,
+                            widget.movieId,
+                            '${movieDetails.cinemaName}',
+                            '${movieDetails.cinemaAddress}',
+                            _showtimes),
+                      ],
+                    );
+                  })),
+        ),
       ),
     );
   }
@@ -535,7 +539,7 @@ class _DateSelectorState extends State<DateSelector> {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: isSelected ? Color(0XFF6F3CD7) : Colors.white,
+          color: isSelected ? mainColor : Colors.white,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected ? Colors.transparent : Colors.grey,
@@ -649,7 +653,7 @@ Widget _buildCinemaItem(BuildContext context, int movieID, String cinemaName,
       decoration: BoxDecoration(
         color: Colors.white, // Nền trắng
         border: Border.all(
-          color: Colors.blue, // Luôn luôn màu viền xanh
+          color: mainColor, // Luôn luôn màu viền xanh
           width: 1, // Độ dày đường viền 1px
         ),
         borderRadius: BorderRadius.circular(10), // Bo tròn các góc
@@ -734,7 +738,8 @@ Widget _buildCinemaItem(BuildContext context, int movieID, String cinemaName,
                           width: (timeSlots.length > 1)
                               ? (MediaQuery.of(context).size.width - 48 - 16) /
                                   3
-                              : null, // Nếu chỉ có 1 mục thì không giới hạn chiều rộng
+                              : (MediaQuery.of(context).size.width - 48 - 16) /
+                                  3, // Nếu chỉ có 1 mục thì không giới hạn chiều rộng
                           child: Align(
                             alignment: Alignment.centerLeft, // Căn trái
                             child: _buildTimeSlot(
@@ -785,7 +790,7 @@ Widget _buildTimeSlot(String startTime, String endTime,
       margin: EdgeInsets.symmetric(horizontal: 4),
       padding: EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: isSelected ? Color(0XFF6F3CD7) : Colors.white,
+        color: isSelected ? mainColor : Colors.white,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: isSelected ? Colors.transparent : Colors.grey,
@@ -793,14 +798,14 @@ Widget _buildTimeSlot(String startTime, String endTime,
       ),
       child: Center(
           child: Row(
-        mainAxisSize: MainAxisSize.min, // Chỉ sử dụng chiều rộng tối thiểu
+        mainAxisSize: MainAxisSize.max, // Chỉ sử dụng chiều rộng tối thiểu
         children: [
           AutoSizeText(
             startTime,
             style: TextStyle(
                 color: isSelected ? Colors.white : Colors.black,
                 fontWeight: FontWeight.w300),
-            maxFontSize: 14, // Cỡ chữ tối đa
+            maxFontSize: 12, // Cỡ chữ tối đa
             minFontSize: 8, // Cỡ chữ tối thiểu
             maxLines: 1, // Chỉ hiển thị một dòng
           ),
@@ -810,7 +815,7 @@ Widget _buildTimeSlot(String startTime, String endTime,
             style: TextStyle(
               color: isSelected ? Colors.grey : Colors.grey,
             ),
-            maxFontSize: 11, // Cỡ chữ tối đa
+            maxFontSize: 10, // Cỡ chữ tối đa
             minFontSize: 6, // Cỡ chữ tối thiểu
             maxLines: 1, // Chỉ hiển thị một dòng
           ),

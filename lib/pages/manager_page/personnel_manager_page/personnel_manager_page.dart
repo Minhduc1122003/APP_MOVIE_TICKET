@@ -11,14 +11,14 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 import 'package:diacritic/diacritic.dart'; // Để xử lý loại bỏ dấu
 
-class FilmHaydangchieuScreen extends StatefulWidget {
-  const FilmHaydangchieuScreen({super.key});
+class PersonnelManagerPage extends StatefulWidget {
+  const PersonnelManagerPage({super.key});
 
   @override
-  State<FilmHaydangchieuScreen> createState() => _FilmHaydangchieuScreenState();
+  State<PersonnelManagerPage> createState() => _FilmHaydangchieuScreenState();
 }
 
-class _FilmHaydangchieuScreenState extends State<FilmHaydangchieuScreen> {
+class _FilmHaydangchieuScreenState extends State<PersonnelManagerPage> {
   late Future<List<MovieDetails>> _moviesFuture;
   late ApiService _APIService;
   bool isSearching = false;

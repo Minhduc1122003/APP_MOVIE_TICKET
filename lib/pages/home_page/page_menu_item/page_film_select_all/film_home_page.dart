@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_app_chat/components/my_listViewCardIteam.dart';
@@ -45,7 +46,10 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
   void initState() {
     super.initState();
     _startSlideshow();
-
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+    ));
     _animationController = AnimationController(
       duration: Duration(milliseconds: 300),
       vsync: this,
@@ -90,6 +94,7 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       body: CustomScrollView(
         controller: _scrollController,
         slivers: [
@@ -99,19 +104,20 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
             floating: false,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              titlePadding: EdgeInsets.only(top: 5.0),
+              centerTitle: true, // Đảm bảo tiêu đề được căn giữa
+              titlePadding: EdgeInsets.only(
+                  top: 35.0), // Điều chỉnh padding để căn giữa theo chiều dọc
               title: Align(
-                alignment: Alignment.bottomCenter, // Căn giữa tiêu đề ở dưới
+                alignment: Alignment.bottomCenter, // Căn giữa theo chiều dọc
                 child: ColorFiltered(
-                    colorFilter:
-                        ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                    child: Image.asset(
-                      'assets/images/logoText2.png',
-                      width: 150, // Đặt chiều rộng tối đa
-                      height: 150, // Đặt chiều rộng tối đa
-                    )),
+                  colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                  child: Image.asset(
+                    'assets/images/logoText2.png',
+                    width: 150,
+                    height: 150,
+                  ),
+                ),
               ),
-              centerTitle: true,
               background: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -119,11 +125,11 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Color(0x0FF6439FF), // Tím
-                          Color(0xFF4F75FF), // Xanh ngọc
-                          Color(0xFFFFFFFF), // Trắng
+                          Color(0x0FF6439FF),
+                          Color(0xFF4F75FF),
+                          Color(0xFFFFFFFF),
                         ],
-                        stops: [0.0, 0.3, 1.0], // Phân bố đều hơn cho các màu
+                        stops: [0.0, 0.3, 1.0],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
@@ -247,7 +253,7 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
           Container(
             padding: EdgeInsets.fromLTRB(13, 13, 13, 10),
             decoration: const BoxDecoration(
-              color: Color(0xFF6F3CD7),
+              color: mainColor,
               borderRadius: BorderRadius.only(
                 bottomRight: Radius.circular(10),
               ),
@@ -271,7 +277,7 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
             child: Text(
               'Xem tất cả',
               style: TextStyle(
-                color: Color(0xFF6F3CD7),
+                color: mainColor,
                 fontSize: 16,
               ),
             ),
