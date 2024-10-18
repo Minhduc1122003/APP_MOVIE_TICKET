@@ -20,10 +20,10 @@ class DetailInvoice extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _DetailInvoiceState createState() => _DetailInvoiceState();
+  DetailInvoiceState createState() => DetailInvoiceState();
 }
 
-class _DetailInvoiceState extends State<DetailInvoice>
+class DetailInvoiceState extends State<DetailInvoice>
     with AutomaticKeepAliveClientMixin {
   late ApiService _apiService;
 
@@ -67,12 +67,8 @@ class _DetailInvoiceState extends State<DetailInvoice>
       );
 
       // Xử lý phản hồi
-      if (response != null) {
-        // Có thể hiển thị thông báo hoặc thực hiện hành động nào đó với dữ liệu nhận được
-        print("Thành công: $response");
-      } else {
-        print("Không nhận được dữ liệu từ API");
-      }
+      // Có thể hiển thị thông báo hoặc thực hiện hành động nào đó với dữ liệu nhận được
+      print("Thành công: $response");
     } catch (e) {
       print("Lỗi khi gọi API: $e");
     }
@@ -123,7 +119,7 @@ class _DetailInvoiceState extends State<DetailInvoice>
                             children: [
                               Row(
                                 children: [
-                                  Container(
+                                  SizedBox(
                                     width: MediaQuery.of(context).size.width *
                                         0.3, // Chiều rộng bằng 50% màn hình
                                     // Chiều cao bằng 30% màn hình
@@ -131,7 +127,7 @@ class _DetailInvoiceState extends State<DetailInvoice>
                                       borderRadius: BorderRadius.circular(
                                           10), // Làm tròn góc cho ảnh
                                       child: Image.network(
-                                        'https://banghieuminhkhang.com/upload/sanpham/poster/poster-phim-10.jpg',
+                                        '',
                                         fit: BoxFit.cover,
                                       ),
                                     ),
@@ -140,7 +136,7 @@ class _DetailInvoiceState extends State<DetailInvoice>
                                   // Sử dụng Container để điều chỉnh chiều cao
                                   Container(
                                     // Giới hạn chiều cao để căn chỉnh phần tử lên trên
-                                    constraints: BoxConstraints(
+                                    constraints: const BoxConstraints(
                                         maxHeight: 130), // Giới hạn chiều cao
                                     alignment: Alignment
                                         .topLeft, // Căn chỉnh ở trên cùng bên trái
@@ -157,7 +153,7 @@ class _DetailInvoiceState extends State<DetailInvoice>
                                         const Text('2D PHỤ ĐỀ',
                                             style: TextStyle(fontSize: 16)),
                                         Container(
-                                          padding: EdgeInsets.symmetric(
+                                          padding: const EdgeInsets.symmetric(
                                               vertical: 3,
                                               horizontal:
                                                   5), // Tạo khoảng trống xung quanh chữ
@@ -167,7 +163,7 @@ class _DetailInvoiceState extends State<DetailInvoice>
                                             borderRadius: BorderRadius.circular(
                                                 10), // Bo góc tròn
                                           ),
-                                          child: Text(
+                                          child: const Text(
                                             'T13', // Nội dung chữ
                                             style: TextStyle(
                                               color:
@@ -185,19 +181,19 @@ class _DetailInvoiceState extends State<DetailInvoice>
                                 ],
                               ),
                               const SizedBox(height: 10),
-                              Row(
+                              const Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
                                 children: [
                                   Row(
                                     children: [
-                                      const Text(
+                                      Text(
                                         'PANTHERs Tô Ký',
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold),
                                       ),
-                                      const Text(' - '),
-                                      const Text(
+                                      Text(' - '),
+                                      Text(
                                         'Rạp 3',
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold),
@@ -207,7 +203,7 @@ class _DetailInvoiceState extends State<DetailInvoice>
                                 ],
                               ),
                               const SizedBox(height: 5),
-                              Row(
+                              const Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
                                 children: [
@@ -217,8 +213,8 @@ class _DetailInvoiceState extends State<DetailInvoice>
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
                                         children: [
-                                          const Text('Thứ 6, '),
-                                          const Text(
+                                          Text('Thứ 6, '),
+                                          Text(
                                             '30/08/2024',
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold),
@@ -233,8 +229,8 @@ class _DetailInvoiceState extends State<DetailInvoice>
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
                                         children: [
-                                          const Text('Suất chiếu: '),
-                                          const Text(
+                                          Text('Suất chiếu: '),
+                                          Text(
                                             '22:00',
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold),
@@ -260,7 +256,7 @@ class _DetailInvoiceState extends State<DetailInvoice>
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              Column(
+                              const Column(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
                                   Row(
@@ -357,20 +353,20 @@ class _DetailInvoiceState extends State<DetailInvoice>
                                   )
                                 ],
                               ),
-                              Divider(
+                              const Divider(
                                 color: Colors.grey, // Màu của đường kẻ
                                 thickness: 1, // Độ dày của đường kẻ
                                 indent: 10, // Khoảng cách từ trái
                                 endIndent: 10, // Khoảng cách từ phải
                               ),
                               const SizedBox(height: 10),
-                              Row(
+                              const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text('Mã vé: 279942'),
+                                  Text('Mã vé: 279942'),
                                 ],
                               ),
-                              Row(
+                              const Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment
                                     .start, // Căn theo chiều dọc ở vị trí đầu (top)

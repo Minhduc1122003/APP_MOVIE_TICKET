@@ -21,9 +21,10 @@ class ApiService {
   Future<void> _initBaseUrl() async {
     final info = NetworkInfo();
     // String? ip = await info.getWifiIP(); // 192.168.1.43
+
     // wifi cf24/24
 
-    baseUrl = 'http://192.168.1.139:8081';
+    baseUrl = 'http://192.168.1.29:8081';
   }
 
   late Response response;
