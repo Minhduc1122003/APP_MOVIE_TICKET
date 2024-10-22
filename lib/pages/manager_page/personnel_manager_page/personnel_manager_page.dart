@@ -1,62 +1,31 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
-import 'package:flutter_app_chat/components/my_listViewCardIteam.dart'; // Giả sử bạn có một tiện ích tương tự đã tạo
-import 'package:flutter_app_chat/components/my_movie_item.dart';
-import 'package:flutter_app_chat/models/Movie_modal.dart';
-import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
+import 'package:flutter_app_chat/components/animation_page.dart';
+import 'package:flutter_app_chat/models/user_model.dart';
+import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_info_manager_page/personnel_info_manager_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-
 import 'package:diacritic/diacritic.dart'; // Để xử lý loại bỏ dấu
 
 class PersonnelManagerPage extends StatefulWidget {
   const PersonnelManagerPage({super.key});
 
   @override
-  State<PersonnelManagerPage> createState() => _FilmHaydangchieuScreenState();
+  State<PersonnelManagerPage> createState() => _PersonnelManagerPageState();
 }
 
-class _FilmHaydangchieuScreenState extends State<PersonnelManagerPage> {
-  late Future<List<MovieDetails>> _moviesFuture;
+class _PersonnelManagerPageState extends State<PersonnelManagerPage> {
   late ApiService _APIService;
   bool isSearching = false;
   FocusNode _focusNode = FocusNode();
   TextEditingController _searchController = TextEditingController();
-  List<MovieDetails> _allMovies = []; // Danh sách tất cả các phim
-  List<MovieDetails> _filteredMovies = []; // Danh sách phim sau khi lọc
+  late Future<List<User>> _alluser;
 
   @override
   void initState() {
     super.initState();
     _APIService = ApiService();
-    _moviesFuture = _APIService.getMoviesDangChieu();
-
-    _moviesFuture.then((movies) {
-      setState(() {
-        _allMovies = movies; // Lưu toàn bộ phim
-        _filteredMovies = movies; // Khởi tạo danh sách lọc
-      });
-    });
-
-    _focusNode.addListener(() {
-      if (!_focusNode.hasFocus) {
-        setState(() {
-          if (_searchController.text.isEmpty) {
-            isSearching = false; // Chỉ khi không có ký tự mới ẩn TextField
-          }
-        });
-      }
-    });
-    _searchController.addListener(() {
-      _filterMovies(_searchController.text);
-      if (_searchController.text.isNotEmpty) {
-        setState(() {
-          isSearching = true; // Hiển thị TextField khi có ký tự nhập vào
-        });
-      }
-    });
+    _alluser = _APIService.getUserListForAdmin();
   }
 
   @override
@@ -64,24 +33,6 @@ class _FilmHaydangchieuScreenState extends State<PersonnelManagerPage> {
     _focusNode.dispose();
     _searchController.dispose();
     super.dispose();
-  }
-
-  // Hàm lọc phim dựa trên tên và từ khóa tìm kiếm
-  void _filterMovies(String query) {
-    final normalizedQuery = removeDiacritics(
-        query.toLowerCase()); // Bỏ dấu và chuyển thành chữ thường
-
-    setState(() {
-      if (normalizedQuery.isEmpty) {
-        _filteredMovies = _allMovies; // Hiển thị tất cả phim khi không tìm kiếm
-      } else {
-        _filteredMovies = _allMovies.where((movie) {
-          final normalizedTitle = removeDiacritics(
-              movie.title.toLowerCase()); // Bỏ dấu và chuyển thành chữ thường
-          return normalizedTitle.contains(normalizedQuery);
-        }).toList();
-      }
-    });
   }
 
   @override
@@ -103,28 +54,24 @@ class _FilmHaydangchieuScreenState extends State<PersonnelManagerPage> {
               },
             ),
             title: AnimatedSwitcher(
-                duration:
-                    Duration(milliseconds: 300), // Thời gian cho animation
+                duration: Duration(milliseconds: 300),
                 transitionBuilder: (Widget child, Animation<double> animation) {
                   return FadeTransition(
-                    opacity:
-                        animation, // Sử dụng FadeTransition để tạo hiệu ứng mờ dần
+                    opacity: animation,
                     child: SizeTransition(
-                      sizeFactor:
-                          animation, // Kết hợp với SizeTransition để phóng to thu nhỏ
-                      axis: Axis.horizontal, // Hiệu ứng theo chiều ngang
+                      sizeFactor: animation,
+                      axis: Axis.horizontal,
                       child: child,
                     ),
                   );
                 },
                 child: isSearching || _searchController.text.isNotEmpty
                     ? TextField(
-                        controller:
-                            _searchController, // Sử dụng controller để lắng nghe input
+                        controller: _searchController,
                         focusNode: _focusNode,
                         autofocus: true,
                         decoration: InputDecoration(
-                          hintText: 'Tìm kiếm phim...',
+                          hintText: 'Tìm kiếm nhân viên...',
                           hintStyle: TextStyle(color: Colors.grey),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20.0),
@@ -134,7 +81,7 @@ class _FilmHaydangchieuScreenState extends State<PersonnelManagerPage> {
                         ),
                         style: TextStyle(color: Colors.black),
                       )
-                    : Text('Phim hay đang chiếu',
+                    : Text('Danh sách nhân viên',
                         style: TextStyle(color: Colors.white, fontSize: 20))),
             centerTitle: true,
             actions: [
@@ -144,11 +91,9 @@ class _FilmHaydangchieuScreenState extends State<PersonnelManagerPage> {
                   setState(() {
                     if (isSearching || _searchController.text.isNotEmpty) {
                       _searchController.clear();
-                      isSearching =
-                          false; // Đặt trạng thái tìm kiếm thành false và xóa nội dung
+                      isSearching = false;
                     } else {
-                      isSearching =
-                          true; // Bật trạng thái tìm kiếm khi nhấn vào icon
+                      isSearching = true;
                     }
                   });
                 },
@@ -156,42 +101,36 @@ class _FilmHaydangchieuScreenState extends State<PersonnelManagerPage> {
             ],
           ),
           backgroundColor: Colors.white,
-          body: FutureBuilder<List<MovieDetails>>(
-            future: _moviesFuture,
+          body: FutureBuilder<List<User>>(
+            future: _alluser,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
               } else if (snapshot.hasError) {
                 return Center(child: Text('Error: ${snapshot.error}'));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(
-                    child: Text(
-                  'No movies available.',
-                  style: TextStyle(color: Colors.black),
-                ));
+                return Center(child: Text('No users found.'));
               } else {
-                // Kiểm tra nếu danh sách phim sau khi lọc rỗng
-                if (_filteredMovies.isEmpty) {
-                  return Center(child: Text('Không tìm thấy phim.'));
-                } else {
-                  return ListView.builder(
-                    itemCount: _filteredMovies.length,
-                    itemBuilder: (context, index) {
-                      final movie = _filteredMovies[index];
-                      return MyListViewCardItem(
-                        movieId: movie.movieId,
-                        title: movie.title,
-                        rating: movie.averageRating.toString(),
-                        ratingCount: movie.reviewCount.toString(),
-                        genre: movie.genres,
-                        cinema: movie.cinemaName,
-                        duration: movie.duration.toString(),
-                        releaseDate: movie.releaseDate.toString(),
-                        imageUrl: movie.posterUrl,
-                      );
-                    },
-                  );
-                }
+                return ListView.builder(
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (context, index) {
+                    final user = snapshot.data![index];
+                    return ListTile(
+                      title: Text(user.fullName),
+                      subtitle: Text(user.email),
+                      leading: user.photo != null
+                          ? Image.network(user.photo!)
+                          : Icon(Icons.person),
+                      trailing: Text(user.status),
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            SlideFromRightPageRoute(
+                                page: PersonnelInfoManagerPage()));
+                      },
+                    );
+                  },
+                );
               }
             },
           ),
@@ -199,8 +138,4 @@ class _FilmHaydangchieuScreenState extends State<PersonnelManagerPage> {
       ),
     );
   }
-}
-
-extension on String {
-  join(String s) {}
 }

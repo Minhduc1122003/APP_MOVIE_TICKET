@@ -8,6 +8,7 @@ import 'package:flutter_app_chat/pages/home_page/home_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/buyTicket_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/bloc/hometab_bloc.dart';
 import 'package:flutter_app_chat/pages/manager_page/movie_manager_page/movie_manager_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/showtime_manager_page/showtime_manager_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -364,6 +365,8 @@ class _HomeTabState extends State<HomeTab> {
             }),
             _buildGridItem('Nhân Sự', 'Quản lý nhân sự', state.count,
                 Icons.people_alt_outlined, Colors.purple, () {
+              Navigator.push(context,
+                  SlideFromRightPageRoute(page: PersonnelManagerPage()));
               // Thêm sự kiện khi tap vào Cuộc họp
             }),
             _buildGridItem('Phim', 'Quản lý phim', state.count,
