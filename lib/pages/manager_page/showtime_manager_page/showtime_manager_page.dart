@@ -1,7 +1,9 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
+import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/models/showTimeForAdmin_model.dart';
+import 'package:flutter_app_chat/pages/manager_page/showtime_manager_page/showtime_edit_manager_page.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 class ShowtimeManagerPage extends StatefulWidget {
@@ -12,14 +14,7 @@ class ShowtimeManagerPage extends StatefulWidget {
 }
 
 class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
-  final List<String> cinemas = [
-    'Phòng 1',
-    'Phòng 2',
-    'Phòng 3',
-    'Phòng 4',
-    'Phòng 5',
-    'Phòng 6'
-  ];
+  List<String> cinemas = []; // Initialize as an empty list
   final List<String> timeSlots = [];
   final List<List<String>> showtimes = [];
   final ScrollController _verticalController1 = ScrollController();
@@ -35,10 +30,38 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
 
   bool _isVerticalSyncing = false;
   bool _isHorizontalSyncing = false;
+
   @override
   void initState() {
     super.initState();
     _fetchShowtimes();
+    // Synchronize scroll controllers
+    _setupScrollSynchronization();
+  }
+
+  void _onSearchChanged(String value) {
+    setState(() {
+      _searchTerm = value.toLowerCase(); // Store the search term in lowercase
+    });
+  }
+
+  List<List<String>> _filteredShowtimes() {
+    if (_searchTerm.isEmpty) {
+      return showtimes;
+    } else {
+      return showtimes.map((row) {
+        return row.map((showtime) {
+          if (showtime.toLowerCase().contains(_searchTerm)) {
+            return showtime;
+          } else {
+            return ''; // Return an empty string if the showtime doesn't match the search term
+          }
+        }).toList();
+      }).toList();
+    }
+  }
+
+  void _setupScrollSynchronization() {
     // Vertical scroll synchronization
     _verticalController1.addListener(() {
       if (_isVerticalSyncing) return;
@@ -91,6 +114,15 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
     super.dispose();
   }
 
+  void _initializeCinemas(List<ShowtimeforadminModel> apiData) {
+    Set<String> uniqueCinemas = {};
+    for (var showtime in apiData) {
+      uniqueCinemas.add('Phòng ${showtime.RoomNumber}');
+    }
+    cinemas.clear();
+    cinemas.addAll(uniqueCinemas.toList()..sort());
+  }
+
   void _initializeTimeSlots(List<ShowtimeforadminModel> apiData) {
     Set<String> uniqueTimeSlots = {};
     for (var showtime in apiData) {
@@ -102,25 +134,8 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
     timeSlots.addAll(uniqueTimeSlots.toList()..sort());
   }
 
-  void _onSearchChanged(String value) {
-    setState(() {
-      _searchTerm = value.toLowerCase(); // Store the search term in lower case
-    });
-  }
-
-  List<List<String>> _filteredShowtimes() {
-    if (_searchTerm.isEmpty) {
-      return showtimes;
-    } else {
-      return showtimes.map((row) {
-        return row.where((showtime) {
-          return showtime.toLowerCase().contains(_searchTerm);
-        }).toList();
-      }).toList();
-    }
-  }
-
   void _processApiData(List<ShowtimeforadminModel> apiData) {
+    _initializeCinemas(apiData);
     _initializeTimeSlots(apiData);
     showtimes.clear();
 
@@ -132,24 +147,81 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
             "${showtime.StartTime.hour.toString().padLeft(2, '0')}:${showtime.StartTime.minute.toString().padLeft(2, '0')}";
 
         if (showtimeSlot == timeSlot) {
-          int roomIndex = showtime.RoomNumber - 1;
+          int roomIndex = cinemas.indexOf('Phòng ${showtime.RoomNumber}');
           if (roomIndex >= 0 && roomIndex < cinemas.length) {
             row[roomIndex] = '${showtime.MovieName}\n$showtimeSlot';
           }
         }
       }
 
-      showtimes.add(row);
+      // Only add non-empty rows
+      if (row.any((showtime) => showtime.isNotEmpty)) {
+        showtimes.add(row);
+      }
+    }
+
+    // Remove empty columns (rooms)
+    _removeEmptyRooms();
+  }
+
+  void _removeEmptyRooms() {
+    // Determine which rooms have showtimes
+    List<bool> hasShowtime = List.filled(cinemas.length, false);
+
+    for (var row in showtimes) {
+      for (int i = 0; i < row.length; i++) {
+        if (row[i].isNotEmpty) {
+          hasShowtime[i] = true;
+        }
+      }
+    }
+
+    // Filter out rooms that have no showtimes
+    List<String> filteredCinemas = [];
+    for (int i = 0; i < cinemas.length; i++) {
+      if (hasShowtime[i]) {
+        filteredCinemas.add(cinemas[i]);
+      }
+    }
+    cinemas = filteredCinemas;
+
+    // Update showtimes to remove empty columns
+    for (int i = 0; i < showtimes.length; i++) {
+      showtimes[i] = showtimes[i]
+          .asMap()
+          .entries
+          .where((entry) => hasShowtime[entry.key])
+          .map((entry) => entry.value)
+          .toList();
     }
   }
 
   Future<void> _fetchShowtimes() async {
     try {
-      final showtimes = await apiService.getShowtimeListForAdmin();
-      setState(() {
-        listShowtimeforadminModel = showtimes;
-        _processApiData(showtimes);
-      });
+      final fetchedShowtimes = await apiService.getShowtimeListForAdmin();
+
+      // Kiểm tra nếu dữ liệu trả về là mảng rỗng
+      if (fetchedShowtimes.isEmpty) {
+        print('đã vào mảng null');
+        cinemas = List.generate(6, (index) => 'Phòng ${index + 1}');
+
+        // Thiết lập khung giờ mặc định
+        timeSlots.clear();
+        timeSlots.addAll(['09:00', '09:30', '10:00', '10:30']);
+
+        showtimes.clear(); // Xóa nội dung hiện tại
+        for (String timeSlot in timeSlots) {
+          List<String> row =
+              List.filled(cinemas.length, ''); // Tạo hàng rỗng cho mỗi phòng
+          showtimes.add(row); // Thêm hàng vào showtimes
+        }
+      } else {
+        setState(() {
+          listShowtimeforadminModel =
+              fetchedShowtimes; // Cập nhật dữ liệu từ API
+          _processApiData(fetchedShowtimes); // Xử lý dữ liệu
+        });
+      }
     } catch (e) {
       print('Error fetching showtimes: $e');
     }
@@ -187,7 +259,7 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
                   controller: _searchController,
                   focusNode: _focusNode,
                   autofocus: true,
-                  onChanged: _onSearchChanged,
+                  onChanged: _onSearchChanged, // Use the defined method here
                   decoration: InputDecoration(
                     hintText: 'Tìm kiếm lịch chiếu...',
                     hintStyle: TextStyle(color: Colors.grey),
@@ -290,7 +362,14 @@ class _ShowtimeManagerPageState extends State<ShowtimeManagerPage> {
                     backgroundColor: Colors.orange,
                     label: 'Sửa lịch',
                     labelStyle: TextStyle(fontSize: 15.0),
-                    onTap: () => print('Sửa '),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        SlideFromRightPageRoute(
+                          page: ShowtimeEditManagerPage(),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

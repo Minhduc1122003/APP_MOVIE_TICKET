@@ -1,6 +1,12 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_app_chat/auth/api_service.dart';
+import 'package:flutter_app_chat/components/my_button.dart';
+import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class MovieManagerPage extends StatefulWidget {
   const MovieManagerPage({Key? key}) : super(key: key);
@@ -14,7 +20,7 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
   bool _isDubbed = false;
   DateTime? _selectedDate;
   String _duration = '';
-  TextEditingController _durationController = TextEditingController();
+  final TextEditingController _durationController = TextEditingController();
   String _selectedRating = '13+';
   final List<String> genres = [
     'Hài',
@@ -58,10 +64,14 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
       'color': Colors.black
     },
   ];
-
   List<String> selectedGenres = [];
   List<Map<String, dynamic>> _rows = [];
   final ImagePicker _picker = ImagePicker();
+  final TextEditingController _urlController = TextEditingController();
+  YoutubePlayerController? _youtubeController;
+  File? _image;
+  final picker = ImagePicker();
+  final ApiService _apiService = ApiService();
 
   @override
   void initState() {
@@ -70,11 +80,57 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
   }
 
   Future<void> _pickImage(int index) async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _rows[index]['image'] = File(image.path);
-      });
+    try {
+      final XFile? pickedFile =
+          await _picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() {
+          // Ensure the index is within bounds
+          if (index >= 0 && index < _rows.length) {
+            _rows[index]['image'] =
+                File(pickedFile.path); // Store the image file
+            _image = File(pickedFile
+                .path); // Optionally store it in a separate variable if needed
+          } else {
+            print('Index out of bounds');
+          }
+        });
+
+        // Automatically upload the image after it is picked
+        await _uploadImage();
+      } else {
+        print('No image selected');
+      }
+    } catch (e) {
+      print('Error picking image: $e');
+    }
+  }
+
+  Future<void> _uploadImage() async {
+    if (_image != null) {
+      await _apiService.uploadImage(_image!);
+    } else {
+      print('No image selected');
+    }
+  }
+
+  void _loadVideo(String url) {
+    final videoId = YoutubePlayer.convertUrlToId(url);
+    if (videoId != null) {
+      _youtubeController = YoutubePlayerController(
+        initialVideoId: videoId,
+        flags: const YoutubePlayerFlags(
+          autoPlay: false,
+          mute: false,
+        ),
+      );
+      setState(() {});
+    } else {
+      // Handle invalid URL
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Không tìm thấy đường dẫn Url trên youtube')),
+      );
     }
   }
 
@@ -104,24 +160,27 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Nhập thời lượng (phút)'),
+          title: const Text('Nhập thời lượng (phút)'),
           content: TextField(
             controller: _durationController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
+            keyboardType: TextInputType.number, // Chỉ cho phép nhập số
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.digitsOnly // Chỉ cho phép nhập chữ số
+            ],
+            decoration: const InputDecoration(
               hintText: 'Nhập số phút',
               border: OutlineInputBorder(),
             ),
           ),
           actions: [
             TextButton(
-              child: Text('Hủy'),
+              child: const Text('Hủy'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('Xác nhận'),
+              child: const Text('Xác nhận'),
               onPressed: () {
                 setState(() {
                   _duration = _durationController.text.isNotEmpty
@@ -145,7 +204,7 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text('Chọn thể loại'),
+              title: const Text('Chọn thể loại'),
               content: SingleChildScrollView(
                 child: ListBody(
                   children: genres.map((genre) {
@@ -172,13 +231,13 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
               ),
               actions: [
                 TextButton(
-                  child: Text('Hủy'),
+                  child: const Text('Hủy'),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
                 ),
                 TextButton(
-                  child: Text('Xác nhận'),
+                  child: const Text('Xác nhận'),
                   onPressed: () {
                     // Update the parent widget's state
                     setState(() {
@@ -198,242 +257,96 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
     });
   }
 
+  void _showPopupMenu(BuildContext context) async {
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
+    await showMenu(
+      context: context,
+      position: RelativeRect.fromRect(
+        Rect.fromLTWH(100, 210, 0, 0), // Position the menu
+        Offset.zero & overlay.size,
+      ),
+      items: ageRatings.map((Map<String, dynamic> rating) {
+        return PopupMenuItem<String>(
+          value: rating['value'],
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  rating['label']!,
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: rating['color']),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    rating['description']!,
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    ).then((value) {
+      if (value != null) {
+        setState(() {
+          _selectedRating = value;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _youtubeController?.dispose();
+    _durationController.dispose();
+    _urlController.dispose();
+    for (var row in _rows) {
+      row['name'].dispose();
+    }
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color(0XFF6F3CD7),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_outlined,
-              color: Colors.white, size: 16),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+    return SafeArea(
+      top: false,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: const Color(0XFF6F3CD7),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_outlined,
+                color: Colors.white, size: 16),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          title: const Text('Thêm phim sắp chiếu',
+              style: TextStyle(color: Colors.white, fontSize: 20)),
+          centerTitle: true,
         ),
-        title: Text('Thêm phim sắp chiếu',
-            style: TextStyle(color: Colors.white, fontSize: 20)),
-        centerTitle: true,
-      ),
-      body: GestureDetector(
-        onTap: () {
-          FocusScope.of(context).unfocus();
-        },
-        child: Container(
+        body: GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+          },
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Stack(
-                      children: [
-                        Container(
-                          height: 200,
-                          width: 120,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: _rows.isEmpty || _rows[0]['image'] == null
-                              ? Center(
-                                  child: Icon(Icons.add,
-                                      size: 40, color: Colors.grey[400]))
-                              : ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Image.file(_rows[0]['image'],
-                                      fit: BoxFit.cover),
-                                ),
-                        ),
-                        Positioned(
-                          top: 8,
-                          left: 8,
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.amber[400],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text('Coming soon',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500)),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 8,
-                          right: 8,
-                          child: IconButton(
-                            icon: Icon(Icons.add_a_photo, color: Colors.white),
-                            onPressed: () => _pickImage(0),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  maxLines: 2,
-                                  decoration: InputDecoration(
-                                    hintText: 'Nhập tên phim...',
-                                    hintStyle:
-                                        TextStyle(color: Colors.grey[400]),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide:
-                                          BorderSide(color: Colors.grey[300]!),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide:
-                                          BorderSide(color: Colors.grey[300]!),
-                                    ),
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                    contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 8),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 8),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.orange,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    _selectedRating,
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                                SizedBox(width: 8),
-                                PopupMenuButton<String>(
-                                  icon: Icon(Icons.arrow_drop_down),
-                                  offset: Offset(100, 40),
-                                  onSelected: (String value) {
-                                    setState(() {
-                                      _selectedRating = value;
-                                    });
-                                  },
-                                  itemBuilder: (BuildContext context) {
-                                    return ageRatings
-                                        .map((Map<String, dynamic> rating) {
-                                      return PopupMenuItem<String>(
-                                        value: rating['value'],
-                                        child: Container(
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 8, horizontal: 12),
-                                          alignment: Alignment.centerRight,
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            children: [
-                                              Text(
-                                                rating['label']!,
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: rating['color']),
-                                              ),
-                                              SizedBox(width: 8),
-                                              Expanded(
-                                                child: Text(
-                                                  rating['description']!,
-                                                  style: TextStyle(
-                                                      color: Colors.black),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    }).toList();
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey[300]!),
-                                  borderRadius: BorderRadius.circular(8),
-                                  color: Colors.white,
-                                ),
-                                child: InkWell(
-                                  onTap: _showMultiSelectDialog,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12.0, vertical: 11.0),
-                                    child: Row(
-                                      children: [
-                                        Text('Thể loại'),
-                                        Icon(Icons.add),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Wrap(
-                                  spacing: 5.0,
-                                  alignment: WrapAlignment.start,
-                                  children: selectedGenres.map((genre) {
-                                    return Container(
-                                      constraints: BoxConstraints(
-                                        maxWidth:
-                                            MediaQuery.of(context).size.width /
-                                                    2 -
-                                                10,
-                                      ),
-                                      child: Chip(
-                                        label: Text(
-                                          genre,
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                        ),
-                                        onDeleted: () {
-                                          setState(() {
-                                            selectedGenres.remove(genre);
-                                          });
-                                        },
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                _buildImagePicker(),
+                const SizedBox(height: 20),
+                const Divider(
+                  height: 0,
+                  thickness: 6,
+                  color: Color(0xfff0f0f0),
                 ),
-                SizedBox(height: 16),
                 MovieInfo(
                   isSubtitled: _isSubtitled,
                   isDubbed: _isDubbed,
@@ -452,81 +365,414 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
                   onDurationSelected: _showDurationDialog,
                   duration: _duration,
                 ),
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'Nội dung phim',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
-                  ),
-                  maxLines: 3,
-                ),
-                SizedBox(height: 16),
-                Column(
-                  children: _rows.asMap().entries.map((entry) {
-                    int index = entry.key;
-                    Map<String, dynamic> row = entry.value;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Row(
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.add_a_photo),
-                            onPressed: () => _pickImage(index),
-                          ),
-                          if (row['image'] != null)
-                            Image.file(
-                              row['image'],
-                              width: 50,
-                              height: 50,
-                              fit: BoxFit.cover,
-                            ),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: TextField(
-                              controller: row['name'],
-                              decoration: InputDecoration(
-                                hintText: 'Thêm tên',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                filled: true,
-                                fillColor: Colors.white,
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.add),
-                            onPressed: _addNewRow,
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-                SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Handle form submission
-                    },
-                    child: Text('Hoàn tất'),
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Video trailer',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(height: 5),
+                _buildYoutubePlayer(),
+                const SizedBox(height: 10),
+                _buildUrlInput(),
+                const SizedBox(height: 20),
+                _buildDescriptionInput(),
+                const SizedBox(height: 20),
+                const Divider(
+                  height: 0,
+                  thickness: 6,
+                  color: Color(0xfff0f0f0),
+                ),
+                const SizedBox(height: 16),
+                _buildActorSection(),
+                const SizedBox(height: 15),
+                const Divider(
+                  height: 0,
+                  thickness: 6,
+                  color: Color(0xfff0f0f0),
+                ),
+                const SizedBox(height: 10),
+                MyButton(
+                    fontsize: 20,
+                    paddingText: 10,
+                    text: 'Hoàn tất',
+                    isBold: true,
+                    onTap: () {})
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildImagePicker() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Stack(
+          children: [
+            MouseRegion(
+              cursor: SystemMouseCursors.click, // Change the cursor to a hand
+              child: GestureDetector(
+                onTap: () => _pickImage(
+                    0), // Trigger _pickImage when the container is tapped
+                child: Container(
+                  height: 200,
+                  width: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: _rows.isEmpty || _rows[0]['image'] == null
+                      ? Center(
+                          child: Icon(Icons.add,
+                              size: 40, color: Colors.grey[400]))
+                      : ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.file(
+                            _rows[0]['image'], // Display the image if it exists
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              child: Container(
+                width: 120, // Match the width of the card
+                decoration: BoxDecoration(
+                  color: Colors.black
+                      .withOpacity(0.7), // Black background with opacity
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(
+                        12), // Add border radius to the bottom left
+                    bottomRight: Radius.circular(
+                        12), // Add border radius to the bottom right
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(
+                    vertical: 4), // Add some vertical padding
+                child: const Text(
+                  'Thêm ảnh',
+                  textAlign: TextAlign.center, // Center the text
+                  style: TextStyle(color: Colors.white), // White text color
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        labelText: 'Tên phim',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      maxLines: 2,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.topLeft,
+                child: Container(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Tuổi',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(
+                          height:
+                              4), // Add some space between the title and the dropdown
+                      GestureDetector(
+                        onTap: () {
+                          // Trigger the dropdown menu
+                          _showPopupMenu(context);
+                        },
+                        child: Container(
+                          width: 100,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.orange,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _selectedRating,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              const Icon(Icons.arrow_drop_down,
+                                  color: Colors.white),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.white,
+                    ),
+                    child: InkWell(
+                      onTap: _showMultiSelectDialog,
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12.0, vertical: 11.0),
+                        child: Row(
+                          children: [
+                            Text('Thể loại'),
+                            Icon(Icons.add),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder:
+                          (BuildContext context, BoxConstraints constraints) {
+                        // Tính toán chiều rộng khả dụng cho mỗi mục
+                        double itemWidth = (constraints.maxWidth - 10) /
+                            2; // Trừ đi khoảng cách giữa các mục
+
+                        return Wrap(
+                          spacing:
+                              3.0, // Không có khoảng cách ngang giữa các mục
+                          runSpacing: 5.0, // Thêm khoảng cách dọc giữa các hàng
+                          children: selectedGenres.map((genre) {
+                            return Container(
+                              constraints: BoxConstraints(
+                                maxWidth:
+                                    itemWidth, // Đặt chiều rộng tối đa cho mỗi mục
+                              ),
+                              child: Chip(
+                                label: Text(
+                                  genre,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                                onDeleted: () {
+                                  setState(() {
+                                    selectedGenres.remove(genre);
+                                  });
+                                },
+                              ),
+                            );
+                          }).toList(),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildYoutubePlayer() {
+    return _youtubeController != null
+        ? YoutubePlayer(
+            controller: _youtubeController!,
+            showVideoProgressIndicator: true,
+            progressIndicatorColor: Colors.amber,
+          )
+        : SizedBox(
+            height: 200,
+            child: Container(
+              height: 200,
+              color: Colors.grey,
+              child: Center(
+                child: Text(
+                  'Chưa tìm thấy nội dung',
+                  style: TextStyle(color: Colors.black),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          );
+  }
+
+  Widget _buildUrlInput() {
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _urlController,
+            decoration: InputDecoration(
+              labelText: 'Url Trailer',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              filled: true,
+              fillColor: Colors.white,
+            ),
+            maxLines: 1,
+          ),
+        ),
+        const SizedBox(width: 10),
+        MyButton(
+          fontsize: 14,
+          paddingText: 10,
+          text: 'Duyệt',
+          isBold: true,
+          onTap: () {
+            _loadVideo(_urlController.text);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDescriptionInput() {
+    return TextField(
+      decoration: InputDecoration(
+        labelText: 'Nội dung phim',
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+      ),
+      maxLines: 3,
+    );
+  }
+
+  Widget _buildActorSection() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(bottom: 12.0),
+          child: Text(
+            'Diễn viên',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        ..._rows.asMap().entries.map((entry) {
+          int index = entry.key;
+          Map<String, dynamic> row = entry.value;
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  children: [
+                    Column(
+                      children: [
+                        const SizedBox(height: 5),
+                        GestureDetector(
+                          onTap: () => _pickImage(index),
+                          child: CircleAvatar(
+                            radius: 25,
+                            backgroundColor: Colors.grey[300],
+                            backgroundImage: row['image'] != null
+                                ? FileImage(row['image'])
+                                : null,
+                            child: row['image'] == null
+                                ? const Icon(Icons.add_a_photo,
+                                    color: Colors.white)
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const AutoSizeText(
+                          'Thêm ảnh',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.black,
+                          ),
+                          maxFontSize: 8,
+                          minFontSize: 4,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: row['name'],
+                        decoration: InputDecoration(
+                          focusColor: mainColor,
+                          hintText: 'Tên diễn viên',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                    if (_rows.length > 1)
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          setState(() {
+                            _rows.removeAt(index);
+                          });
+                        },
+                      ),
+                  ],
+                ),
+              ),
+              if (index < _rows.length - 1)
+                const Divider(
+                  thickness: 1,
+                  color: Colors.grey,
+                ),
+            ],
+          );
+        }).toList(),
+        Center(
+          child: Container(
+            decoration: BoxDecoration(
+              color: mainColor, // Replace with your desired color
+              borderRadius: BorderRadius.circular(50),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.add, color: Colors.white),
+              onPressed: _addNewRow,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -541,7 +787,8 @@ class MovieInfo extends StatelessWidget {
   final Function() onDurationSelected;
   final String duration;
 
-  MovieInfo({
+  const MovieInfo({
+    Key? key,
     required this.isSubtitled,
     required this.isDubbed,
     required this.onSubtitleChanged,
@@ -550,31 +797,52 @@ class MovieInfo extends StatelessWidget {
     required this.onDateSelected,
     required this.onDurationSelected,
     required this.duration,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(10),
-      child: Container(
-        height: 190,
+      padding: const EdgeInsets.all(10),
+      child: SizedBox(
+        height: 160,
         child: Row(
           children: [
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Ngày khởi chiếu', style: TextStyle(fontSize: 16)),
-                  SizedBox(height: 8),
-                  IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: onDateSelected,
+                  const AutoSizeText(
+                    'Ngày khởi chiếu',
+                    style: TextStyle(fontSize: 16),
+                    maxLines: 1,
                   ),
+                  const SizedBox(height: 8),
                   if (selectedDate != null)
-                    Text(
+                    AutoSizeText(
                       "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}",
-                      style: TextStyle(fontSize: 14),
+                      style: const TextStyle(fontSize: 14),
+                      maxLines: 1,
                     ),
+                  if (selectedDate == null)
+                    const AutoSizeText(
+                      "",
+                      style: TextStyle(fontSize: 14),
+                      maxLines: 1,
+                    ),
+                  const SizedBox(height: 5),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: mainColor, // Replace with your desired color
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        selectedDate != null ? Icons.edit : Icons.add,
+                        color: Colors.white,
+                      ),
+                      onPressed: onDateSelected,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -587,15 +855,30 @@ class MovieInfo extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Thời lượng', style: TextStyle(fontSize: 16)),
-                  SizedBox(height: 8),
-                  IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: onDurationSelected,
+                  const AutoSizeText(
+                    'Thời lượng',
+                    style: TextStyle(fontSize: 16),
+                    maxLines: 1,
                   ),
-                  Text(
-                    duration.isNotEmpty ? duration : '',
-                    style: TextStyle(fontSize: 14),
+                  const SizedBox(height: 8),
+                  AutoSizeText(
+                    duration,
+                    style: const TextStyle(fontSize: 14),
+                    maxLines: 1,
+                  ),
+                  const SizedBox(height: 5),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: mainColor, // Replace with your desired color
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        selectedDate != null ? Icons.edit : Icons.add,
+                        color: Colors.white,
+                      ),
+                      onPressed: onDurationSelected,
+                    ),
                   ),
                 ],
               ),
@@ -610,28 +893,42 @@ class MovieInfo extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(height: 40),
-                  Text('Ngôn ngữ', style: TextStyle(fontSize: 16)),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 20),
+                  const AutoSizeText(
+                    'Ngôn ngữ',
+                    style: TextStyle(fontSize: 16),
+                    maxLines: 1,
+                  ),
+                  const SizedBox(height: 5),
                   CheckboxListTile(
-                    title: Text('Phụ đề', style: TextStyle(fontSize: 14)),
+                    title: const AutoSizeText(
+                      'Phụ đề',
+                      style: TextStyle(fontSize: 14),
+                      maxLines: 1,
+                    ),
                     value: isSubtitled,
                     onChanged: onSubtitleChanged,
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding:
-                        EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+                        const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
                     dense: true,
+                    activeColor: mainColor,
                   ),
                   Transform.translate(
-                    offset: Offset(0, -10),
+                    offset: const Offset(0, -10),
                     child: CheckboxListTile(
-                      title: Text('Lồng tiếng', style: TextStyle(fontSize: 14)),
+                      title: const AutoSizeText(
+                        'Lồng tiếng',
+                        style: TextStyle(fontSize: 14),
+                        maxLines: 1,
+                      ),
                       value: isDubbed,
                       onChanged: onDubbedChanged,
                       controlAffinity: ListTileControlAffinity.leading,
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 0, vertical: 0),
                       dense: true,
+                      activeColor: mainColor,
                     ),
                   ),
                 ],

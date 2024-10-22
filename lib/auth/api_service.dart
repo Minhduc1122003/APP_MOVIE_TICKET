@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_network.dart';
@@ -12,6 +13,7 @@ import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:network_info_plus/network_info_plus.dart';
+import 'package:path/path.dart' as path;
 
 class ApiService {
   late String baseUrl;
@@ -23,7 +25,7 @@ class ApiService {
     // String? ip = await info.getWifiIP(); // 192.168.1.43
     // wifi cf24/24
 
-    baseUrl = 'http://192.168.1.139:8081';
+    baseUrl = 'http://192.168.1.36:8081';
   }
 
   late Response response;
@@ -337,6 +339,33 @@ class ApiService {
     } else {
       // Nếu server trả về một lỗi
       throw Exception('Failed to login');
+    }
+  }
+
+  Future<void> uploadImage(File image) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/uploadImage'),
+    );
+
+    request.files.add(await http.MultipartFile.fromPath(
+      'image',
+      image.path,
+      filename: path.basename(image.path),
+    ));
+
+    try {
+      final response = await request.send();
+
+      if (response.statusCode == 200) {
+        print('Image uploaded successfully');
+      } else {
+        print('Failed to upload image');
+      }
+    } catch (e) {
+      print('Error uploading image: $e');
     }
   }
 
