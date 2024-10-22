@@ -23,6 +23,7 @@ class ApiService {
   Future<void> _initBaseUrl() async {
     final info = NetworkInfo();
     // String? ip = await info.getWifiIP(); // 192.168.1.43
+
     // wifi cf24/24
 
     baseUrl = 'http://192.168.1.36:8081';
@@ -516,6 +517,28 @@ class ApiService {
           .toList();
     } else {
       throw Exception('Failed to load data: ${response.statusCode}');
+    }
+  }
+
+  Future<List<User>> getUserListForAdmin() async {
+    await _initBaseUrl();
+    try {
+      // Gửi yêu cầu GET đến API
+      final response = await http.get(
+        Uri.parse('$baseUrl/getUserListForAdmin'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((item) => User.fromJson(item)).toList();
+      } else {
+        throw Exception('Failed to get movies: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to get movies');
     }
   }
 

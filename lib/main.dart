@@ -9,6 +9,8 @@ import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
+import 'pages/register_page/createAccount_bloc/createAccount_bloc.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -45,7 +47,6 @@ class _MyAppState extends State<MyApp> {
           debugShowCheckedModeBanner: false,
           builder: EasyLoading.init(),
           home: HomePage(),
-          // home: ShowtimeEditManagerPage(),
         ));
   }
 }
