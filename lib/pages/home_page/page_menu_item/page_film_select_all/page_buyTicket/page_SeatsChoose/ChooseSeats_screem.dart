@@ -8,7 +8,6 @@ import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/cinema_seat_grid.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_billTicket/bill_Ticket_Screen.dart';
-import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_combo_Ticket/combo_Ticket_Screen.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_detail/detail_invoice.dart';
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
@@ -455,54 +454,19 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                               );
                             },
                           );
-                        }
-                        // else {
-                        //   Navigator.push(
-                        //     context,
-                        //     SlideFromRightPageRoute(
-                        //       page: ComboTicketScreen(
-                        //         movieID: widget.movieID,
-                        //         showTimeID: widget.showTimeID,
-                        //         seatCodes:
-                        //             seatIDList, // Sử dụng seatIDList thay vì selectedSeatCodes
-                        //         quantity:
-                        //             selectedCount, // Sử dụng selectedCount thay vì selectedSeatsCount
-                        //         sumPrice: _movieDetails!.price! *
-                        //             selectedCount, // Tính tổng giá vé
-                        //       ),
-                        //     ),
-                        //   );
-
-                        // Của Đức
-                        // else {
-                        //   Navigator.push(
-                        //     context,
-                        //     SlideFromRightPageRoute(
-                        //         page: DetailInvoice(
-                        //       movieID: widget.movieID,
-                        //       quantity: selectedCount,
-                        //       sumPrice: (_movieDetails!.price! * selectedCount),
-                        //       showTimeID: widget.showTimeID,
-                        //       seatCodes: seatIDList,
-                        //     )),
-                        //   );
-
-                        else {
+                        } else {
                           Navigator.push(
                             context,
                             SlideFromRightPageRoute(
-                              page: BillTicketScreen(
-                                movieID: widget.movieID,
-                                cinemaRoomID: widget.cinemaRoomID,
-                                showTimeID: widget.showTimeID,
-                                showtimeDate: widget.showtimeDate,
-                                startTime: widget.startTime,
-                                endTime: widget.endTime,
-                              ),
-                            ),
+                                page: DetailInvoice(
+                              movieID: widget.movieID,
+                              quantity: selectedCount,
+                              sumPrice: (_movieDetails!.price! * selectedCount),
+                              showTimeID: widget.showTimeID,
+                              seatCodes: seatIDList,
+                            )),
                           );
 
-                          // else {
                           // Navigator.push(
                           //   context,
                           //   SlideFromRightPageRoute(
