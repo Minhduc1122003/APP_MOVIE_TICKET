@@ -15,6 +15,9 @@ class BillTicketScreen extends StatefulWidget {
   final String showtimeDate;
   final String startTime;
   final String endTime;
+  final List<int> seatCodes;
+  final int quantity;
+  final double sumPrice;
 
   const BillTicketScreen({
     Key? key,
@@ -24,6 +27,9 @@ class BillTicketScreen extends StatefulWidget {
     required this.showtimeDate,
     required this.startTime,
     required this.endTime,
+    required this.quantity,
+    required this.sumPrice,
+    required this.seatCodes,
   }) : super(key: key);
 
   @override
@@ -157,18 +163,18 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                             padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
                             child: Row(
                               children: [
-                                Image.network(
-                                  'assets/images/postermada.jpg', // Replace with actual image URL
+                                Image.asset(
+                                  'assets/images/henhovoisatnhan.jpg', // Replace with actual image URL
                                   width: 100,
                                   height: 150,
                                   fit: BoxFit.cover,
                                 ),
                                 const SizedBox(width: 16),
-                                Expanded(
+                                const Expanded(
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    children: const [
+                                    children: [
                                       Text(
                                         'Quái vật không gian',
                                         style: TextStyle(
@@ -191,18 +197,19 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                             padding: const EdgeInsets.all(16.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
+                              children: [
                                 Text('Thông tin giao dịch'),
                                 SizedBox(height: 8),
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text('1x Vé xem phim - G7'),
-                                    Text('60.000 VND'),
+                                    Text(
+                                        '${widget.quantity} Vé xem phim - ${widget.seatCodes}'),
+                                    Text('${formatPrice(widget.sumPrice)} VND'),
                                   ],
                                 ),
-                                Row(
+                                const Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
@@ -216,7 +223,7 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text('Tổng cộng:'),
-                                    Text('154.000 VND'),
+                                    Text('${formatPrice(widget.sumPrice)} VND'),
                                   ],
                                 ),
                               ],
@@ -224,30 +231,30 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                           ),
                           const Divider(thickness: 1, color: Colors.grey),
                           // Voucher Section
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
+                          const Padding(
+                            padding: EdgeInsets.all(16.0),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Row(
-                                  children: const [
+                                  children: [
                                     Icon(Icons.percent, color: Colors.purple),
                                     SizedBox(width: 8),
                                     Text('PANTHERs Voucher'),
                                   ],
                                 ),
-                                const Text('-30K',
+                                Text('-30K',
                                     style: TextStyle(color: Colors.blue)),
                               ],
                             ),
                           ),
                           const Divider(thickness: 1, color: Colors.grey),
                           // Total Payment Information
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
+                          const Padding(
+                            padding: EdgeInsets.all(16.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
+                              children: [
                                 Text('Tổng thanh toán'),
                                 SizedBox(height: 8),
                                 Row(
@@ -282,11 +289,11 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                           ),
                           const Divider(thickness: 1, color: Colors.grey),
                           // Payment Methods
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
+                          const Padding(
+                            padding: EdgeInsets.all(16.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
+                              children: [
                                 Text('Phương thức thanh toán'),
                                 SizedBox(height: 8),
                                 ListTile(
@@ -333,4 +340,9 @@ class _BillTicketScreenState extends State<BillTicketScreen>
 
   @override
   bool get wantKeepAlive => true;
+}
+
+String formatPrice(double price) {
+  final formatter = NumberFormat('#,###');
+  return formatter.format(price);
 }
