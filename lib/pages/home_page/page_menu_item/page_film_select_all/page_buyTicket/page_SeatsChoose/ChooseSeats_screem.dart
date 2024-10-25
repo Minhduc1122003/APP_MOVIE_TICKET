@@ -8,6 +8,7 @@ import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/cinema_seat_grid.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_billTicket/bill_Ticket_Screen.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_combo_Ticket/combo_Ticket_Screen.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_detail/detail_invoice.dart';
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
@@ -455,17 +456,42 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                             },
                           );
                         } else {
+                          print(widget.movieID);
+                          print(selectedCount);
+                          print((_movieDetails!.price! * selectedCount));
+                          print(widget.showTimeID);
+                          print(seatIDList);
+                          print(widget.showtimeDate);
+                          print(widget.startTime);
+                          print(widget.endTime);
+                          print(widget.cinemaRoomID);
                           Navigator.push(
                             context,
                             SlideFromRightPageRoute(
-                                page: DetailInvoice(
+                                page: ComboTicketScreen(
                               movieID: widget.movieID,
                               quantity: selectedCount,
                               sumPrice: (_movieDetails!.price! * selectedCount),
                               showTimeID: widget.showTimeID,
                               seatCodes: seatIDList,
+                              showtimeDate: widget.showtimeDate,
+                              startTime: widget.startTime,
+                              endTime: widget.endTime,
+                              cinemaRoomID: widget.cinemaRoomID,
                             )),
                           );
+
+                          // Navigator.push(
+                          //   context,
+                          //   SlideFromRightPageRoute(
+                          //       page: DetailInvoice(
+                          //     movieID: widget.movieID,
+                          //     quantity: selectedCount,
+                          //     sumPrice: (_movieDetails!.price! * selectedCount),
+                          //     showTimeID: widget.showTimeID,
+                          //     seatCodes: seatIDList,
+                          //   )),
+                          // );
 
                           // Navigator.push(
                           //   context,

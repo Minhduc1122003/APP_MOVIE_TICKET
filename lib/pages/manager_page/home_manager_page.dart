@@ -9,6 +9,8 @@ import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select
 import 'package:flutter_app_chat/pages/manager_page/bloc/hometab_bloc.dart';
 import 'package:flutter_app_chat/pages/manager_page/movie_manager_page/movie_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_manager_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/scan_code_manager/scan_QRcode.dart';
+import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/shift_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/showtime_manager_page/showtime_manager_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -353,15 +355,18 @@ class _HomeTabState extends State<HomeTab> {
             }),
             _buildGridItem('Quét mã', 'QR vào cổng', state.donTu,
                 Icons.qr_code_scanner, Colors.orange, () {
+              Navigator.push(
+                  context, SlideFromRightPageRoute(page: ScanQrcode()));
               // Thêm sự kiện khi tap vào Đơn từ
             }),
             _buildGridItem('Lịch sử', 'Lịch sử đặt vé/combo', state.count,
                 Icons.history, Colors.blue, () {
               // Thêm sự kiện khi tap vào Cuộc họp
             }),
-            _buildGridItem('Tạo mã', 'Tạo mã vào ca/ra ca', state.count,
-                Icons.qr_code_outlined, Colors.purple, () {
-              // Thêm sự kiện khi tap vào Cuộc họp
+            _buildGridItem('Cài đặt', 'Thiết lập ca làm', state.count,
+                Icons.settings, Colors.purple, () {
+              Navigator.push(
+                  context, SlideFromRightPageRoute(page: ShiftManagerPage()));
             }),
             _buildGridItem('Nhân Sự', 'Quản lý nhân sự', state.count,
                 Icons.people_alt_outlined, Colors.purple, () {
@@ -375,7 +380,7 @@ class _HomeTabState extends State<HomeTab> {
                   context, SlideFromRightPageRoute(page: MovieManagerPage()));
             }),
             _buildGridItem('Lịch chiếu', 'Quản lý lịch chiếu', state.count,
-                Icons.calendar_today, Colors.purple, () {
+                Icons.calendar_month_outlined, Colors.purple, () {
               Navigator.push(context,
                   SlideFromRightPageRoute(page: ShowtimeManagerPage()));
             }),

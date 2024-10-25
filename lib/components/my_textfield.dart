@@ -15,6 +15,7 @@ class MyTextfield extends StatefulWidget {
   final String? errorMessage;
   final IconData? icon;
   final Color? focusColor;
+  final Function(String)? onSubmitted; // Thêm thuộc tính onSubmitted
 
   const MyTextfield({
     Key? key,
@@ -30,6 +31,7 @@ class MyTextfield extends StatefulWidget {
     this.errorMessage,
     this.icon,
     this.focusColor,
+    this.onSubmitted,
   }) : super(key: key);
 
   @override
@@ -87,6 +89,8 @@ class _MyTextfieldState extends State<MyTextfield> {
             controller: widget.controller,
             obscureText: widget.isPassword ? _obscureText : false,
             focusNode: _focusNode, // Use internal focus node
+            onSubmitted:
+                widget.onSubmitted ?? (_) {}, // Nếu không có, thì bỏ qua
             decoration: InputDecoration(
               border: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(8.0)),

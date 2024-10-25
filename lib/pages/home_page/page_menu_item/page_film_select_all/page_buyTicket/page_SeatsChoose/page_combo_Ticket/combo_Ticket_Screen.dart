@@ -1,10 +1,12 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
+import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/models/Chair_modal.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_billTicket/bill_Ticket_Screen.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:intl/intl.dart';
 
@@ -15,6 +17,9 @@ class ComboTicketScreen extends StatefulWidget {
   final String showtimeDate;
   final String startTime;
   final String endTime;
+  final List<int> seatCodes;
+  final int quantity;
+  final double sumPrice;
 
   const ComboTicketScreen({
     Key? key,
@@ -24,6 +29,9 @@ class ComboTicketScreen extends StatefulWidget {
     required this.showtimeDate,
     required this.startTime,
     required this.endTime,
+    required this.quantity,
+    required this.sumPrice,
+    required this.seatCodes,
   }) : super(key: key);
 
   @override
@@ -85,6 +93,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     super.build(context);
     return SafeArea(
@@ -129,7 +138,8 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                                   ],
                                 ),
                                 SizedBox(
-                                  height: 500, // Adjust this height as needed
+                                  height:
+                                      400, // Set a fixed height for the TabBarView
                                   child: TabBarView(
                                     children: [
                                       // Combo tab content
@@ -145,6 +155,37 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                                             '1 bắp ngọt 60oz + 2 coke 32oz',
                                             '115,000 VND',
                                           ),
+                                          _buildComboItem(
+                                            'COMBO SOLO',
+                                            '1 bắp ngọt 60oz + 1 coke 32oz',
+                                            '94,000 VND',
+                                          ),
+                                          _buildComboItem(
+                                            'COMBO COUPLE',
+                                            '1 bắp ngọt 60oz + 2 coke 32oz',
+                                            '115,000 VND',
+                                          ),
+                                          _buildComboItem(
+                                            'COMBO SOLO',
+                                            '1 bắp ngọt 60oz + 1 coke 32oz',
+                                            '94,000 VND',
+                                          ),
+                                          _buildComboItem(
+                                            'COMBO COUPLE',
+                                            '1 bắp ngọt 60oz + 2 coke 32oz',
+                                            '115,000 VND',
+                                          ),
+                                          _buildComboItem(
+                                            'COMBO SOLO',
+                                            '1 bắp ngọt 60oz + 1 coke 32oz',
+                                            '94,000 VND',
+                                          ),
+                                          _buildComboItem(
+                                            'COMBO COUPLE',
+                                            '1 bắp ngọt 60oz + 2 coke 32oz',
+                                            '115,000 VND',
+                                          ),
+                                          // Add more items as needed
                                         ],
                                       ),
                                       // Bán lẻ tab content
@@ -160,6 +201,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                                             '1 coke Coca 32oz',
                                             '39,000 VND',
                                           ),
+                                          // Add more items as needed
                                         ],
                                       ),
                                     ],
@@ -172,7 +214,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                       ),
                     ),
                   ),
-                  // Các phần tử nằm ở đáy
+                  // Bottom elements
                   const Divider(
                     height: 0,
                     thickness: 6,
@@ -194,32 +236,6 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                             overflow: TextOverflow.ellipsis,
                             minFontSize: 14,
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(8.0, 0, 5, 0),
-                          child: Align(
-                              alignment: Alignment
-                                  .topRight, // Căn giữa ở phía trên bên phải
-                              child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 2),
-                                    decoration: const BoxDecoration(
-                                      color: mainColor,
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(4)),
-                                    ),
-                                    child: const Text(
-                                      'Đổi suất',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ))),
                         ),
                       ],
                     ),
@@ -305,11 +321,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                         Padding(
                           padding: EdgeInsets.fromLTRB(8.0, 0, 5, 0),
                           child: AutoSizeText(
-                            _movieDetails != null && selectedCount > 0
-                                ? '${formatPrice(_movieDetails!.price! * selectedCount)} VND'
-                                : _movieDetails != null
-                                    ? '0 VND' // Display 0 VND when no chairs are selected
-                                    : 'Đang tải...',
+                            formatPrice(widget.sumPrice),
                             style: const TextStyle(
                               color: Colors.red,
                               fontSize: 18,
@@ -331,7 +343,30 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                       text: 'Tiếp tục',
                       isBold: true,
                       onTap: () {
-                        Navigator.pop(context);
+                        print(widget.movieID);
+                        print(widget.quantity);
+                        print(widget.sumPrice);
+                        print(widget.showTimeID);
+                        print(widget.seatCodes);
+                        print(widget.showtimeDate);
+                        print(widget.startTime);
+                        print(widget.endTime);
+                        print(widget.cinemaRoomID);
+                        Navigator.push(
+                          context,
+                          SlideFromRightPageRoute(
+                              page: BillTicketScreen(
+                            movieID: widget.movieID,
+                            quantity: widget.quantity,
+                            sumPrice: widget.sumPrice,
+                            showTimeID: widget.showTimeID,
+                            seatCodes: widget.seatCodes,
+                            showtimeDate: widget.showtimeDate,
+                            startTime: widget.startTime,
+                            endTime: widget.endTime,
+                            cinemaRoomID: widget.cinemaRoomID,
+                          )),
+                        );
                       },
                     ),
                   ),
@@ -352,8 +387,15 @@ Widget _buildComboItem(String title, String description, String price) {
       children: [
         Expanded(
           flex: 1,
-          child: Image.asset(
-              'assets/combo_image.png'), // Replace with actual image
+          child: SizedBox(
+            width: 100,
+            height: 120,
+            child: Image.asset(
+              'assets/images/combo1.png', // Replace with actual image
+              fit: BoxFit
+                  .cover, // Optional, to control how the image is resized within the box
+            ),
+          ),
         ),
         Expanded(
           flex: 2,
@@ -485,4 +527,9 @@ class CurvedLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
+String formatPrice(double price) {
+  final formatter = NumberFormat('#,###');
+  return formatter.format(price);
 }
