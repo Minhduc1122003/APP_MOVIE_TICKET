@@ -256,7 +256,7 @@ class _LocationEditPageState extends State<LocationEditPage> {
                       height: 10,
                     ),
                     SizedBox(
-                      height: 150,
+                      height: 200,
                       child: GoogleMap(
                         zoomGesturesEnabled: true,
                         scrollGesturesEnabled: true,
@@ -298,7 +298,7 @@ class _LocationEditPageState extends State<LocationEditPage> {
                             },
                             style: TextButton.styleFrom(
                               backgroundColor: Colors.green,
-                              padding: EdgeInsets.symmetric(vertical: 20.0),
+                              padding: EdgeInsets.symmetric(vertical: 12.0),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.0),
@@ -363,7 +363,7 @@ class _LocationEditPageState extends State<LocationEditPage> {
                               backgroundColor:
                                   mainColor, // Set the background color to blue
                               padding: EdgeInsets.symmetric(
-                                  vertical: 20.0), // Adjust padding
+                                  vertical: 12.0), // Adjust padding
                               foregroundColor:
                                   Colors.white, // Set the text color to white
                               shape: RoundedRectangleBorder(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_InfoCard.dart';
+import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/components/my_textfield.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_info_manager_page/personnel_info_manager_page.dart';
@@ -24,6 +25,12 @@ class _ShiftEditPageState extends State<ShiftEditPage> {
   FocusNode _focusNode = FocusNode();
   TextEditingController _searchController = TextEditingController();
   late Future<List<User>> _alluser;
+  TextEditingController shiftNameController = TextEditingController();
+  TextEditingController startTimeController = TextEditingController();
+  TextEditingController endTimeController = TextEditingController();
+  TextEditingController isCrossDateController = TextEditingController();
+  String? selectedShiftType;
+  String? selectedStatus;
 
   @override
   void initState() {
@@ -105,19 +112,107 @@ class _ShiftEditPageState extends State<ShiftEditPage> {
             ],
           ),
           backgroundColor: Colors.white,
-          body: const Stack(
+          body: Stack(
             children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
                 child: Column(
                   children: [
-                    MyTextfield(
+                    const MyTextfield(
                       placeHolder: 'Tên ca làm',
-                      icon: Icons.not_listed_location_sharp,
+                      icon: Icons.drive_file_rename_outline,
                     ),
-                    SizedBox(
-                      height: 10,
+                    const SizedBox(
+                      height: 15,
                     ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: MyTextfield(
+                            controller: startTimeController,
+                            isTimePicker: true,
+                            isPassword: false,
+                            placeHolder: "Giờ bắt đầu",
+                            sendCode: false,
+                            icon: Icons.timer_sharp,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: MyTextfield(
+                            controller: endTimeController,
+                            isTimePicker: true,
+                            isPassword: false,
+                            placeHolder: "Giờ kết thúc",
+                            sendCode: false,
+                            icon: Icons.access_time,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    DropdownButtonFormField<String>(
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                        ),
+                        labelText: 'Loại ca làm',
+                      ),
+                      value: selectedShiftType, // Giá trị được chọn
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'Không qua đêm',
+                          child: Text('Không qua đêm'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Qua đêm',
+                          child: Text('Qua đêm'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          selectedShiftType = value; // Cập nhật giá trị đã chọn
+                        });
+                      },
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    DropdownButtonFormField<String>(
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                        ),
+                        labelText: 'Trạng thái',
+                      ),
+                      value: selectedStatus, // Giá trị được chọn
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'Đang hoạt động',
+                          child: Text('Đang hoạt động'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Ngưng hoạt động',
+                          child: Text('Ngưng hoạt động'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          selectedStatus = value; // Cập nhật giá trị đã chọn
+                        });
+                      },
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    MyButton(
+                        fontsize: 20,
+                        paddingText: 10,
+                        text: 'Đặt vé ngay',
+                        isBold: true,
+                        onTap: () {})
                   ],
                 ),
               )

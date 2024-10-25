@@ -16,7 +16,8 @@ class MyTextfield extends StatefulWidget {
   final IconData? icon;
   final Color? focusColor;
   final Function(String)? onSubmitted; // Thêm thuộc tính onSubmitted
-
+  final bool? isTimePicker;
+  final List<String>? comboBoxItems;
   const MyTextfield({
     Key? key,
     this.title,
@@ -32,6 +33,8 @@ class MyTextfield extends StatefulWidget {
     this.icon,
     this.focusColor,
     this.onSubmitted,
+    this.isTimePicker,
+    this.comboBoxItems,
   }) : super(key: key);
 
   @override
@@ -42,6 +45,7 @@ class _MyTextfieldState extends State<MyTextfield> {
   FocusNode _focusNode = FocusNode();
   bool _obscureText = true;
   bool hasText = false;
+  String? selectedItem;
 
   @override
   void initState() {
@@ -85,115 +89,168 @@ class _MyTextfieldState extends State<MyTextfield> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          TextField(
-            controller: widget.controller,
-            obscureText: widget.isPassword ? _obscureText : false,
-            focusNode: _focusNode, // Use internal focus node
-            onSubmitted:
-                widget.onSubmitted ?? (_) {}, // Nếu không có, thì bỏ qua
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(8.0)),
-              ),
-              labelText: widget.placeHolder,
-              hintStyle: const TextStyle(color: Color(0xFF4F75FF)),
-              labelStyle: TextStyle(
-                color: isFocused || hasText
-                    ? widget.focusColor ?? const Color(0xFF4F75FF)
-                    : Colors.grey,
-              ),
-              fillColor: const Color(0xFF4F75FF),
-              filled: widget.isFill,
-              prefixIcon: widget.icon != null
-                  ? Icon(
-                      widget.icon,
-                      color: isFocused
-                          ? widget.focusColor ?? const Color(0xFF4F75FF)
-                          : Colors.black.withOpacity(0.6),
-                      size: 20.0,
-                    )
-                  : null,
-              prefixText: widget.isPhone ? '+84 ' : null,
-              prefixStyle: const TextStyle(color: Colors.black),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(
-                  color: widget.focusColor ?? const Color(0xFF4F75FF),
-                  width: 1.0, // You can adjust the thickness here
-                ),
-                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(
-                  color: Colors.grey.shade400, // Border when not focused
-                ),
-                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-              ),
-              suffixIcon: widget.isPassword
-                  ? Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                      child: IconButton(
-                        icon: Icon(
-                          _obscureText
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureText = !_obscureText;
-                          });
-                        },
+          widget.comboBoxItems !=
+                  null // Nếu có comboBoxItems, hiển thị ComboBox
+              ? DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    labelText: widget.placeHolder,
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: widget.focusColor ?? const Color(0xFF4F75FF),
+                        width: 1.0,
                       ),
-                    )
-                  : widget.sendCode
-                      ? Padding(
-                          padding: const EdgeInsets.only(right: 10.0),
-                          child: SizedBox(
-                            width: 60,
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: MouseRegion(
-                                cursor: SystemMouseCursors.click,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    final title = 'Your Email Subject';
-                                    final content = 'Content of the email';
-                                    final recipient =
-                                        widget.controller?.text ?? '';
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(8.0)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.grey.shade400,
+                      ),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(8.0)),
+                    ),
+                  ),
+                  value: selectedItem,
+                  items: widget.comboBoxItems!
+                      .map((item) => DropdownMenuItem(
+                            value: item,
+                            child: Text(item),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedItem = value;
+                    });
+                  },
+                )
+              : TextField(
+                  controller: widget.controller,
+                  obscureText: widget.isPassword ? _obscureText : false,
+                  focusNode: _focusNode, // Use internal focus node
+                  onSubmitted:
+                      widget.onSubmitted ?? (_) {}, // Nếu không có, thì bỏ qua
+                  readOnly: widget.isTimePicker ?? false,
+                  onTap: widget.isTimePicker == true
+                      ? () async {
+                          TimeOfDay? pickedTime = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay.now(),
+                          );
+                          if (pickedTime != null) {
+                            final formattedTime =
+                                "${pickedTime.hour}:${pickedTime.minute.toString().padLeft(2, '0')}"; // Đảm bảo phút luôn có 2 chữ số
+                            widget.controller?.text = formattedTime;
+                          }
+                        }
+                      : null,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                    ),
+                    labelText: widget.placeHolder,
+                    hintStyle: const TextStyle(color: Color(0xFF4F75FF)),
+                    labelStyle: TextStyle(
+                      color: isFocused || hasText
+                          ? widget.focusColor ?? const Color(0xFF4F75FF)
+                          : Colors.grey,
+                    ),
+                    fillColor: const Color(0xFF4F75FF),
+                    filled: widget.isFill,
+                    prefixIcon: widget.icon != null
+                        ? Icon(
+                            widget.icon,
+                            color: isFocused
+                                ? widget.focusColor ?? const Color(0xFF4F75FF)
+                                : Colors.black.withOpacity(0.6),
+                            size: 20.0,
+                          )
+                        : null,
+                    prefixText: widget.isPhone ? '+84 ' : null,
+                    prefixStyle: const TextStyle(color: Colors.black),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: widget.focusColor ?? const Color(0xFF4F75FF),
+                        width: 1.0, // You can adjust the thickness here
+                      ),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(8.0)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.grey.shade400, // Border when not focused
+                      ),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(8.0)),
+                    ),
+                    suffixIcon: widget.isPassword
+                        ? Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                            child: IconButton(
+                              icon: Icon(
+                                _obscureText
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscureText = !_obscureText;
+                                });
+                              },
+                            ),
+                          )
+                        : widget.sendCode
+                            ? Padding(
+                                padding: const EdgeInsets.only(right: 10.0),
+                                child: SizedBox(
+                                  width: 60,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: MouseRegion(
+                                      cursor: SystemMouseCursors.click,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          final title = 'Your Email Subject';
+                                          final content =
+                                              'Content of the email';
+                                          final recipient =
+                                              widget.controller?.text ?? '';
 
-                                    context.read<SendCodeBloc>().add(
-                                          SendCode(title, content, recipient),
-                                        );
-                                  },
-                                  child: const Text(
-                                    'Gửi mã',
-                                    style: TextStyle(
-                                      color: Color(0XFF6F3CD7),
+                                          context.read<SendCodeBloc>().add(
+                                                SendCode(
+                                                    title, content, recipient),
+                                              );
+                                        },
+                                        child: const Text(
+                                          'Gửi mã',
+                                          style: TextStyle(
+                                            color: Color(0XFF6F3CD7),
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          ),
-                        )
-                      : widget.isCode == true
-                          ? const Padding(
-                              padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                              child: Icon(
-                                Icons.check_circle,
-                                color: Colors.green,
-                              ),
-                            )
-                          : widget.isCode == false
-                              ? const Padding(
-                                  padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                                  child: Icon(
-                                    Icons.cancel,
-                                    color: Colors.red,
-                                  ),
-                                )
-                              : null,
-            ),
-          ),
+                              )
+                            : widget.isCode == true
+                                ? const Padding(
+                                    padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                                    child: Icon(
+                                      Icons.check_circle,
+                                      color: Colors.green,
+                                    ),
+                                  )
+                                : widget.isCode == false
+                                    ? const Padding(
+                                        padding:
+                                            EdgeInsets.fromLTRB(0, 0, 0, 0),
+                                        child: Icon(
+                                          Icons.cancel,
+                                          color: Colors.red,
+                                        ),
+                                      )
+                                    : null,
+                  ),
+                ),
           if (widget.errorMessage != null) ...[
             const SizedBox(height: 5),
             Text(

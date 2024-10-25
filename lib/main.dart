@@ -7,6 +7,7 @@ import 'package:flutter_app_chat/pages/manager_page/bloc/hometab_bloc.dart';
 import 'package:flutter_app_chat/pages/manager_page/home_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/location_manager_page/location_edit_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/shift_manager_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/shift_page/shift_edit_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/showtime_manager_page/showtime_edit_manager_page.dart';
 import 'package:flutter_app_chat/pages/register_page/createAccount_bloc/createAccount_bloc.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
@@ -50,8 +51,8 @@ class _MyAppState extends State<MyApp> {
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           builder: EasyLoading.init(),
-          // home: HomePage(),
-          home: ShiftManagerPage(),
+          home: HomePage(),
+          // home: ShiftEditPage(),
         ));
   }
 }

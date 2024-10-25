@@ -173,7 +173,7 @@ class _ShiftListPageState extends State<ShiftListPage> {
                     Navigator.push(
                       context,
                       SlideFromRightPageRoute(
-                        page: LocationEditPage(),
+                        page: ShiftEditPage(),
                       ),
                     );
                   },
