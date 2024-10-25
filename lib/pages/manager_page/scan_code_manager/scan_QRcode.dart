@@ -32,7 +32,7 @@ class _ScanQrcodeState extends State<ScanQrcode>
     super.build(context);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0XFF6F3CD7),
+        backgroundColor: const Color(0xFF4F75FF),
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_outlined,
@@ -55,17 +55,114 @@ class _ScanQrcodeState extends State<ScanQrcode>
             key: qrKey,
             onQRViewCreated: _onQRViewCreated,
           ),
+          Padding(
+            padding: const EdgeInsets.only(top: 10.0),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                padding: const EdgeInsets.all(5),
+                color: Colors.orange,
+                child: const Text(
+                  'Đưa QR vào khung để check vé !',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.center,
+            child: Container(
+              width: 250, // Adjust the width as needed
+              height: 250, // Adjust the height as needed
+              child: Stack(
+                children: [
+                  // Top-left corner
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(
+                              color: Colors.white.withOpacity(0.8), width: 3.0),
+                          left: BorderSide(
+                              color: Colors.white.withOpacity(0.8), width: 3.0),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Top-right corner
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(
+                              color: Colors.white.withOpacity(0.8), width: 3.0),
+                          right: BorderSide(
+                              color: Colors.white.withOpacity(0.8), width: 3.0),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Bottom-left corner
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                              color: Colors.white.withOpacity(0.8), width: 3.0),
+                          left: BorderSide(
+                              color: Colors.white.withOpacity(0.8), width: 3.0),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Bottom-right corner
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                              color: Colors.white.withOpacity(0.8), width: 3.0),
+                          right: BorderSide(
+                              color: Colors.white.withOpacity(0.8), width: 3.0),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           Positioned(
-            bottom: 80, // Adjusted to make space for the text
+            bottom: 100,
             left: 0,
             right: 0,
             child: Text(
               result,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                  fontSize: 20,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w400),
+                fontSize: 20,
+                color: Colors.white,
+                fontWeight: FontWeight.w400,
+              ),
             ),
           ),
         ],
@@ -73,17 +170,6 @@ class _ScanQrcodeState extends State<ScanQrcode>
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.all(5), // Padding of 10 pixels
-            color: Colors.orange, // Background color set to orange
-            child: const Text(
-              'Chào mừng đến với ứng dụng quét mã!',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white,
-              ),
-            ),
-          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -92,9 +178,12 @@ class _ScanQrcodeState extends State<ScanQrcode>
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.camera_alt,
-                      color: Color(0xFF6439FF),
+                    Padding(
+                      padding: EdgeInsets.only(top: 10.0),
+                      child: Icon(
+                        Icons.camera_alt,
+                        color: Color(0xFF6439FF),
+                      ),
                     ),
                     Text(
                       'Quét mã QR',
