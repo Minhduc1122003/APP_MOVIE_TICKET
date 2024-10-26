@@ -10,6 +10,8 @@ import 'package:flutter_app_chat/pages/manager_page/showtime_manager_page/showti
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
+import '../../../../models/Location_modal.dart';
+
 class LocationListPage extends StatefulWidget {
   const LocationListPage({super.key});
 
@@ -22,13 +24,13 @@ class _LocationListPageState extends State<LocationListPage> {
   bool isSearching = false;
   FocusNode _focusNode = FocusNode();
   TextEditingController _searchController = TextEditingController();
-  late Future<List<User>> _alluser;
+  late Future<List<LocationWithShift>> _allLocation;
 
   @override
   void initState() {
     super.initState();
     _APIService = ApiService();
-    _alluser = _APIService.getUserListForAdmin();
+    _allLocation = _APIService.getAllListLocaion();
   }
 
   @override
@@ -36,6 +38,28 @@ class _LocationListPageState extends State<LocationListPage> {
     _focusNode.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _navigateToLocationEditPage(bool isEdit,
+      [LocationWithShift? location]) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LocationEditPage(
+          location: location,
+          isEdit: isEdit,
+        ),
+      ),
+    );
+
+    print('Result from ShiftEditPage: $result');
+
+    if (result == true) {
+      setState(() {
+        print('đã load lại data');
+        _allLocation = _APIService.getAllListLocaion();
+      });
+    }
   }
 
   @override
@@ -106,8 +130,8 @@ class _LocationListPageState extends State<LocationListPage> {
           backgroundColor: Colors.white,
           body: Stack(
             children: [
-              FutureBuilder<List<User>>(
-                future: _alluser,
+              FutureBuilder<List<LocationWithShift>>(
+                future: _allLocation,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
@@ -119,32 +143,100 @@ class _LocationListPageState extends State<LocationListPage> {
                     return ListView.builder(
                       itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
-                        final user = snapshot.data![index];
-                        return ListTile(
-                          title: Text(user.fullName),
-                          subtitle: Text(user.email),
-                          leading: user.photo != null
-                              ? Image.network(user.photo!)
-                              : Icon(Icons.person),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(user.status), // Giữ nguyên phần trạng thái
-                              SizedBox(
-                                  width:
-                                      8), // Khoảng cách giữa trạng thái và mũi tên
-                              Icon(Icons.arrow_forward_ios,
-                                  size: 16), // Mũi tên kiểu iOS
-                            ],
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              SlideFromRightPageRoute(
-                                page: LocationEditPage(),
+                        final location = snapshot.data![index];
+                        return Column(
+                          children: [
+                            ListTile(
+                              title: Row(
+                                children: [
+                                  Icon(
+                                    Icons.location_on,
+                                    size: 18,
+                                    color: mainColor,
+                                  ),
+                                  Text(
+                                    location.locationName,
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ],
                               ),
-                            );
-                          },
+                              subtitle: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.calendar_month_outlined,
+                                        size: 15,
+                                      ),
+                                      Text(' Ca làm: ${location.shiftName} '),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.access_time_outlined,
+                                        size: 15,
+                                      ),
+                                      Text(
+                                        ' ${location.startTime} đến ${location.endTime}', // Dòng thời gian
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 10, // Đường kính của hình tròn
+                                        height: 10, // Đường kính của hình tròn
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: location.status ==
+                                                  'Đang hoạt động'
+                                              ? Colors.green
+                                              : Colors
+                                                  .red, // Màu sắc dựa trên trạng thái
+                                        ),
+                                      ),
+                                      SizedBox(
+                                          width:
+                                              8), // Khoảng cách giữa hình tròn và văn bản
+                                      Text(
+                                        '${location.status}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: location.status ==
+                                                  'Đang hoạt động'
+                                              ? Colors.green
+                                              : Colors
+                                                  .red, // Màu sắc dựa trên trạng thái
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                      width:
+                                          8), // Khoảng cách giữa trạng thái và mũi tên
+                                  Icon(Icons.arrow_forward_ios,
+                                      size: 16), // Mũi tên kiểu iOS
+                                ],
+                              ),
+                              onTap: () {
+                                _navigateToLocationEditPage(true, location);
+                              },
+                            ),
+                            if (index < snapshot.data!.length - 1)
+                              Divider(
+                                height: 1,
+                                thickness: 0,
+                              ),
+                          ],
                         );
                       },
                     );
@@ -169,12 +261,7 @@ class _LocationListPageState extends State<LocationListPage> {
                   elevation: 8.0,
                   shape: CircleBorder(),
                   onPress: () {
-                    Navigator.push(
-                      context,
-                      SlideFromRightPageRoute(
-                        page: LocationEditPage(),
-                      ),
-                    );
+                    _navigateToLocationEditPage(false);
                   },
                 ),
               ),

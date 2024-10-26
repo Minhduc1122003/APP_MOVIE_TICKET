@@ -5,6 +5,7 @@ import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_InfoCard.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_info_manager_page/personnel_info_manager_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/calendar_shift_manager_page/calendar_shift_list_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/location_manager_page/location_list_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/shift_page/shift_list_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
@@ -114,14 +115,14 @@ class _ShiftManagerPageState extends State<ShiftManagerPage> {
                         title: 'Cài đặt quản trị',
                         buttons: [
                           UtilityButton(
-                            color: Colors.pink,
+                            color: mainColor,
                             title: 'Ca làm việc',
                             icon: Icons
                                 .people_alt_outlined, // Đổi thành icon phù hợp với "Quản lý người dùng"
                             isExpandable: true,
                             expandedItems: [
                               UtilityButton(
-                                color: Colors.pink,
+                                color: mainColor,
                                 title: 'Thiết lập vị trí',
                                 icon: Icons.bar_chart,
                                 textStyle: TextStyle(fontSize: 16),
@@ -136,10 +137,117 @@ class _ShiftManagerPageState extends State<ShiftManagerPage> {
                                 },
                               ),
                               UtilityButton(
-                                color: Colors.pink,
+                                color: mainColor,
                                 title: 'Thiết lập ca làm',
                                 icon: Icons
                                     .account_box, // Đổi thành icon phù hợp với "Chi tiết người dùng"
+                                textStyle: TextStyle(fontSize: 16),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    SlideFromRightPageRoute(
+                                      page:
+                                          ShiftListPage(), // Thay editPage() bằng trang cần chuyển tới
+                                    ),
+                                  );
+                                },
+                              ),
+                              UtilityButton(
+                                color: mainColor,
+                                title: 'Lịch làm việc nhân viên',
+                                icon: Icons
+                                    .account_box, // Đổi thành icon phù hợp với "Chi tiết người dùng"
+                                textStyle: TextStyle(fontSize: 16),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    SlideFromRightPageRoute(
+                                      page:
+                                          CalendarShiftListPage(), // Thay editPage() bằng trang cần chuyển tới
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                            onPressed:
+                                () {}, // This will be called when the item is tapped, even if it's expandable
+                          ),
+                          UtilityButton(
+                            color: mainColor,
+                            title: 'Phát thông báo',
+                            icon: Icons
+                                .notifications_active, // Đổi thành icon phù hợp với "Quản lý phim"
+                            isExpandable: true,
+                            expandedItems: [
+                              UtilityButton(
+                                color: mainColor,
+                                title: 'Thông báo cho nhân viên',
+                                icon: Icons
+                                    .edit_notifications, // Đổi thành icon phù hợp với "Thêm phim sắp chiếu"
+                                textStyle: TextStyle(fontSize: 16),
+                                onPressed: () {},
+                              ),
+                              UtilityButton(
+                                color: mainColor,
+                                title: 'Thông báo cho khách hàng',
+                                icon: Icons
+                                    .notifications, // Đổi thành icon phù hợp với "Chỉnh sửa nội dung"
+                                textStyle: TextStyle(fontSize: 16),
+                                onPressed: () {},
+                              ),
+                              UtilityButton(
+                                color: mainColor,
+                                title: 'Thông báo cho khách hàng',
+                                icon: Icons
+                                    .notifications, // Đổi thành icon phù hợp với "Chỉnh sửa nội dung"
+                                textStyle: TextStyle(fontSize: 16),
+                                onPressed: () {},
+                              ),
+                              UtilityButton(
+                                color: mainColor,
+                                title: 'Thông báo cho khách hàng',
+                                icon: Icons
+                                    .notifications, // Đổi thành icon phù hợp với "Chỉnh sửa nội dung"
+                                textStyle: TextStyle(fontSize: 16),
+                                onPressed: () {},
+                              ),
+                              // Add more sub-items here as needed
+                            ],
+                            onPressed:
+                                () {}, // This will be called when the item is tapped, even if it's expandable
+                          ),
+                        ],
+                      ),
+                      UtilitySection(
+                        title: 'Thiết lập quảng cáo',
+                        buttons: [
+                          UtilityButton(
+                            color: mainColor,
+                            title: 'Thiết lập poster',
+                            icon: Icons
+                                .people_alt_outlined, // Đổi thành icon phù hợp với "Quản lý người dùng"
+                            isExpandable: true,
+                            expandedItems: [
+                              UtilityButton(
+                                color: mainColor,
+                                title: 'Poster trang chủ',
+                                icon: Icons.image_sharp,
+                                textStyle: TextStyle(fontSize: 16),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    SlideFromRightPageRoute(
+                                      page:
+                                          LocationListPage(), // Thay editPage() bằng trang cần chuyển tới
+                                    ),
+                                  );
+                                },
+                              ),
+                              UtilityButton(
+                                color: mainColor,
+                                title: 'Khác...',
+                                icon: Icons
+                                    .add_box, // Đổi thành icon phù hợp với "Chi tiết người dùng"
                                 textStyle: TextStyle(fontSize: 16),
                                 onPressed: () {
                                   Navigator.push(
@@ -157,45 +265,26 @@ class _ShiftManagerPageState extends State<ShiftManagerPage> {
                                 () {}, // This will be called when the item is tapped, even if it's expandable
                           ),
                           UtilityButton(
-                            color: Colors.pink,
-                            title: 'Phát thông báo',
-                            icon: Icons
-                                .notifications_active, // Đổi thành icon phù hợp với "Quản lý phim"
-                            isExpandable: true,
-                            expandedItems: [
-                              UtilityButton(
-                                color: Colors.pink,
-                                title: 'Thông báo cho nhân viên',
-                                icon: Icons
-                                    .edit_notifications, // Đổi thành icon phù hợp với "Thêm phim sắp chiếu"
-                                textStyle: TextStyle(fontSize: 16),
-                                onPressed: () {},
-                              ),
-                              UtilityButton(
-                                color: Colors.pink,
-                                title: 'Thông báo cho khách hàng',
-                                icon: Icons
-                                    .notifications, // Đổi thành icon phù hợp với "Chỉnh sửa nội dung"
-                                textStyle: TextStyle(fontSize: 16),
-                                onPressed: () {},
-                              ),
-                              // Add more sub-items here as needed
-                            ],
-                            onPressed:
-                                () {}, // This will be called when the item is tapped, even if it's expandable
+                            color: mainColor,
+                            title: 'Quảng cáo phim',
+                            icon: Icons.movie_rounded,
+                            onPressed: () {},
                           ),
+                        ],
+                      ),
+                      UtilitySection(
+                        title: 'Thông tin admin',
+                        buttons: [
                           UtilityButton(
-                            color: Colors.pink,
-                            title: 'Quản lý phòng chiếu',
-                            icon: Icons
-                                .account_box, // Đổi thành icon phù hợp với "Chi tiết người dùng"
+                            color: mainColor,
+                            title: 'Thông tin admin',
+                            icon: Icons.info_outline_rounded,
                             onPressed: () {},
                           ),
                           UtilityButton(
-                            color: Colors.pink,
-                            title: 'Báo cáo &  thống kê doanh thu',
-                            icon: Icons
-                                .account_box, // Đổi thành icon phù hợp với "Chi tiết người dùng"
+                            color: mainColor,
+                            title: 'Cấp quyền quản lý',
+                            icon: Icons.manage_accounts,
                             onPressed: () {},
                           ),
                         ],

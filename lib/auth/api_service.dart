@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_network.dart';
 import 'package:flutter_app_chat/models/Chair_modal.dart';
+import 'package:flutter_app_chat/models/Location_modal.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
+import 'package:flutter_app_chat/models/Shift_modal.dart';
 import 'package:flutter_app_chat/models/ShowTime_modal.dart';
 import 'package:flutter_app_chat/models/chat_item_model.dart';
 import 'package:flutter_app_chat/models/showTimeForAdmin_model.dart';
@@ -26,7 +28,7 @@ class ApiService {
 
     // wifi cf24/24
 
-    baseUrl = 'http://192.168.1.58:8081';
+    baseUrl = 'http://192.168.1.77:8081';
   }
 
   late Response response;
@@ -571,6 +573,171 @@ class ApiService {
     } catch (e) {
       print('Error: $e');
       throw Exception('Failed to get conversations');
+    }
+  }
+
+  Future<String> createShift(Shift shiftModel) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    print('Base URL: $baseUrl');
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/createShifts'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'ShiftName': shiftModel.shiftName,
+          'StartTime': shiftModel.startTime,
+          'EndTime': shiftModel.endTime,
+          'IsCrossDay': shiftModel.isCrossDay ? 1 : 0,
+          'Status': shiftModel.status,
+        }),
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 201) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        print('Parsed Data: $data');
+
+        // Trả về message từ phản hồi của server
+        return data['message'];
+      } else {
+        throw Exception('Failed to create shift: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to create shift');
+    }
+  }
+
+  Future<String> createLocation(
+      String locationName, // Get from your text field
+      String latitude, // Get from your text field
+      String longitude, // Get from your text field
+      double radius, // Get from your text field
+      int shiftId) async {
+    await _initBaseUrl(); // Ensure that baseUrl is initialized
+    print('Base URL: $baseUrl');
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/createLocation'), // Update the endpoint
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'LocationName': locationName,
+          'Latitude': latitude,
+          'Longitude': longitude,
+          'Radius': radius,
+          'ShiftId': shiftId,
+        }),
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 201) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        print('Parsed Data: $data');
+
+        // Return the message from the server response
+        return data['message'];
+      } else {
+        throw Exception('Failed to create location: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to create location');
+    }
+  }
+
+  Future<String> createWorkSchedules(
+      String UserId, // Get from your text field
+      String ShiftId, // Get from your text field
+      String StartDate, // Get from your text field
+      String EndDate, // Get from your text field
+      String DaysOfWeek) async {
+    await _initBaseUrl(); // Ensure that baseUrl is initialized
+    print('Base URL: $baseUrl');
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/createWorkSchedules'), // Update the endpoint
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'UserId': UserId,
+          'ShiftId': ShiftId,
+          'StartDate': StartDate,
+          'EndDate': EndDate,
+          'DaysOfWeek': DaysOfWeek,
+        }),
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 201) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        print('Parsed Data: $data');
+
+        // Return the message from the server response
+        return data['message'];
+      } else {
+        throw Exception('Failed to create location: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to create location');
+    }
+  }
+
+  Future<List<Shift>> getAllListShift() async {
+    await _initBaseUrl();
+    try {
+      // Gửi yêu cầu GET đến API
+      final response = await http.get(
+        Uri.parse('$baseUrl/getAllListShift'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((item) => Shift.fromMap(item)).toList();
+      } else {
+        throw Exception('Failed to get movies: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to get movies');
+    }
+  }
+
+  Future<List<LocationWithShift>> getAllListLocaion() async {
+    await _initBaseUrl();
+    try {
+      // Gửi yêu cầu GET đến API
+      final response = await http.get(
+        Uri.parse('$baseUrl/getAllListLocation'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((item) => LocationWithShift.fromJson(item)).toList();
+      } else {
+        throw Exception('Failed to get location: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to get location');
     }
   }
 }

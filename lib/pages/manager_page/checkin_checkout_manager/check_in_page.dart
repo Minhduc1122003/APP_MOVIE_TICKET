@@ -3,34 +3,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_InfoCard.dart';
-import 'package:flutter_app_chat/models/Shift_modal.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_info_manager_page/personnel_info_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/location_manager_page/location_edit_page.dart';
-import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/shift_page/shift_edit_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/showtime_manager_page/showtime_edit_manager_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
-class ShiftListPage extends StatefulWidget {
-  const ShiftListPage({super.key});
+import '../../../../models/Location_modal.dart';
+
+class CheckInPage extends StatefulWidget {
+  const CheckInPage({super.key});
 
   @override
-  State<ShiftListPage> createState() => _ShiftListPageState();
+  State<CheckInPage> createState() => _CheckInPageState();
 }
 
-class _ShiftListPageState extends State<ShiftListPage> {
+class _CheckInPageState extends State<CheckInPage> {
   late ApiService _APIService;
   bool isSearching = false;
   FocusNode _focusNode = FocusNode();
   TextEditingController _searchController = TextEditingController();
-  late Future<List<Shift>> _allShift;
+  late Future<List<LocationWithShift>> _allLocation;
 
   @override
   void initState() {
     super.initState();
     _APIService = ApiService();
-    _allShift = _APIService.getAllListShift();
+    _allLocation = _APIService.getAllListLocaion();
   }
 
   @override
@@ -40,12 +40,13 @@ class _ShiftListPageState extends State<ShiftListPage> {
     super.dispose();
   }
 
-  Future<void> _navigateToShiftEditPage(bool isEdit, [Shift? shift]) async {
+  Future<void> _navigateToLocationEditPage(bool isEdit,
+      [LocationWithShift? location]) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ShiftEditPage(
-          shift: shift,
+        builder: (context) => LocationEditPage(
+          location: location,
           isEdit: isEdit,
         ),
       ),
@@ -56,7 +57,7 @@ class _ShiftListPageState extends State<ShiftListPage> {
     if (result == true) {
       setState(() {
         print('đã load lại data');
-        _allShift = _APIService.getAllListShift();
+        _allLocation = _APIService.getAllListLocaion();
       });
     }
   }
@@ -91,46 +92,15 @@ class _ShiftListPageState extends State<ShiftListPage> {
                     ),
                   );
                 },
-                child: isSearching || _searchController.text.isNotEmpty
-                    ? TextField(
-                        controller: _searchController,
-                        focusNode: _focusNode,
-                        autofocus: true,
-                        decoration: InputDecoration(
-                          hintText: 'Tìm kiếm ca làm',
-                          hintStyle: TextStyle(color: Colors.grey),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20.0),
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                        ),
-                        style: TextStyle(color: Colors.black),
-                      )
-                    : Text('Danh sách ca làm',
-                        style: TextStyle(color: Colors.white, fontSize: 20))),
+                child: Text('Check in vào ca',
+                    style: TextStyle(color: Colors.white, fontSize: 20))),
             centerTitle: true,
-            actions: [
-              IconButton(
-                icon: Icon(Icons.search, color: Colors.white, size: 20),
-                onPressed: () {
-                  setState(() {
-                    if (isSearching || _searchController.text.isNotEmpty) {
-                      _searchController.clear();
-                      isSearching = false;
-                    } else {
-                      isSearching = true;
-                    }
-                  });
-                },
-              ),
-            ],
           ),
           backgroundColor: Colors.white,
           body: Stack(
             children: [
-              FutureBuilder<List<Shift>>(
-                future: _allShift,
+              FutureBuilder<List<LocationWithShift>>(
+                future: _allLocation,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
@@ -142,37 +112,49 @@ class _ShiftListPageState extends State<ShiftListPage> {
                     return ListView.builder(
                       itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
-                        final shift = snapshot.data![index];
+                        final location = snapshot.data![index];
                         return Column(
                           children: [
                             ListTile(
                               title: Row(
                                 children: [
+                                  Icon(
+                                    Icons.location_on,
+                                    size: 18,
+                                    color: mainColor,
+                                  ),
                                   Text(
-                                    shift.shiftName,
+                                    location.locationName,
                                     style:
                                         TextStyle(fontWeight: FontWeight.bold),
                                   ),
-                                  SizedBox(
-                                    width: 8,
-                                  ),
-                                  Text(
-                                    ' - ', // Ngày tạo
-                                    style: TextStyle(
-                                        color: Colors.grey, fontSize: 12),
-                                  ),
-                                  SizedBox(
-                                    width: 8,
-                                  ),
-                                  Text(
-                                    'Ngày tạo: ${shift.createDate}', // Ngày tạo
-                                    style: TextStyle(
-                                        color: Colors.grey, fontSize: 12),
-                                  ),
                                 ],
                               ),
-                              subtitle: Text(
-                                'Từ ${shift.startTime} đến ${shift.endTime}', // Dòng thời gian
+                              subtitle: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.calendar_month_outlined,
+                                        size: 15,
+                                      ),
+                                      Text(' Ca làm: ${location.shiftName} '),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.access_time_outlined,
+                                        size: 15,
+                                      ),
+                                      Text(
+                                        ' ${location.startTime} đến ${location.endTime}', // Dòng thời gian
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -184,7 +166,7 @@ class _ShiftListPageState extends State<ShiftListPage> {
                                         height: 10, // Đường kính của hình tròn
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
-                                          color: shift.status ==
+                                          color: location.status ==
                                                   'Đang hoạt động'
                                               ? Colors.green
                                               : Colors
@@ -195,10 +177,10 @@ class _ShiftListPageState extends State<ShiftListPage> {
                                           width:
                                               8), // Khoảng cách giữa hình tròn và văn bản
                                       Text(
-                                        '${shift.status}',
+                                        '${location.status}',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          color: shift.status ==
+                                          color: location.status ==
                                                   'Đang hoạt động'
                                               ? Colors.green
                                               : Colors
@@ -210,19 +192,19 @@ class _ShiftListPageState extends State<ShiftListPage> {
                                   SizedBox(
                                       width:
                                           8), // Khoảng cách giữa trạng thái và mũi tên
-                                  Icon(Icons.arrow_forward_ios, size: 16),
+                                  Icon(Icons.arrow_forward_ios,
+                                      size: 16), // Mũi tên kiểu iOS
                                 ],
                               ),
                               onTap: () {
-                                _navigateToShiftEditPage(true, shift);
+                                _navigateToLocationEditPage(true, location);
                               },
                             ),
-                            // Thêm đường kẻ ngăn cách nếu không phải là item cuối
                             if (index < snapshot.data!.length - 1)
                               Divider(
                                 height: 1,
                                 thickness: 0,
-                              ), // Đường kẻ ngăn cách
+                              ),
                           ],
                         );
                       },
@@ -248,9 +230,7 @@ class _ShiftListPageState extends State<ShiftListPage> {
                   elevation: 8.0,
                   shape: CircleBorder(),
                   onPress: () {
-                    _navigateToShiftEditPage(
-                      false,
-                    );
+                    _navigateToLocationEditPage(false);
                   },
                 ),
               ),

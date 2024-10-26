@@ -15,9 +15,13 @@ class MyTextfield extends StatefulWidget {
   final String? errorMessage;
   final IconData? icon;
   final Color? focusColor;
-  final Function(String)? onSubmitted; // Thêm thuộc tính onSubmitted
+  final Function(String)? onSubmitted;
+  final Function(String)? onChanged; // Thêm thuộc tính onChanged
   final bool? isTimePicker;
   final List<String>? comboBoxItems;
+  final bool isEdit; // Thêm thuộc tính isEdit
+  final Function()? onArrowTap;
+
   const MyTextfield({
     Key? key,
     this.title,
@@ -33,8 +37,11 @@ class MyTextfield extends StatefulWidget {
     this.icon,
     this.focusColor,
     this.onSubmitted,
+    this.onChanged, // Truyền giá trị cho onChanged
     this.isTimePicker,
     this.comboBoxItems,
+    this.isEdit = true, // Đặt giá trị mặc định cho isEdit là true
+    this.onArrowTap,
   }) : super(key: key);
 
   @override
@@ -83,14 +90,13 @@ class _MyTextfieldState extends State<MyTextfield> {
 
   @override
   Widget build(BuildContext context) {
-    bool isFocused = _focusNode.hasFocus; // Check if focused
+    bool isFocused = _focusNode.hasFocus;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          widget.comboBoxItems !=
-                  null // Nếu có comboBoxItems, hiển thị ComboBox
+          widget.comboBoxItems != null
               ? DropdownButtonFormField<String>(
                   decoration: InputDecoration(
                     labelText: widget.placeHolder,
@@ -103,9 +109,7 @@ class _MyTextfieldState extends State<MyTextfield> {
                           const BorderRadius.all(Radius.circular(8.0)),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.grey.shade400,
-                      ),
+                      borderSide: BorderSide(color: Colors.grey.shade400),
                       borderRadius:
                           const BorderRadius.all(Radius.circular(8.0)),
                     ),
@@ -121,28 +125,40 @@ class _MyTextfieldState extends State<MyTextfield> {
                     setState(() {
                       selectedItem = value;
                     });
+                    if (widget.onChanged != null) {
+                      widget.onChanged!(value!);
+                    }
                   },
                 )
               : TextField(
                   controller: widget.controller,
                   obscureText: widget.isPassword ? _obscureText : false,
-                  focusNode: _focusNode, // Use internal focus node
-                  onSubmitted:
-                      widget.onSubmitted ?? (_) {}, // Nếu không có, thì bỏ qua
-                  readOnly: widget.isTimePicker ?? false,
-                  onTap: widget.isTimePicker == true
-                      ? () async {
-                          TimeOfDay? pickedTime = await showTimePicker(
-                            context: context,
-                            initialTime: TimeOfDay.now(),
-                          );
-                          if (pickedTime != null) {
-                            final formattedTime =
-                                "${pickedTime.hour}:${pickedTime.minute.toString().padLeft(2, '0')}"; // Đảm bảo phút luôn có 2 chữ số
-                            widget.controller?.text = formattedTime;
+                  focusNode: _focusNode,
+                  onSubmitted: widget.onSubmitted ?? (_) {},
+                  onChanged: widget.onChanged, // Thêm onChanged ở đây
+                  readOnly: widget.isTimePicker ??
+                      false || !(widget.isEdit) || widget.onArrowTap != null,
+
+                  onTap: widget.onArrowTap != null
+                      ? () {
+                          // Trigger the onArrowTap action when tapped
+                          if (widget.onArrowTap != null) {
+                            widget.onArrowTap!();
                           }
                         }
-                      : null,
+                      : widget.isTimePicker == true
+                          ? () async {
+                              TimeOfDay? pickedTime = await showTimePicker(
+                                context: context,
+                                initialTime: TimeOfDay.now(),
+                              );
+                              if (pickedTime != null) {
+                                final formattedTime =
+                                    "${pickedTime.hour}:${pickedTime.minute.toString().padLeft(2, '0')}";
+                                widget.controller?.text = formattedTime;
+                              }
+                            }
+                          : null,
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(8.0)),
@@ -170,85 +186,79 @@ class _MyTextfieldState extends State<MyTextfield> {
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(
                         color: widget.focusColor ?? const Color(0xFF4F75FF),
-                        width: 1.0, // You can adjust the thickness here
+                        width: 1.0,
                       ),
                       borderRadius:
                           const BorderRadius.all(Radius.circular(8.0)),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.grey.shade400, // Border when not focused
-                      ),
+                      borderSide: BorderSide(color: Colors.grey.shade400),
                       borderRadius:
                           const BorderRadius.all(Radius.circular(8.0)),
                     ),
-                    suffixIcon: widget.isPassword
-                        ? Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                            child: IconButton(
-                              icon: Icon(
-                                _obscureText
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscureText = !_obscureText;
-                                });
-                              },
+                    suffixIcon: widget.onArrowTap != null
+                        ? IconButton(
+                            icon: Icon(
+                              Icons.arrow_forward_ios_outlined,
+                              size: 16,
                             ),
+                            onPressed:
+                                widget.onArrowTap, // Call the provided function
                           )
-                        : widget.sendCode
-                            ? Padding(
-                                padding: const EdgeInsets.only(right: 10.0),
-                                child: SizedBox(
-                                  width: 60,
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: MouseRegion(
-                                      cursor: SystemMouseCursors.click,
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          final title = 'Your Email Subject';
-                                          final content =
-                                              'Content of the email';
-                                          final recipient =
-                                              widget.controller?.text ?? '';
+                        : widget.isPassword
+                            ? IconButton(
+                                icon: Icon(
+                                  _obscureText
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscureText = !_obscureText;
+                                  });
+                                },
+                              )
+                            : widget.sendCode
+                                ? Padding(
+                                    padding: const EdgeInsets.only(right: 10.0),
+                                    child: SizedBox(
+                                      width: 60,
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: MouseRegion(
+                                          cursor: SystemMouseCursors.click,
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              final title =
+                                                  'Your Email Subject';
+                                              final content =
+                                                  'Content of the email';
+                                              final recipient =
+                                                  widget.controller?.text ?? '';
 
-                                          context.read<SendCodeBloc>().add(
-                                                SendCode(
-                                                    title, content, recipient),
-                                              );
-                                        },
-                                        child: const Text(
-                                          'Gửi mã',
-                                          style: TextStyle(
-                                            color: Color(0XFF6F3CD7),
+                                              context.read<SendCodeBloc>().add(
+                                                    SendCode(title, content,
+                                                        recipient),
+                                                  );
+                                            },
+                                            child: const Text(
+                                              'Gửi mã',
+                                              style: TextStyle(
+                                                color: Color(0XFF6F3CD7),
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                              )
-                            : widget.isCode == true
-                                ? const Padding(
-                                    padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                                    child: Icon(
-                                      Icons.check_circle,
-                                      color: Colors.green,
-                                    ),
                                   )
-                                : widget.isCode == false
-                                    ? const Padding(
-                                        padding:
-                                            EdgeInsets.fromLTRB(0, 0, 0, 0),
-                                        child: Icon(
-                                          Icons.cancel,
-                                          color: Colors.red,
-                                        ),
-                                      )
-                                    : null,
+                                : widget.isCode == true
+                                    ? const Icon(Icons.check_circle,
+                                        color: Colors.green)
+                                    : widget.isCode == false
+                                        ? const Icon(Icons.cancel,
+                                            color: Colors.red)
+                                        : null,
                   ),
                 ),
           if (widget.errorMessage != null) ...[

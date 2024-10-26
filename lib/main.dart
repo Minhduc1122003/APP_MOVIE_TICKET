@@ -5,9 +5,12 @@ import 'package:flutter_app_chat/pages/login_page/loginBloc/login_bloc.dart';
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/bloc/hometab_bloc.dart';
 import 'package:flutter_app_chat/pages/manager_page/home_manager_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/calendar_shift_manager_page/calendar_shift_list_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/location_manager_page/location_edit_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/location_manager_page/location_list_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/shift_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/shift_page/shift_edit_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/shift_page/shift_list_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/showtime_manager_page/showtime_edit_manager_page.dart';
 import 'package:flutter_app_chat/pages/register_page/createAccount_bloc/createAccount_bloc.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
@@ -52,7 +55,9 @@ class _MyAppState extends State<MyApp> {
           debugShowCheckedModeBanner: false,
           builder: EasyLoading.init(),
           home: HomePage(),
-          // home: ShiftEditPage(),
+          // home: ShiftManagerPage(),
+
+          // home: CalendarShiftListPage(),
         ));
   }
 }

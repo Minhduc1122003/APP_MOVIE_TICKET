@@ -4,18 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_InfoCard.dart';
+import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/components/my_textfield.dart';
+import 'package:flutter_app_chat/models/Location_modal.dart';
+import 'package:flutter_app_chat/models/Shift_modal.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_info_manager_page/personnel_info_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/location_manager_page/locationSelectionScreen.dart';
 import 'package:flutter_app_chat/pages/manager_page/showtime_manager_page/showtime_edit_manager_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class LocationEditPage extends StatefulWidget {
-  const LocationEditPage({super.key});
+  final bool isEdit; // Thuộc tính xác định chế độ sửa
+  final LocationWithShift? location;
+  const LocationEditPage({
+    super.key,
+    required this.isEdit,
+    this.location,
+  });
 
   @override
   State<LocationEditPage> createState() => _LocationEditPageState();
@@ -26,20 +36,35 @@ class _LocationEditPageState extends State<LocationEditPage> {
   bool isSearching = false;
   FocusNode _focusNode = FocusNode();
   TextEditingController _searchController = TextEditingController();
-  late Future<List<User>> _alluser;
   LatLng position = const LatLng(10.927580515436906, 106.79012965530953);
-  TextEditingController locationController = TextEditingController();
-  TextEditingController addressController = TextEditingController();
-  TextEditingController radiusController = TextEditingController();
-  TextEditingController latitudeController = TextEditingController();
-  TextEditingController longitudeController = TextEditingController();
+  final TextEditingController locationNameController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController radiusController = TextEditingController();
+  final TextEditingController latitudeController = TextEditingController();
+  final TextEditingController longitudeController = TextEditingController();
+  final TextEditingController shiftController = TextEditingController();
+
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
   Set<Marker> allMarkers = {};
   GoogleMapController? mapController; // Khai báo mapController là nullable
+  ApiService apiService = ApiService();
+  late Future<List<Shift>> _allShift;
+  int? idShift;
   void initState() {
     initMarker();
     super.initState();
+    _APIService = ApiService();
+
+    _allShift = _APIService.getAllListShift();
+    if (widget.isEdit && widget.location != null) {
+      locationNameController.text = widget.location!.locationName.toString();
+      shiftController.text = widget.location!.shiftName.toString();
+      idShift = widget.location!.shiftId;
+      longitudeController.text = widget.location!.longitude;
+      latitudeController.text = widget.location!.latitude;
+      radiusController.text = widget.location!.radius.toString();
+    }
   }
 
   initMarker() {
@@ -141,6 +166,151 @@ class _LocationEditPageState extends State<LocationEditPage> {
     }
   }
 
+  void _showShiftBottomSheet(TextEditingController controller) {
+    showModalBottomSheet(
+      useSafeArea: true,
+      isScrollControlled: true,
+      context: context,
+      builder: (BuildContext context) {
+        return DraggableScrollableSheet(
+          expand: false,
+          builder: (context, scrollController) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.9,
+              child: FutureBuilder<List<Shift>>(
+                future: _allShift,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(child: Text('Không có phim nào.'));
+                  }
+
+                  final shiftmodel = snapshot.data!;
+                  return Column(
+                    children: [
+                      Container(
+                        alignment: Alignment.center,
+                        child: Container(
+                          width: 50,
+                          height: 6,
+                          margin: EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[400],
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(16),
+                        child: Text(
+                          'Danh sách ca làm',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      Divider(),
+                      Expanded(
+                        child: ListView.separated(
+                          controller: scrollController,
+                          itemCount: shiftmodel.length,
+                          separatorBuilder: (context, index) => Divider(
+                            height: 1,
+                            thickness: 0,
+                          ),
+                          itemBuilder: (context, index) {
+                            final shift = shiftmodel[index];
+                            return ListTile(
+                              title: Text(
+                                shift.shiftName,
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(
+                                'Từ ${shift.startTime} đến ${shift.endTime}', // Dòng thời gian
+                              ),
+                              trailing: Text(
+                                'Ngày tạo: ${shift.createDate}', // Ngày tạo
+                                style:
+                                    TextStyle(color: Colors.grey, fontSize: 12),
+                              ),
+                              onTap: () {
+                                print('Đã chọn  ${shift.shiftName}');
+
+                                setState(() {
+                                  controller.text =
+                                      shift.shiftName; // Update the text field
+                                  idShift = shift
+                                      .shiftId; // Update the idShift variable with the selected shift ID
+                                });
+                                Navigator.pop(context);
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _submitLocation() async {
+    if (locationNameController.text.isEmpty ||
+        latitudeController.text.isEmpty ||
+        longitudeController.text.isEmpty ||
+        radiusController.text.isEmpty == null ||
+        idShift == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Vui lòng điền đầy đủ thông tin!')),
+      );
+      return;
+    }
+    print(locationNameController.text);
+    print(latitudeController.text);
+    print(longitudeController.text);
+    print(radiusController.text);
+    print(idShift);
+    int shiftId = idShift!;
+    // Tạo một đối tượng Shift từ dữ liệu đã nhập
+
+    try {
+      // Gọi API để gửi dữ liệu và lấy message
+      String message = await _APIService.createLocation(
+          locationNameController.text,
+          latitudeController.text,
+          longitudeController.text,
+          double.parse(radiusController.text),
+          shiftId);
+
+      // Kiểm tra nếu message là "Shift created successfully"
+      if (message == 'Location created successfully') {
+        EasyLoading.showSuccess('Tạo ca làm thành công!');
+        Future.delayed(Duration(seconds: 1), () {
+          Navigator.of(context).pop(true); // Trả về true khi tạo ca thành công
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi tạo ca làm: $message')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi tạo ca làm: $e')),
+      );
+    }
+  }
+
   @override
   void dispose() {
     _focusNode.dispose();
@@ -194,205 +364,241 @@ class _LocationEditPageState extends State<LocationEditPage> {
                         ),
                         style: TextStyle(color: Colors.black),
                       )
-                    : const Text('Thông tin vị trí',
-                        style: TextStyle(color: Colors.white, fontSize: 20))),
+                    : Text(widget.isEdit ? 'Sửa vị trí' : 'Tạo vị trí',
+                        style: const TextStyle(
+                            color: Colors.white, fontSize: 20))),
             centerTitle: false,
           ),
           backgroundColor: Colors.white,
-          body: Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                child: Column(
+          body: Padding(
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+            child: Column(
+              children: [
+                MyTextfield(
+                  controller: locationNameController,
+                  placeHolder: 'Tên vị trí',
+                  icon: Icons.not_listed_location_sharp,
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                MyTextfield(
+                  controller: shiftController,
+                  placeHolder: 'Ca làm',
+                  icon: Icons.calendar_month_outlined,
+                  onArrowTap: () => _showShiftBottomSheet(
+                      shiftController), // Pass the controller here
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Row(
                   children: [
-                    const MyTextfield(
-                      placeHolder: 'Tên vị trí',
-                      icon: Icons.not_listed_location_sharp,
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const MyTextfield(
-                      placeHolder: 'Ca làm',
-                      icon: Icons.calendar_month_outlined,
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: MyTextfield(
-                            controller: longitudeController,
-                            isPassword: false,
-                            placeHolder: "Kinh độ",
-                            sendCode: false,
-                            icon: Icons.my_location,
-                            onSubmitted: (value) {
-                              if (latitudeController.text.isEmpty) return;
-                              if (longitudeController.text.isEmpty) return;
-                              setSelectLatitudeAndLongitude();
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: MyTextfield(
-                            controller: latitudeController,
-                            isPassword: false,
-                            placeHolder: "Vĩ độ",
-                            sendCode: false,
-                            icon: Icons.my_location,
-                            onSubmitted: (value) {
-                              if (latitudeController.text.isEmpty) return;
-                              if (longitudeController.text.isEmpty) return;
-                              setSelectLatitudeAndLongitude();
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    SizedBox(
-                      height: 200,
-                      child: GoogleMap(
-                        zoomGesturesEnabled: true,
-                        scrollGesturesEnabled: true,
-                        tiltGesturesEnabled: true,
-                        rotateGesturesEnabled: true,
-                        zoomControlsEnabled: true,
-                        mapType: MapType.normal,
-                        initialCameraPosition: CameraPosition(
-                          target: position,
-                          zoom: 16.5,
-                        ),
-                        myLocationEnabled: true,
-                        myLocationButtonEnabled: true,
-                        onMapCreated: (GoogleMapController controller) {
-                          _controller.complete(controller);
+                    Expanded(
+                      child: MyTextfield(
+                        controller: longitudeController,
+                        isPassword: false,
+                        placeHolder: "Kinh độ",
+                        sendCode: false,
+                        icon: Icons.my_location,
+                        onSubmitted: (value) {
+                          if (latitudeController.text.isEmpty) return;
+                          if (longitudeController.text.isEmpty) return;
+                          setSelectLatitudeAndLongitude();
                         },
-                        circles: {
-                          Circle(
-                            circleId: const CircleId("myCircle"),
-                            radius: 150,
-                            center: position,
-                            fillColor: const Color.fromRGBO(100, 100, 100, 0.3),
-                            strokeWidth: 0,
-                          )
-                        },
-                        markers: allMarkers,
                       ),
                     ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextButton(
-                            onPressed: () async {
-                              await getCurrentLocation();
-                              updateMapPosition();
-                            },
-                            style: TextButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              padding: EdgeInsets.symmetric(vertical: 12.0),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                                side: BorderSide.none,
-                              ),
-                            ),
-                            child: const AutoSizeText(
-                              'Lấy vị trí hiện tại',
-                              style: TextStyle(fontSize: 16.0),
-                              maxLines: 1,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: TextButton(
-                            onPressed: () async {
-                              // Define the initial position for the map (you can adjust this as needed)
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => LocationSelectionScreen(
-                                    initialPosition: position,
-                                  ),
-                                ),
-                              );
-
-                              // Check if result is not null and update the text fields and map
-                              if (result is LatLng) {
-                                print(
-                                    "Selected Location: Latitude: ${result.latitude}, Longitude: ${result.longitude}");
-
-                                // Update the text fields with the selected coordinates
-                                latitudeController.text =
-                                    result.latitude.toString();
-                                longitudeController.text =
-                                    result.longitude.toString();
-
-                                // Update the position and trigger a rebuild
-                                setState(() {
-                                  position =
-                                      result; // Update the position to the selected location
-                                  allMarkers = {
-                                    Marker(
-                                      markerId: MarkerId('selectedLocation'),
-                                      position:
-                                          position, // Update the marker position
-                                    ),
-                                  };
-                                });
-
-                                // Move the camera to the new position
-                                final GoogleMapController controller =
-                                    await _controller.future;
-                                controller.animateCamera(
-                                    CameraUpdate.newLatLng(position));
-                              } else {
-                                print("No location selected.");
-                              }
-                            },
-                            style: TextButton.styleFrom(
-                              backgroundColor:
-                                  mainColor, // Set the background color to blue
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 12.0), // Adjust padding
-                              foregroundColor:
-                                  Colors.white, // Set the text color to white
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                    8.0), // Optional: rounded corners
-                                side: BorderSide.none, // Remove the border
-                              ),
-                            ),
-                            child: const AutoSizeText(
-                              'Chọn vị trí cụ thể',
-                              style: TextStyle(
-                                  fontSize: 16.0), // Đặt kích thước chữ tối đa
-                              maxLines: 1, // Chỉ cho phép 1 dòng
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    MyTextfield(
-                      placeHolder: 'Bán kính (m)',
-                      icon: Icons.radio_button_on,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: MyTextfield(
+                        controller: latitudeController,
+                        isPassword: false,
+                        placeHolder: "Vĩ độ",
+                        sendCode: false,
+                        icon: Icons.my_location,
+                        onSubmitted: (value) {
+                          if (latitudeController.text.isEmpty) return;
+                          if (longitudeController.text.isEmpty) return;
+                          setSelectLatitudeAndLongitude();
+                        },
+                      ),
                     ),
                   ],
                 ),
-              )
-            ],
+                const SizedBox(
+                  height: 10,
+                ),
+                SizedBox(
+                  height: 200,
+                  child: GoogleMap(
+                    zoomGesturesEnabled: true,
+                    scrollGesturesEnabled: true,
+                    tiltGesturesEnabled: true,
+                    rotateGesturesEnabled: true,
+                    zoomControlsEnabled: true,
+                    mapType: MapType.normal,
+                    initialCameraPosition: CameraPosition(
+                      target: position,
+                      zoom: 16.5,
+                    ),
+                    myLocationEnabled: true,
+                    myLocationButtonEnabled: true,
+                    onMapCreated: (GoogleMapController controller) {
+                      _controller.complete(controller);
+                    },
+                    circles: {
+                      Circle(
+                        circleId: const CircleId("myCircle"),
+                        radius: 150,
+                        center: position,
+                        fillColor: const Color.fromRGBO(100, 100, 100, 0.3),
+                        strokeWidth: 0,
+                      )
+                    },
+                    markers: allMarkers,
+                  ),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () async {
+                          await getCurrentLocation();
+                          updateMapPosition();
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          padding: EdgeInsets.symmetric(vertical: 12.0),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            side: BorderSide.none,
+                          ),
+                        ),
+                        child: const AutoSizeText(
+                          'Lấy vị trí hiện tại',
+                          style: TextStyle(fontSize: 16.0),
+                          maxLines: 1,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () async {
+                          // Define the initial position for the map (you can adjust this as needed)
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LocationSelectionScreen(
+                                initialPosition: position,
+                              ),
+                            ),
+                          );
+
+                          // Check if result is not null and update the text fields and map
+                          if (result is LatLng) {
+                            print(
+                                "Selected Location: Latitude: ${result.latitude}, Longitude: ${result.longitude}");
+
+                            // Update the text fields with the selected coordinates
+                            latitudeController.text =
+                                result.latitude.toString();
+                            longitudeController.text =
+                                result.longitude.toString();
+
+                            // Update the position and trigger a rebuild
+                            setState(() {
+                              position =
+                                  result; // Update the position to the selected location
+                              allMarkers = {
+                                Marker(
+                                  markerId: MarkerId('selectedLocation'),
+                                  position:
+                                      position, // Update the marker position
+                                ),
+                              };
+                            });
+
+                            // Move the camera to the new position
+                            final GoogleMapController controller =
+                                await _controller.future;
+                            controller.animateCamera(
+                                CameraUpdate.newLatLng(position));
+                          } else {
+                            print("No location selected.");
+                          }
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor:
+                              mainColor, // Set the background color to blue
+                          padding: EdgeInsets.symmetric(
+                              vertical: 12.0), // Adjust padding
+                          foregroundColor:
+                              Colors.white, // Set the text color to white
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                                8.0), // Optional: rounded corners
+                            side: BorderSide.none, // Remove the border
+                          ),
+                        ),
+                        child: const AutoSizeText(
+                          'Chọn vị trí cụ thể',
+                          style: TextStyle(
+                              fontSize: 16.0), // Đặt kích thước chữ tối đa
+                          maxLines: 1, // Chỉ cho phép 1 dòng
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                MyTextfield(
+                  controller: radiusController,
+                  placeHolder: 'Bán kính (m)',
+                  icon: Icons.radio_button_on,
+                ),
+                Spacer(),
+                if (widget.isEdit)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: MyButton(
+                          color: Colors.red,
+                          fontsize: 20,
+                          paddingText: 10,
+                          text: 'Xóa ca',
+                          onTap: () {
+                            // Xử lý sự kiện xóa
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10), // Khoảng cách giữa hai nút
+                      Expanded(
+                        child: MyButton(
+                          fontsize: 20,
+                          paddingText: 10,
+                          text: 'Hoàn tất',
+                          onTap: _submitLocation, // Gọi hàm _submitShift
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  MyButton(
+                    fontsize: 20,
+                    paddingText: 10,
+                    text: 'Hoàn tất',
+                    onTap: _submitLocation, // Gọi hàm _submitShift
+                  ),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

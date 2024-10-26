@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:lottie/lottie.dart'; // Import Lottie package
 
 class UtilitySection extends StatefulWidget {
@@ -82,7 +83,7 @@ class _UtilitySectionState extends State<UtilitySection> {
                             border: Border(
                               bottom: BorderSide(
                                 color: (_expandStates[index] ?? false)
-                                    ? Colors.pink.withOpacity(0.4)
+                                    ? mainColor.withOpacity(0.4)
                                     : Colors.transparent,
                                 width: 2.0,
                               ),
@@ -161,7 +162,7 @@ class _UtilitySectionState extends State<UtilitySection> {
                   child: IconButton(
                     icon: Icon(
                       _showAllButtons ? Icons.expand_less : Icons.expand_more,
-                      color: Colors.pink,
+                      color: mainColor,
                     ),
                     onPressed: () {
                       if (mounted) {
@@ -251,7 +252,7 @@ class UtilityButton extends StatelessWidget {
         trailingIcon = Icon(
           Icons.expand_less,
           size: textStyle?.fontSize,
-          color: Colors.pink,
+          color: mainColor,
         );
         break;
     }
