@@ -156,19 +156,6 @@ class _ShiftListPageState extends State<ShiftListPage> {
                                   SizedBox(
                                     width: 8,
                                   ),
-                                  Text(
-                                    ' - ', // Ngày tạo
-                                    style: TextStyle(
-                                        color: Colors.grey, fontSize: 12),
-                                  ),
-                                  SizedBox(
-                                    width: 8,
-                                  ),
-                                  Text(
-                                    'Ngày tạo: ${shift.createDate}', // Ngày tạo
-                                    style: TextStyle(
-                                        color: Colors.grey, fontSize: 12),
-                                  ),
                                 ],
                               ),
                               subtitle: Text(

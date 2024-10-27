@@ -12,6 +12,8 @@ import 'package:flutter_app_chat/models/chat_item_model.dart';
 import 'package:flutter_app_chat/models/showTimeForAdmin_model.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
+import 'package:flutter_app_chat/models/work_schedule_checkIn.dart';
+import 'package:flutter_app_chat/models/work_schedule_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:network_info_plus/network_info_plus.dart';
@@ -28,7 +30,7 @@ class ApiService {
 
     // wifi cf24/24
 
-    baseUrl = 'http://192.168.1.77:8081';
+    baseUrl = 'http://192.168.1.184:8081';
   }
 
   late Response response;
@@ -738,6 +740,71 @@ class ApiService {
     } catch (e) {
       print('Error: $e');
       throw Exception('Failed to get location');
+    }
+  }
+
+  Future<List<WorkSchedule>?> getAllWorkSchedulesByID(
+      int userId, String startDate, String endDate) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/getAllWorkSchedulesByID'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'userId': userId,
+          'startDate': startDate,
+          'endDate': endDate,
+        }),
+      );
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonResponse = jsonDecode(response.body);
+
+        return jsonResponse.map((json) => WorkSchedule.fromJson(json)).toList();
+      } else {
+        print(
+            'Failed to load work schedules. Status code: ${response.statusCode}');
+        return null; // Trả về null nếu không tìm thấy
+      }
+    } catch (error) {
+      print('Error occurred: $error');
+      return null; // Trả về null nếu có lỗi
+    }
+  }
+
+  Future<List<WorkScheduleForCheckIn>?> getShiftForAttendance(
+      int userId, String startDate, String endDate, String daysOfWeek) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/getShiftForAttendance'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'userId': userId,
+          'startDate': startDate,
+          'endDate': endDate,
+          'daysOfWeek': daysOfWeek
+        }),
+      );
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonResponse = jsonDecode(response.body);
+
+        return jsonResponse
+            .map((json) => WorkScheduleForCheckIn.fromJson(json))
+            .toList();
+      } else {
+        print(
+            'Failed to load work schedules. Status code: ${response.statusCode}');
+        return null; // Trả về null nếu không tìm thấy
+      }
+    } catch (error) {
+      print('Error occurred: $error');
+      return null; // Trả về null nếu có lỗi
     }
   }
 }

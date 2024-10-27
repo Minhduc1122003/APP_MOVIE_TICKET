@@ -7,6 +7,7 @@ import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/home_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/buyTicket_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/bloc/hometab_bloc.dart';
+import 'package:flutter_app_chat/pages/manager_page/checkin_checkout_manager/check_in_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/movie_manager_page/movie_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/scan_code_manager/scan_QRcode.dart';
@@ -320,7 +321,15 @@ class _HomeTabState extends State<HomeTab> {
                                   color: Colors.white,
                                   size: 40,
                                 ),
-                                onPressed: () {}),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    SlideFromRightPageRoute(
+                                      page:
+                                          TimekeepingScreen(), // Thay editPage() bằng trang cần chuyển tới
+                                    ),
+                                  );
+                                }),
                           ),
                         ),
                       ],
