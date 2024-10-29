@@ -2,10 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
+import 'package:flutter_app_chat/components/my_movie_item.dart';
 import 'package:flutter_app_chat/components/my_textfield.dart';
+import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/Shift_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/models/work_schedule_checkIn.dart';
+import 'package:flutter_app_chat/pages/manager_page/book_ticket_staff_page/GridView_Card_FilmSapchieu.dart';
 import 'package:flutter_app_chat/pages/manager_page/book_ticket_staff_page/film_sapchieu_staff.dart';
 import 'package:flutter_app_chat/pages/manager_page/checkin_checkout_manager/bloc/timekeeping_bloc.dart';
 import 'package:flutter_app_chat/pages/manager_page/checkin_checkout_manager/check_in_history_calendar.dart';
@@ -28,14 +31,26 @@ class BookTicketStaffPage extends StatefulWidget {
 class _BookTicketStaffPageState extends State<BookTicketStaffPage> {
   final TextEditingController shiftController = TextEditingController();
   late ApiService _APIService;
+  late Future<List<MovieDetails>> _moviesFuture;
+  List<MovieDetails> _filteredMovies = [];
+  List<MovieDetails> _allMovies = [];
+  late Future<List<MovieDetails>> _filmSapChieu;
 
   Set<Marker> allMarkers = {};
   GoogleMapController? mapController;
   @override
-  void initState() {
+  void initState() async {
     super.initState();
 
     _APIService = ApiService();
+    _moviesFuture = _APIService.getMoviesDangChieu();
+    _filmSapChieu = _APIService.getMoviesSapChieu();
+    _moviesFuture.then((movies) {
+      setState(() {
+        _allMovies = movies; // Lưu toàn bộ phim
+        _filteredMovies = movies; // Khởi tạo danh sách lọc
+      });
+    });
   }
 
   @override
@@ -94,14 +109,72 @@ class _BookTicketStaffPageState extends State<BookTicketStaffPage> {
         body: TabBarView(
           physics: NeverScrollableScrollPhysics(),
           children: [
-            const SingleChildScrollView(
+            SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Padding(
-                    padding: EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(8.0),
                     child: Center(
-                      child: Text('Hello'),
+                      child: FutureBuilder<List<MovieDetails>>(
+                        future: _moviesFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
+                            return Center(
+                                child: Text('Error: ${snapshot.error}'));
+                          } else if (!snapshot.hasData ||
+                              snapshot.data!.isEmpty) {
+                            return Center(
+                              child: Text(
+                                'No movies available.',
+                                style: TextStyle(color: Colors.black),
+                              ),
+                            );
+                          } else {
+                            if (_filteredMovies.isEmpty) {
+                              return Center(
+                                  child: Text('Không tìm thấy phim.'));
+                            } else {
+                              return SizedBox(
+                                height: MediaQuery.of(context)
+                                    .size
+                                    .height, // Set a specific height
+                                child: GridView.builder(
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount:
+                                        3, // Số lượng cột trong một hàng
+                                    mainAxisSpacing:
+                                        10.0, // Khoảng cách giữa các mục theo chiều dọc
+                                    crossAxisSpacing:
+                                        10.0, // Khoảng cách giữa các mục theo chiều ngang
+                                    childAspectRatio:
+                                        0.65, // Tỷ lệ chiều cao / chiều rộng của mỗi item
+                                  ),
+                                  itemCount: _filteredMovies.length,
+                                  itemBuilder: (context, index) {
+                                    final movie = _filteredMovies[index];
+                                    return GridviewCardFilmsapchieu(
+                                      movieId: movie.movieId,
+                                      title: movie.title,
+                                      rating: movie.averageRating.toString(),
+                                      ratingCount: movie.reviewCount.toString(),
+                                      genre: movie.genres,
+                                      cinema: movie.cinemaName,
+                                      duration: movie.duration.toString(),
+                                      releaseDate: movie.releaseDate.toString(),
+                                      imageUrl: movie.posterUrl,
+                                    );
+                                  },
+                                ),
+                              );
+                            }
+                          }
+                        },
+                      ),
                     ),
                   ),
                 ],
@@ -113,7 +186,9 @@ class _BookTicketStaffPageState extends State<BookTicketStaffPage> {
                 constraints: BoxConstraints(
                   maxHeight: MediaQuery.of(context).size.height * 0.5,
                 ),
-                child: FilmSapchieuStaff(),
+                child: FilmSapchieuStaff(
+                  filmSapChieu: [],
+                ),
               ),
             ),
           ],
