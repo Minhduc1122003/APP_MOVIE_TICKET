@@ -9,6 +9,7 @@ import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select
 import 'package:flutter_app_chat/pages/manager_page/bloc/hometab_bloc.dart';
 import 'package:flutter_app_chat/pages/manager_page/book_ticket_staff_page/book_ticket_staff_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/checkin_checkout_manager/check_in_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/combo_ticket_staff_page/combo_ticket_staff_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/movie_manager_page/movie_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/scan_code_manager/scan_QRcode.dart';
@@ -363,8 +364,9 @@ class _HomeTabState extends State<HomeTab> {
             }),
             _buildGridItem('Đặt combo', 'Thêm bắp/nước', state.tuyenDung,
                 Icons.fastfood, Colors.green, () {
+              Navigator.push(context,
+                  SlideFromRightPageRoute(page: ComboTicketStaffPage()));
               // Thêm sự kiện khi tap vào Tuyển dụng
-              print('Tuyển dụng pressed');
             }),
             _buildGridItem('Quét mã', 'QR vào cổng', state.donTu,
                 Icons.qr_code_scanner, Colors.orange, () {

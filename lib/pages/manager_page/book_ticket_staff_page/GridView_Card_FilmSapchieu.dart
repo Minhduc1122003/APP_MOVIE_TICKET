@@ -56,7 +56,7 @@ class GridviewCardFilmsapchieu extends StatelessWidget {
             children: [
               // Row 1: Hình ảnh
               Expanded(
-                flex: 5,
+                flex: 8,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
                   child: Image.asset(
@@ -69,7 +69,7 @@ class GridviewCardFilmsapchieu extends StatelessWidget {
 
               // Row 2: Thông tin phim
               Expanded(
-                flex: 6,
+                flex: 12,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -143,8 +143,8 @@ class GridviewCardFilmsapchieu extends StatelessWidget {
                 flex: 2,
                 child: MyButton(
                   text: 'Mua vé',
-                  paddingText: 5,
-                  fontsize: 14,
+                  paddingText: 0,
+                  fontsize: 12,
                   onTap: () {
                     // Hàm xử lý khi bấm nút mua vé
                   },

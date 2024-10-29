@@ -7,6 +7,7 @@ import 'package:flutter_app_chat/models/Chair_modal.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_billTicket/bill_Ticket_Screen.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_combo_Ticket/combo_model.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:intl/intl.dart';
 
@@ -47,12 +48,29 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
   List<Map<String, dynamic>> selectedChairsInfo =
       []; // List to store selected chair info
   List<int> seatIDList = [];
+  List<Combo> comboItems = [];
+  List<Combo> nonComboItems = [];
+
   @override
   void initState() {
     super.initState();
     _apiService = ApiService();
     _loadChairs();
     _loadMovieDetails();
+    _loadComboItems(); // Add this
+  }
+
+  Future<void> _loadComboItems() async {
+    try {
+      final combos = await _apiService.getAllIsCombo();
+      final nonCombos = await _apiService.getAllIsNotCombo();
+      setState(() {
+        comboItems = combos;
+        nonComboItems = nonCombos;
+      });
+    } catch (e) {
+      print('Error loading combo items: $e');
+    }
   }
 
   Future<void> _loadChairs() async {
@@ -92,7 +110,6 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
     return formatter.format(price);
   }
 
-  @override
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -139,71 +156,46 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                                 ),
                                 SizedBox(
                                   height:
-                                      400, // Set a fixed height for the TabBarView
+                                      500, // Set a fixed height for the TabBarView
                                   child: TabBarView(
                                     children: [
                                       // Combo tab content
-                                      ListView(
-                                        children: [
-                                          _buildComboItem(
-                                            'COMBO SOLO',
-                                            '1 bắp ngọt 60oz + 1 coke 32oz',
-                                            '94,000 VND',
-                                          ),
-                                          _buildComboItem(
-                                            'COMBO COUPLE',
-                                            '1 bắp ngọt 60oz + 2 coke 32oz',
-                                            '115,000 VND',
-                                          ),
-                                          _buildComboItem(
-                                            'COMBO SOLO',
-                                            '1 bắp ngọt 60oz + 1 coke 32oz',
-                                            '94,000 VND',
-                                          ),
-                                          _buildComboItem(
-                                            'COMBO COUPLE',
-                                            '1 bắp ngọt 60oz + 2 coke 32oz',
-                                            '115,000 VND',
-                                          ),
-                                          _buildComboItem(
-                                            'COMBO SOLO',
-                                            '1 bắp ngọt 60oz + 1 coke 32oz',
-                                            '94,000 VND',
-                                          ),
-                                          _buildComboItem(
-                                            'COMBO COUPLE',
-                                            '1 bắp ngọt 60oz + 2 coke 32oz',
-                                            '115,000 VND',
-                                          ),
-                                          _buildComboItem(
-                                            'COMBO SOLO',
-                                            '1 bắp ngọt 60oz + 1 coke 32oz',
-                                            '94,000 VND',
-                                          ),
-                                          _buildComboItem(
-                                            'COMBO COUPLE',
-                                            '1 bắp ngọt 60oz + 2 coke 32oz',
-                                            '115,000 VND',
-                                          ),
-                                          // Add more items as needed
-                                        ],
-                                      ),
+                                      comboItems.isEmpty
+                                          ? Center(
+                                              child:
+                                                  CircularProgressIndicator())
+                                          : ListView.builder(
+                                              itemCount: comboItems.length,
+                                              itemBuilder: (context, index) {
+                                                final combo = comboItems[index];
+                                                return _buildComboItem(
+                                                  combo.title,
+                                                  combo.subtitle,
+                                                  formatPrice(combo.price) +
+                                                      ' VND',
+                                                  combo.image,
+                                                );
+                                              },
+                                            ),
                                       // Bán lẻ tab content
-                                      ListView(
-                                        children: [
-                                          _buildSingleItem(
-                                            'BẮP NGỌT',
-                                            '1 bắp ngọt 60oz',
-                                            '49,000 VND',
-                                          ),
-                                          _buildSingleItem(
-                                            'COCA 32OZ',
-                                            '1 coke Coca 32oz',
-                                            '39,000 VND',
-                                          ),
-                                          // Add more items as needed
-                                        ],
-                                      ),
+                                      nonComboItems.isEmpty
+                                          ? Center(
+                                              child:
+                                                  CircularProgressIndicator())
+                                          : ListView.builder(
+                                              itemCount: nonComboItems.length,
+                                              itemBuilder: (context, index) {
+                                                final item =
+                                                    nonComboItems[index];
+                                                return _buildSingleItem(
+                                                  item.title,
+                                                  item.subtitle,
+                                                  formatPrice(item.price) +
+                                                      ' VND',
+                                                  item.image,
+                                                );
+                                              },
+                                            ),
                                     ],
                                   ),
                                 ),
@@ -221,7 +213,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                     color: Color(0xfff0f0f0),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 5),
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 5),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -321,7 +313,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                         Padding(
                           padding: EdgeInsets.fromLTRB(8.0, 0, 5, 0),
                           child: AutoSizeText(
-                            formatPrice(widget.sumPrice),
+                            formatPrice(widget.sumPrice) + 'VND',
                             style: const TextStyle(
                               color: Colors.red,
                               fontSize: 18,
@@ -343,15 +335,6 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                       text: 'Tiếp tục',
                       isBold: true,
                       onTap: () {
-                        print(widget.movieID);
-                        print(widget.quantity);
-                        print(widget.sumPrice);
-                        print(widget.showTimeID);
-                        print(widget.seatCodes);
-                        print(widget.showtimeDate);
-                        print(widget.startTime);
-                        print(widget.endTime);
-                        print(widget.cinemaRoomID);
                         Navigator.push(
                           context,
                           SlideFromRightPageRoute(
@@ -380,7 +363,8 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
   bool get wantKeepAlive => true;
 }
 
-Widget _buildComboItem(String title, String description, String price) {
+Widget _buildComboItem(
+    String title, String description, String price, String imagePath) {
   return Padding(
     padding: const EdgeInsets.all(8.0),
     child: Row(
@@ -390,10 +374,12 @@ Widget _buildComboItem(String title, String description, String price) {
           child: SizedBox(
             width: 100,
             height: 120,
-            child: Image.asset(
-              'assets/images/combo1.png', // Replace with actual image
-              fit: BoxFit
-                  .cover, // Optional, to control how the image is resized within the box
+            child: Image.network(
+              imagePath,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset('assets/images/combo1.png');
+              },
             ),
           ),
         ),
@@ -423,15 +409,25 @@ Widget _buildComboItem(String title, String description, String price) {
   );
 }
 
-Widget _buildSingleItem(String title, String description, String price) {
+Widget _buildSingleItem(
+    String title, String description, String price, String imagePath) {
   return Padding(
     padding: const EdgeInsets.all(8.0),
     child: Row(
       children: [
         Expanded(
           flex: 1,
-          child: Image.asset(
-              'assets/single_item_image.png'), // Replace with actual image
+          child: SizedBox(
+            width: 100,
+            height: 120,
+            child: Image.network(
+              imagePath,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset('assets/images/combo1.png');
+              },
+            ),
+          ),
         ),
         Expanded(
           flex: 2,

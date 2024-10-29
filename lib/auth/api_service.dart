@@ -14,6 +14,7 @@ import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/models/work_schedule_checkIn.dart';
 import 'package:flutter_app_chat/models/work_schedule_model.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_combo_Ticket/combo_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:network_info_plus/network_info_plus.dart';
@@ -30,7 +31,7 @@ class ApiService {
 
     // wifi cf24/24
 
-    baseUrl = 'http://192.168.10.24:8081';
+    baseUrl = 'http://192.168.1.122:8081';
   }
 
   late Response response;
@@ -805,6 +806,61 @@ class ApiService {
     } catch (error) {
       print('Error occurred: $error');
       return null; // Trả về null nếu có lỗi
+    }
+  }
+
+  Future<List<Combo>> getAllIsCombo() async {
+    await _initBaseUrl();
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/getAllIsCombo'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        if (responseData['success'] == true) {
+          final List<dynamic> comboList = responseData['data'];
+          return comboList.map((item) => Combo.fromJson(item)).toList();
+        } else {
+          throw Exception('API returned error: ${responseData['message']}');
+        }
+      } else {
+        throw Exception('Failed to get combos: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to get combos');
+    }
+  }
+
+  Future<List<Combo>> getAllIsNotCombo() async {
+    await _initBaseUrl();
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/getAllIsNotCombo'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        if (responseData['success'] == true) {
+          final List<dynamic> comboList = responseData['data'];
+          return comboList.map((item) => Combo.fromJson(item)).toList();
+        } else {
+          throw Exception('API returned error: ${responseData['message']}');
+        }
+      } else {
+        throw Exception(
+            'Failed to get non-combo items: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to get non-combo items');
     }
   }
 }

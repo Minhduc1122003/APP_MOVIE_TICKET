@@ -131,7 +131,8 @@ class _BookTicketStaffPageState extends State<BookTicketStaffPage> {
               crossAxisCount: 3,
               mainAxisSpacing: 10.0,
               crossAxisSpacing: 10.0,
-              childAspectRatio: 0.65,
+              childAspectRatio:
+                  0.50, // Thay đổi từ 0.65 thành 0.55 để có thêm chiều cao
             ),
             itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
