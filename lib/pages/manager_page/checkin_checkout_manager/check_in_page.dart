@@ -149,19 +149,6 @@ class _TimekeepingScreenState extends State<TimekeepingScreen> {
     }
   }
 
-  Future<void> _pickImage() async {
-    final ImagePicker _picker = ImagePicker();
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.camera, // Sử dụng camera để chụp ảnh
-    );
-
-    if (image != null) {
-      setState(() {
-        _selectedImagePath = image.path; // Lưu đường dẫn ảnh đã chọn
-      });
-    }
-  }
-
   Future<void> _fetchWSCheckIn(int userId) async {
     DateTime now = DateTime.now();
     DateTime _currentWeekStart = now.subtract(Duration(days: now.weekday - 1));

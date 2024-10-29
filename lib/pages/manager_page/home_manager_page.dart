@@ -7,6 +7,7 @@ import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/home_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/buyTicket_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/bloc/hometab_bloc.dart';
+import 'package:flutter_app_chat/pages/manager_page/book_ticket_staff_page/book_ticket_staff_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/checkin_checkout_manager/check_in_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/movie_manager_page/movie_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_manager_page.dart';
@@ -356,7 +357,10 @@ class _HomeTabState extends State<HomeTab> {
           physics: const NeverScrollableScrollPhysics(),
           children: [
             _buildGridItem('Đặt vé', 'Đặt vé', state.nhanSu, Icons.local_movies,
-                Colors.blue, () {}),
+                Colors.blue, () {
+              Navigator.push(context,
+                  SlideFromRightPageRoute(page: BookTicketStaffPage()));
+            }),
             _buildGridItem('Đặt combo', 'Thêm bắp/nước', state.tuyenDung,
                 Icons.fastfood, Colors.green, () {
               // Thêm sự kiện khi tap vào Tuyển dụng

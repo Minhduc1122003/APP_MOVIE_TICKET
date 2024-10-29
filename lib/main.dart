@@ -4,6 +4,7 @@ import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select
 import 'package:flutter_app_chat/pages/login_page/loginBloc/login_bloc.dart';
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/bloc/hometab_bloc.dart';
+import 'package:flutter_app_chat/pages/manager_page/book_ticket_staff_page/book_ticket_staff_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/home_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/calendar_shift_manager_page/calendar_shift_list_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/location_manager_page/location_edit_page.dart';
@@ -55,9 +56,9 @@ class _MyAppState extends State<MyApp> {
           debugShowCheckedModeBanner: false,
           builder: EasyLoading.init(),
           home: HomePage(),
-          // home: ShiftManagerPage(),
+          // home: BookTicketStaffPage(),
 
-          // home: CalendarShiftListPage(),
+          // home: LoginPage(),
         ));
   }
 }
