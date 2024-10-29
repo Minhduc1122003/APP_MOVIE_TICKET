@@ -75,86 +75,36 @@ class _FilmSapchieuStaffState extends State<FilmSapchieuStaff> {
       onTap: () {
         FocusScope.of(context).unfocus();
       },
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: mainColor,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_outlined,
-                color: Colors.white, size: 16),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          title: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: isSearching
-                ? TextField(
-                    controller: _searchController,
-                    focusNode: _focusNode,
-                    autofocus: true,
-                    decoration: InputDecoration(
-                      hintText: 'Tìm kiếm phim...',
-                      hintStyle: const TextStyle(color: Colors.grey),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                    ),
-                    style: const TextStyle(color: Colors.black),
-                  )
-                : const Text('Phim sắp chiếu',
-                    style: TextStyle(color: Colors.white)),
-          ),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.search, color: Colors.white, size: 20),
-              onPressed: () {
-                setState(() {
-                  if (isSearching) {
-                    _searchController.clear();
-                    isSearching = false;
-                  } else {
-                    isSearching = true;
-                  }
-                });
-              },
-            ),
-          ],
-        ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: moviesByMonth.entries.map((entry) {
-              final month = entry.key;
-              final movieList = entry.value;
+      child: SingleChildScrollView(
+        child: Column(
+          children: moviesByMonth.entries.map((entry) {
+            final month = entry.key;
+            final movieList = entry.value;
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Tiêu đề tháng
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 10),
-                    child: Text(
-                      month,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: mainColor,
-                      ),
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Tiêu đề tháng
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                  child: Text(
+                    month,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: mainColor,
                     ),
                   ),
-                  // Danh sách phim của tháng đó
-                  SizedBox(
-                    height: 300,
-                    child: MyListviewCardItem(filmList: movieList),
-                  ),
-                ],
-              );
-            }).toList(),
-          ),
+                ),
+                // Danh sách phim của tháng đó
+                SizedBox(
+                  height: 300,
+                  child: MyListviewCardItem(filmList: movieList),
+                ),
+              ],
+            );
+          }).toList(),
         ),
       ),
     );

@@ -260,7 +260,7 @@ class ApiService {
   }
 
   Future<List<MovieDetails>> getMoviesSapChieu() async {
-    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    await _initBaseUrl(); // Đảm bảo ring baseUrl đã được khởi tạo
 
     try {
       // Gửi yêu cầu GET đến API
@@ -278,7 +278,7 @@ class ApiService {
         final List<dynamic> data = jsonDecode(response.body);
         print('Parsed Data: $data');
 
-        // Chuyển đổi dữ liệu từ JSON sang danh sách các đối tượng MovieDetails
+        // Chan đổi dữ liệu từ JSON sang danh sách các đối tượng MovieDetails
         return data.map((item) => MovieDetails.fromJson(item)).toList();
       } else {
         throw Exception('Failed to get movies: ${response.statusCode}');

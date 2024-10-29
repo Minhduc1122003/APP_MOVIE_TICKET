@@ -29,33 +29,16 @@ class BookTicketStaffPage extends StatefulWidget {
 }
 
 class _BookTicketStaffPageState extends State<BookTicketStaffPage> {
-  final TextEditingController shiftController = TextEditingController();
-  late ApiService _APIService;
-  late Future<List<MovieDetails>> _moviesFuture;
-  List<MovieDetails> _filteredMovies = [];
-  List<MovieDetails> _allMovies = [];
-  late Future<List<MovieDetails>> _filmSapChieu;
+  late ApiService _apiService;
+  late Future<List<MovieDetails>> _moviesDangChieuFuture;
+  late Future<List<MovieDetails>> _moviesSapChieuFuture;
 
-  Set<Marker> allMarkers = {};
-  GoogleMapController? mapController;
   @override
-  void initState() async {
+  void initState() {
     super.initState();
-
-    _APIService = ApiService();
-    _moviesFuture = _APIService.getMoviesDangChieu();
-    _filmSapChieu = _APIService.getMoviesSapChieu();
-    _moviesFuture.then((movies) {
-      setState(() {
-        _allMovies = movies; // Lưu toàn bộ phim
-        _filteredMovies = movies; // Khởi tạo danh sách lọc
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
+    _apiService = ApiService();
+    _moviesDangChieuFuture = _apiService.getMoviesDangChieu();
+    _moviesSapChieuFuture = _apiService.getMoviesSapChieu();
   }
 
   @override
@@ -107,93 +90,67 @@ class _BookTicketStaffPageState extends State<BookTicketStaffPage> {
           ),
         ),
         body: TabBarView(
-          physics: NeverScrollableScrollPhysics(),
           children: [
-            SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: FutureBuilder<List<MovieDetails>>(
-                        future: _moviesFuture,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(child: CircularProgressIndicator());
-                          } else if (snapshot.hasError) {
-                            return Center(
-                                child: Text('Error: ${snapshot.error}'));
-                          } else if (!snapshot.hasData ||
-                              snapshot.data!.isEmpty) {
-                            return Center(
-                              child: Text(
-                                'No movies available.',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                            );
-                          } else {
-                            if (_filteredMovies.isEmpty) {
-                              return Center(
-                                  child: Text('Không tìm thấy phim.'));
-                            } else {
-                              return SizedBox(
-                                height: MediaQuery.of(context)
-                                    .size
-                                    .height, // Set a specific height
-                                child: GridView.builder(
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount:
-                                        3, // Số lượng cột trong một hàng
-                                    mainAxisSpacing:
-                                        10.0, // Khoảng cách giữa các mục theo chiều dọc
-                                    crossAxisSpacing:
-                                        10.0, // Khoảng cách giữa các mục theo chiều ngang
-                                    childAspectRatio:
-                                        0.65, // Tỷ lệ chiều cao / chiều rộng của mỗi item
-                                  ),
-                                  itemCount: _filteredMovies.length,
-                                  itemBuilder: (context, index) {
-                                    final movie = _filteredMovies[index];
-                                    return GridviewCardFilmsapchieu(
-                                      movieId: movie.movieId,
-                                      title: movie.title,
-                                      rating: movie.averageRating.toString(),
-                                      ratingCount: movie.reviewCount.toString(),
-                                      genre: movie.genres,
-                                      cinema: movie.cinemaName,
-                                      duration: movie.duration.toString(),
-                                      releaseDate: movie.releaseDate.toString(),
-                                      imageUrl: movie.posterUrl,
-                                    );
-                                  },
-                                ),
-                              );
-                            }
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Container(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.5,
-                ),
-                child: FilmSapchieuStaff(
-                  filmSapChieu: [],
-                ),
-              ),
+            // Phim đang chiếu tab
+            buildMovieGridView(_moviesDangChieuFuture),
+            // Phim sắp chiếu tab
+            FutureBuilder<List<MovieDetails>>(
+              future: _moviesSapChieuFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('No movies available.'));
+                } else {
+                  return FilmSapchieuStaff(filmSapChieu: snapshot.data!);
+                }
+              },
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget buildMovieGridView(Future<List<MovieDetails>> future) {
+    return FutureBuilder<List<MovieDetails>>(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(child: Text('No movies available.'));
+        } else {
+          return GridView.builder(
+            padding: const EdgeInsets.all(8),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              mainAxisSpacing: 10.0,
+              crossAxisSpacing: 10.0,
+              childAspectRatio: 0.65,
+            ),
+            itemCount: snapshot.data!.length,
+            itemBuilder: (context, index) {
+              final movie = snapshot.data![index];
+              return GridviewCardFilmsapchieu(
+                movieId: movie.movieId,
+                title: movie.title,
+                rating: movie.averageRating.toString(),
+                ratingCount: movie.reviewCount.toString(),
+                genre: movie.genres,
+                cinema: movie.cinemaName,
+                duration: movie.duration.toString(),
+                releaseDate: movie.releaseDate.toString(),
+                imageUrl: movie.posterUrl,
+              );
+            },
+          );
+        }
+      },
     );
   }
 }
