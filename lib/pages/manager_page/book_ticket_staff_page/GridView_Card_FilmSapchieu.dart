@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/buyTicket_page.dart';
-import 'package:flutter_app_chat/themes/colorsTheme.dart';
 
 class GridviewCardFilmsapchieu extends StatelessWidget {
   final int movieId;
@@ -56,7 +55,7 @@ class GridviewCardFilmsapchieu extends StatelessWidget {
             children: [
               // Row 1: Hình ảnh
               Expanded(
-                flex: 8,
+                flex: 5,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
                   child: Image.asset(
@@ -69,7 +68,7 @@ class GridviewCardFilmsapchieu extends StatelessWidget {
 
               // Row 2: Thông tin phim
               Expanded(
-                flex: 12,
+                flex: 6,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -143,8 +142,8 @@ class GridviewCardFilmsapchieu extends StatelessWidget {
                 flex: 2,
                 child: MyButton(
                   text: 'Mua vé',
-                  paddingText: 0,
-                  fontsize: 12,
+                  paddingText: 5,
+                  fontsize: 14,
                   onTap: () {
                     // Hàm xử lý khi bấm nút mua vé
                   },
