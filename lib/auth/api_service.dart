@@ -31,7 +31,7 @@ class ApiService {
 
     // wifi cf24/24
 
-    baseUrl = 'http://172.20.10.4:8081';
+    baseUrl = 'http://192.168.1.53:8081';
   }
 
   late Response response;
@@ -861,6 +861,155 @@ class ApiService {
     } catch (e) {
       print('Error: $e');
       throw Exception('Failed to get non-combo items');
+    }
+  }
+
+  Future<String> updateShifts(Shift shiftModel) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    print('Base URL: $baseUrl');
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/updateShifts'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'ShiftId': shiftModel.shiftId,
+          'ShiftName': shiftModel.shiftName,
+          'StartTime': shiftModel.startTime,
+          'EndTime': shiftModel.endTime,
+          'IsCrossDay': shiftModel.isCrossDay ? 1 : 0,
+          'Status': shiftModel.status,
+        }),
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 201) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        print('Parsed Data: $data');
+
+        // Trả về message từ phản hồi của server
+        return data['message'];
+      } else {
+        throw Exception('Failed to create shift: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to create shift');
+    }
+  }
+
+  Future<String> removeShifts(Shift shiftModel) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    print('Base URL: $baseUrl');
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/removeShifts'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'ShiftId': shiftModel.shiftId,
+        }),
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 201) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        print('Parsed Data: $data');
+
+        // Trả về message từ phản hồi của server
+        return data['message'];
+      } else {
+        throw Exception('Failed to create shift: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to create shift');
+    }
+  }
+
+  Future<String> updateLocationShifts(
+    int locationId,
+    String locationName,
+    String latitude,
+    String longitude,
+    double radius,
+    int shiftId,
+  ) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    print('Base URL: $baseUrl');
+
+    try {
+      final response = await http.post(
+        // Đổi từ POST sang PUT vì đây là update
+        Uri.parse('$baseUrl/updateLocationShifts'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'LocationId': locationId,
+          'LocationName': locationName,
+          'Latitude': latitude,
+          'Longitude': longitude,
+          'Radius': radius,
+          'ShiftId': shiftId,
+        }),
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 201) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        print('Parsed Data: $data');
+
+        // Trả về message từ phản hồi của server
+        return data['message'];
+      } else {
+        throw Exception('Failed to create shift: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to create shift');
+    }
+  }
+
+  Future<String> removeLocationShifts(int locationId) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    print('Base URL: $baseUrl');
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/removeLocationShifts'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'LocationId': locationId,
+        }),
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        print('Parsed Data: $data');
+
+        return data['message'];
+      } else {
+        throw Exception('Failed to create shift: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to create shift');
     }
   }
 }

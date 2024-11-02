@@ -25,19 +25,41 @@ class _LocationListPageState extends State<LocationListPage> {
   FocusNode _focusNode = FocusNode();
   TextEditingController _searchController = TextEditingController();
   late Future<List<LocationWithShift>> _allLocation;
+  List<LocationWithShift> _filteredLocationWithShift = [];
 
   @override
   void initState() {
     super.initState();
     _APIService = ApiService();
     _allLocation = _APIService.getAllListLocaion();
+    _searchController.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
     _focusNode.dispose();
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged() {
+    if (_searchController.text.isEmpty) {
+      setState(() {
+        _filteredLocationWithShift = [];
+      });
+      return;
+    }
+
+    _allLocation.then((location) {
+      setState(() {
+        _filteredLocationWithShift = location.where((location) {
+          return location.locationName
+              .toLowerCase()
+              .contains(_searchController.text.toLowerCase());
+        }).toList();
+      });
+    });
   }
 
   Future<void> _navigateToLocationEditPage(bool isEdit,
@@ -76,51 +98,58 @@ class _LocationListPageState extends State<LocationListPage> {
             leading: IconButton(
               icon: Icon(Icons.arrow_back_ios_new_outlined,
                   color: Colors.white, size: 16),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
             title: AnimatedSwitcher(
-                duration: Duration(milliseconds: 300),
-                transitionBuilder: (Widget child, Animation<double> animation) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: SizeTransition(
-                      sizeFactor: animation,
-                      axis: Axis.horizontal,
-                      child: child,
-                    ),
-                  );
-                },
-                child: isSearching || _searchController.text.isNotEmpty
-                    ? TextField(
+              duration: Duration(milliseconds: 300),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SizeTransition(
+                    sizeFactor: animation,
+                    axis: Axis.horizontal,
+                    child: child,
+                  ),
+                );
+              },
+              child: isSearching
+                  ? Container(
+                      width: double.infinity,
+                      height: 40,
+                      child: TextField(
                         controller: _searchController,
                         focusNode: _focusNode,
                         autofocus: true,
                         decoration: InputDecoration(
-                          hintText: 'Tìm kiếm nhân viên...',
+                          hintText: 'Tìm kiếm vị trí...',
                           hintStyle: TextStyle(color: Colors.grey),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20.0),
                           ),
                           filled: true,
                           fillColor: Colors.white,
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 15, vertical: 0),
                         ),
                         style: TextStyle(color: Colors.black),
-                      )
-                    : Text('Danh sách nhân viên',
-                        style: TextStyle(color: Colors.white, fontSize: 20))),
+                      ),
+                    )
+                  : Text('Danh sách vị trí',
+                      style: TextStyle(color: Colors.white, fontSize: 20)),
+            ),
             centerTitle: true,
             actions: [
               IconButton(
-                icon: Icon(Icons.search, color: Colors.white, size: 20),
+                icon: Icon(
+                  isSearching ? Icons.close : Icons.search,
+                  color: Colors.white,
+                  size: 20,
+                ),
                 onPressed: () {
                   setState(() {
-                    if (isSearching || _searchController.text.isNotEmpty) {
+                    isSearching = !isSearching;
+                    if (!isSearching) {
                       _searchController.clear();
-                      isSearching = false;
-                    } else {
-                      isSearching = true;
                     }
                   });
                 },
@@ -138,12 +167,47 @@ class _LocationListPageState extends State<LocationListPage> {
                   } else if (snapshot.hasError) {
                     return Center(child: Text('Error: ${snapshot.error}'));
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Center(child: Text('No users found.'));
+                    return Center(child: Text('Không tìm thấy vị trí nào.'));
                   } else {
+                    List<LocationWithShift> displayedLocations =
+                        _searchController.text.isEmpty
+                            ? snapshot.data!
+                            : snapshot.data!.where((location) {
+                                return location.locationName
+                                        .toLowerCase()
+                                        .contains(_searchController.text
+                                            .toLowerCase()) ||
+                                    location.shiftName.toLowerCase().contains(
+                                        _searchController.text.toLowerCase());
+                              }).toList();
+
+                    if (displayedLocations.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search_off,
+                              size: 50,
+                              color: Colors.grey,
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              'Không tìm thấy kết quả phù hợp',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
                     return ListView.builder(
-                      itemCount: snapshot.data!.length,
+                      itemCount: displayedLocations.length,
                       itemBuilder: (context, index) {
-                        final location = snapshot.data![index];
+                        final location = displayedLocations[index];
                         return Column(
                           children: [
                             ListTile(
@@ -154,10 +218,13 @@ class _LocationListPageState extends State<LocationListPage> {
                                     size: 18,
                                     color: mainColor,
                                   ),
-                                  Text(
-                                    location.locationName,
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
+                                  Expanded(
+                                    child: Text(
+                                      location.locationName,
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -171,7 +238,12 @@ class _LocationListPageState extends State<LocationListPage> {
                                         Icons.calendar_month_outlined,
                                         size: 15,
                                       ),
-                                      Text(' Ca làm: ${location.shiftName} '),
+                                      Expanded(
+                                        child: Text(
+                                          ' Ca làm: ${location.shiftName}',
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                   Row(
@@ -180,8 +252,11 @@ class _LocationListPageState extends State<LocationListPage> {
                                         Icons.access_time_outlined,
                                         size: 15,
                                       ),
-                                      Text(
-                                        ' ${location.startTime} đến ${location.endTime}', // Dòng thời gian
+                                      Expanded(
+                                        child: Text(
+                                          ' ${location.startTime} đến ${location.endTime}',
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -193,20 +268,17 @@ class _LocationListPageState extends State<LocationListPage> {
                                   Row(
                                     children: [
                                       Container(
-                                        width: 10, // Đường kính của hình tròn
-                                        height: 10, // Đường kính của hình tròn
+                                        width: 10,
+                                        height: 10,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
                                           color: location.status ==
                                                   'Đang hoạt động'
                                               ? Colors.green
-                                              : Colors
-                                                  .red, // Màu sắc dựa trên trạng thái
+                                              : Colors.red,
                                         ),
                                       ),
-                                      SizedBox(
-                                          width:
-                                              8), // Khoảng cách giữa hình tròn và văn bản
+                                      SizedBox(width: 8),
                                       Text(
                                         '${location.status}',
                                         style: TextStyle(
@@ -214,28 +286,21 @@ class _LocationListPageState extends State<LocationListPage> {
                                           color: location.status ==
                                                   'Đang hoạt động'
                                               ? Colors.green
-                                              : Colors
-                                                  .red, // Màu sắc dựa trên trạng thái
+                                              : Colors.red,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  SizedBox(
-                                      width:
-                                          8), // Khoảng cách giữa trạng thái và mũi tên
-                                  Icon(Icons.arrow_forward_ios,
-                                      size: 16), // Mũi tên kiểu iOS
+                                  SizedBox(width: 8),
+                                  Icon(Icons.arrow_forward_ios, size: 16),
                                 ],
                               ),
                               onTap: () {
                                 _navigateToLocationEditPage(true, location);
                               },
                             ),
-                            if (index < snapshot.data!.length - 1)
-                              Divider(
-                                height: 1,
-                                thickness: 0,
-                              ),
+                            if (index < displayedLocations.length - 1)
+                              Divider(height: 1, thickness: 0),
                           ],
                         );
                       },

@@ -43,6 +43,7 @@ class _LocationEditPageState extends State<LocationEditPage> {
   final TextEditingController latitudeController = TextEditingController();
   final TextEditingController longitudeController = TextEditingController();
   final TextEditingController shiftController = TextEditingController();
+  final TextEditingController idController = TextEditingController();
 
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
@@ -51,6 +52,13 @@ class _LocationEditPageState extends State<LocationEditPage> {
   ApiService apiService = ApiService();
   late Future<List<Shift>> _allShift;
   int? idShift;
+  final FocusNode _locationNameFocus = FocusNode();
+  final FocusNode _shiftFocus = FocusNode();
+  final FocusNode _longitudeFocus = FocusNode();
+  final FocusNode _latitudeFocus = FocusNode();
+  final FocusNode _radiusFocus = FocusNode();
+  final FocusNode _idfocus = FocusNode();
+
   void initState() {
     initMarker();
     super.initState();
@@ -58,6 +66,7 @@ class _LocationEditPageState extends State<LocationEditPage> {
 
     _allShift = _APIService.getAllListShift();
     if (widget.isEdit && widget.location != null) {
+      idController.text = widget.location!.locationId.toString();
       locationNameController.text = widget.location!.locationName.toString();
       shiftController.text = widget.location!.shiftName.toString();
       idShift = widget.location!.shiftId;
@@ -74,6 +83,16 @@ class _LocationEditPageState extends State<LocationEditPage> {
       draggable: false,
       position: position,
     ));
+  }
+
+  void _unfocusAll() {
+    _locationNameFocus.unfocus();
+    _shiftFocus.unfocus();
+    _longitudeFocus.unfocus();
+    _latitudeFocus.unfocus();
+    _radiusFocus.unfocus();
+    _focusNode.unfocus();
+    _idfocus.unfocus();
   }
 
   setSelectpalce(String placeId) async {
@@ -311,10 +330,98 @@ class _LocationEditPageState extends State<LocationEditPage> {
     }
   }
 
+  Future<void> _updateLocation() async {
+    if (locationNameController.text.isEmpty ||
+        latitudeController.text.isEmpty ||
+        longitudeController.text.isEmpty ||
+        radiusController.text.isEmpty == null ||
+        idShift == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Vui lòng điền đầy đủ thông tin!')),
+      );
+      return;
+    }
+
+    int shiftId = idShift!;
+
+    try {
+      // Gọi API để gửi dữ liệu và lấy message
+      String message = await _APIService.updateLocationShifts(
+          int.parse(idController.text),
+          locationNameController.text,
+          latitudeController.text,
+          longitudeController.text,
+          double.parse(radiusController.text),
+          shiftId);
+
+      // Kiểm tra nếu message là "Shift created successfully"
+      if (message == 'Location updated successfully') {
+        EasyLoading.showSuccess('Sửa vị trí làm thành công!');
+        Navigator.of(context).pop(true); // Trả về true khi tạo ca thành công
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi sửa ca làm: $message')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi sửa ca làm: $e')),
+      );
+    }
+  }
+
+  Future<void> _removeLocation() async {
+    if (locationNameController.text.isEmpty ||
+        latitudeController.text.isEmpty ||
+        longitudeController.text.isEmpty ||
+        radiusController.text.isEmpty == null ||
+        idShift == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Vui lòng điền đầy đủ thông tin!')),
+      );
+      return;
+    }
+
+    int shiftId = idShift!;
+
+    try {
+      // Gọi API để gửi dữ liệu và lấy message
+      String message = await _APIService.removeLocationShifts(
+        int.parse(idController.text),
+      );
+      print('message11111: $message');
+
+      // Kiểm tra nếu message là "Shift created successfully"
+      if (message == 'Location deleted successfully') {
+        EasyLoading.showSuccess('Xóa vị trí thành công!');
+        Navigator.of(context).pop(true); // Trả về true khi tạo ca thành công
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi xóa vị trí: $message')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi xóa vị trí: $e')),
+      );
+    }
+  }
+
   @override
   void dispose() {
+    _locationNameFocus.dispose();
+    _shiftFocus.dispose();
+    _longitudeFocus.dispose();
+    _latitudeFocus.dispose();
+    _radiusFocus.dispose();
     _focusNode.dispose();
     _searchController.dispose();
+    locationNameController.dispose();
+    addressController.dispose();
+    radiusController.dispose();
+    latitudeController.dispose();
+    longitudeController.dispose();
+    shiftController.dispose();
     super.dispose();
   }
 
@@ -322,7 +429,7 @@ class _LocationEditPageState extends State<LocationEditPage> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        FocusScope.of(context).unfocus();
+        _unfocusAll();
       },
       child: SafeArea(
         top: false,
@@ -333,6 +440,7 @@ class _LocationEditPageState extends State<LocationEditPage> {
               icon: Icon(Icons.arrow_back_ios_new_outlined,
                   color: Colors.white, size: 16),
               onPressed: () {
+                _unfocusAll();
                 Navigator.of(context).pop();
               },
             ),
@@ -374,8 +482,19 @@ class _LocationEditPageState extends State<LocationEditPage> {
             padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
             child: Column(
               children: [
+                if (widget.isEdit)
+                  MyTextfield(
+                    controller: idController,
+                    focusNode: _idfocus,
+                    placeHolder: 'ID vị trí',
+                    icon: Icons.not_listed_location_sharp,
+                  ),
+                const SizedBox(
+                  height: 10,
+                ),
                 MyTextfield(
                   controller: locationNameController,
+                  focusNode: _locationNameFocus,
                   placeHolder: 'Tên vị trí',
                   icon: Icons.not_listed_location_sharp,
                 ),
@@ -384,10 +503,13 @@ class _LocationEditPageState extends State<LocationEditPage> {
                 ),
                 MyTextfield(
                   controller: shiftController,
+                  focusNode: _shiftFocus,
                   placeHolder: 'Ca làm',
                   icon: Icons.calendar_month_outlined,
-                  onArrowTap: () => _showShiftBottomSheet(
-                      shiftController), // Pass the controller here
+                  onArrowTap: () {
+                    _unfocusAll();
+                    _showShiftBottomSheet(shiftController);
+                  },
                 ),
                 const SizedBox(
                   height: 10,
@@ -397,6 +519,7 @@ class _LocationEditPageState extends State<LocationEditPage> {
                     Expanded(
                       child: MyTextfield(
                         controller: longitudeController,
+                        focusNode: _longitudeFocus,
                         isPassword: false,
                         placeHolder: "Kinh độ",
                         sendCode: false,
@@ -405,6 +528,7 @@ class _LocationEditPageState extends State<LocationEditPage> {
                           if (latitudeController.text.isEmpty) return;
                           if (longitudeController.text.isEmpty) return;
                           setSelectLatitudeAndLongitude();
+                          _unfocusAll();
                         },
                       ),
                     ),
@@ -412,6 +536,7 @@ class _LocationEditPageState extends State<LocationEditPage> {
                     Expanded(
                       child: MyTextfield(
                         controller: latitudeController,
+                        focusNode: _latitudeFocus,
                         isPassword: false,
                         placeHolder: "Vĩ độ",
                         sendCode: false,
@@ -420,6 +545,7 @@ class _LocationEditPageState extends State<LocationEditPage> {
                           if (latitudeController.text.isEmpty) return;
                           if (longitudeController.text.isEmpty) return;
                           setSelectLatitudeAndLongitude();
+                          _unfocusAll();
                         },
                       ),
                     ),
@@ -560,6 +686,7 @@ class _LocationEditPageState extends State<LocationEditPage> {
                 ),
                 MyTextfield(
                   controller: radiusController,
+                  focusNode: _radiusFocus,
                   placeHolder: 'Bán kính (m)',
                   icon: Icons.radio_button_on,
                 ),
@@ -574,7 +701,36 @@ class _LocationEditPageState extends State<LocationEditPage> {
                           paddingText: 10,
                           text: 'Xóa ca',
                           onTap: () {
-                            // Xử lý sự kiện xóa
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Xác nhận xóa ca'),
+                                  content: const Text(
+                                      'Bạn có chắc chắn muốn xóa ca này không?'),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context)
+                                            .pop(); // Đóng hộp thoại
+                                      },
+                                      child: const Text('Hủy'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context)
+                                            .pop(); // Đóng hộp thoại
+                                        _removeLocation(); // Gọi hàm xóa ca sau khi xác nhận
+                                      },
+                                      child: const Text(
+                                        'Xóa',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
                           },
                         ),
                       ),
@@ -583,8 +739,8 @@ class _LocationEditPageState extends State<LocationEditPage> {
                         child: MyButton(
                           fontsize: 20,
                           paddingText: 10,
-                          text: 'Hoàn tất',
-                          onTap: _submitLocation, // Gọi hàm _submitShift
+                          text: 'Lưu',
+                          onTap: _updateLocation, // Gọi hàm _submitShift
                         ),
                       ),
                     ],

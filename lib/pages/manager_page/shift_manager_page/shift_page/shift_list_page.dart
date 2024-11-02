@@ -25,19 +25,50 @@ class _ShiftListPageState extends State<ShiftListPage> {
   FocusNode _focusNode = FocusNode();
   TextEditingController _searchController = TextEditingController();
   late Future<List<Shift>> _allShift;
+  List<Shift> _filteredShifts = [];
 
   @override
   void initState() {
     super.initState();
     _APIService = ApiService();
     _allShift = _APIService.getAllListShift();
+    _searchController.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
     _focusNode.dispose();
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged() {
+    if (_searchController.text.isEmpty) {
+      setState(() {
+        _filteredShifts = [];
+      });
+      return;
+    }
+
+    _allShift.then((shifts) {
+      setState(() {
+        _filteredShifts = shifts.where((shift) {
+          return shift.shiftName
+                  .toLowerCase()
+                  .contains(_searchController.text.toLowerCase()) ||
+              shift.startTime
+                  .toLowerCase()
+                  .contains(_searchController.text.toLowerCase()) ||
+              shift.endTime
+                  .toLowerCase()
+                  .contains(_searchController.text.toLowerCase()) ||
+              shift.status
+                  .toLowerCase()
+                  .contains(_searchController.text.toLowerCase());
+        }).toList();
+      });
+    });
   }
 
   Future<void> _navigateToShiftEditPage(bool isEdit, [Shift? shift]) async {
@@ -51,11 +82,8 @@ class _ShiftListPageState extends State<ShiftListPage> {
       ),
     );
 
-    print('Result from ShiftEditPage: $result');
-
     if (result == true) {
       setState(() {
-        print('đã load lại data');
         _allShift = _APIService.getAllListShift();
       });
     }
@@ -75,24 +103,25 @@ class _ShiftListPageState extends State<ShiftListPage> {
             leading: IconButton(
               icon: Icon(Icons.arrow_back_ios_new_outlined,
                   color: Colors.white, size: 16),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
             title: AnimatedSwitcher(
-                duration: Duration(milliseconds: 300),
-                transitionBuilder: (Widget child, Animation<double> animation) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: SizeTransition(
-                      sizeFactor: animation,
-                      axis: Axis.horizontal,
-                      child: child,
-                    ),
-                  );
-                },
-                child: isSearching || _searchController.text.isNotEmpty
-                    ? TextField(
+              duration: Duration(milliseconds: 300),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SizeTransition(
+                    sizeFactor: animation,
+                    axis: Axis.horizontal,
+                    child: child,
+                  ),
+                );
+              },
+              child: isSearching
+                  ? Container(
+                      width: double.infinity,
+                      height: 40,
+                      child: TextField(
                         controller: _searchController,
                         focusNode: _focusNode,
                         autofocus: true,
@@ -104,22 +133,28 @@ class _ShiftListPageState extends State<ShiftListPage> {
                           ),
                           filled: true,
                           fillColor: Colors.white,
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 15, vertical: 0),
                         ),
                         style: TextStyle(color: Colors.black),
-                      )
-                    : Text('Danh sách ca làm',
-                        style: TextStyle(color: Colors.white, fontSize: 20))),
+                      ),
+                    )
+                  : Text('Danh sách ca làm',
+                      style: TextStyle(color: Colors.white, fontSize: 20)),
+            ),
             centerTitle: true,
             actions: [
               IconButton(
-                icon: Icon(Icons.search, color: Colors.white, size: 20),
+                icon: Icon(
+                  isSearching ? Icons.close : Icons.search,
+                  color: Colors.white,
+                  size: 20,
+                ),
                 onPressed: () {
                   setState(() {
-                    if (isSearching || _searchController.text.isNotEmpty) {
+                    isSearching = !isSearching;
+                    if (!isSearching) {
                       _searchController.clear();
-                      isSearching = false;
-                    } else {
-                      isSearching = true;
                     }
                   });
                 },
@@ -137,12 +172,22 @@ class _ShiftListPageState extends State<ShiftListPage> {
                   } else if (snapshot.hasError) {
                     return Center(child: Text('Error: ${snapshot.error}'));
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Center(child: Text('No users found.'));
+                    return Center(child: Text('Không tìm thấy ca làm nào.'));
                   } else {
+                    final displayedShifts = _searchController.text.isNotEmpty
+                        ? _filteredShifts
+                        : snapshot.data!;
+
+                    if (_searchController.text.isNotEmpty &&
+                        _filteredShifts.isEmpty) {
+                      return Center(
+                          child: Text('Không tìm thấy kết quả phù hợp'));
+                    }
+
                     return ListView.builder(
-                      itemCount: snapshot.data!.length,
+                      itemCount: displayedShifts.length,
                       itemBuilder: (context, index) {
-                        final shift = snapshot.data![index];
+                        final shift = displayedShifts[index];
                         return Column(
                           children: [
                             ListTile(
@@ -153,13 +198,11 @@ class _ShiftListPageState extends State<ShiftListPage> {
                                     style:
                                         TextStyle(fontWeight: FontWeight.bold),
                                   ),
-                                  SizedBox(
-                                    width: 8,
-                                  ),
+                                  SizedBox(width: 8),
                                 ],
                               ),
                               subtitle: Text(
-                                'Từ ${shift.startTime} đến ${shift.endTime}', // Dòng thời gian
+                                'Từ ${shift.startTime} đến ${shift.endTime}',
                               ),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -167,36 +210,30 @@ class _ShiftListPageState extends State<ShiftListPage> {
                                   Row(
                                     children: [
                                       Container(
-                                        width: 10, // Đường kính của hình tròn
-                                        height: 10, // Đường kính của hình tròn
+                                        width: 10,
+                                        height: 10,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
-                                          color: shift.status ==
-                                                  'Đang hoạt động'
-                                              ? Colors.green
-                                              : Colors
-                                                  .red, // Màu sắc dựa trên trạng thái
+                                          color:
+                                              shift.status == 'Đang hoạt động'
+                                                  ? Colors.green
+                                                  : Colors.red,
                                         ),
                                       ),
-                                      SizedBox(
-                                          width:
-                                              8), // Khoảng cách giữa hình tròn và văn bản
+                                      SizedBox(width: 8),
                                       Text(
                                         '${shift.status}',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          color: shift.status ==
-                                                  'Đang hoạt động'
-                                              ? Colors.green
-                                              : Colors
-                                                  .red, // Màu sắc dựa trên trạng thái
+                                          color:
+                                              shift.status == 'Đang hoạt động'
+                                                  ? Colors.green
+                                                  : Colors.red,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  SizedBox(
-                                      width:
-                                          8), // Khoảng cách giữa trạng thái và mũi tên
+                                  SizedBox(width: 8),
                                   Icon(Icons.arrow_forward_ios, size: 16),
                                 ],
                               ),
@@ -204,12 +241,8 @@ class _ShiftListPageState extends State<ShiftListPage> {
                                 _navigateToShiftEditPage(true, shift);
                               },
                             ),
-                            // Thêm đường kẻ ngăn cách nếu không phải là item cuối
-                            if (index < snapshot.data!.length - 1)
-                              Divider(
-                                height: 1,
-                                thickness: 0,
-                              ), // Đường kẻ ngăn cách
+                            if (index < displayedShifts.length - 1)
+                              Divider(height: 1, thickness: 0),
                           ],
                         );
                       },
@@ -235,9 +268,7 @@ class _ShiftListPageState extends State<ShiftListPage> {
                   elevation: 8.0,
                   shape: CircleBorder(),
                   onPress: () {
-                    _navigateToShiftEditPage(
-                      false,
-                    );
+                    _navigateToShiftEditPage(false);
                   },
                 ),
               ),

@@ -103,7 +103,6 @@ class _ShiftEditPageState extends State<ShiftEditPage> {
     );
 
     try {
-      // Gọi API để gửi dữ liệu và lấy message
       String message = await _APIService.createShift(shift);
 
       // Kiểm tra nếu message là "Shift created successfully"
@@ -123,6 +122,90 @@ class _ShiftEditPageState extends State<ShiftEditPage> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi khi tạo ca làm: $e')),
+      );
+    }
+  }
+
+  Future<void> _updateShift() async {
+    if (shiftNameController.text.isEmpty ||
+        startTimeController.text.isEmpty ||
+        endTimeController.text.isEmpty ||
+        selectedShiftType == null ||
+        selectedStatus == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Vui lòng điền đầy đủ thông tin!')),
+      );
+      return;
+    }
+
+    // Tạo một đối tượng Shift từ dữ liệu đã nhập
+    Shift shift = Shift(
+      shiftId: int.parse(idController.text),
+      shiftName: shiftNameController.text,
+      startTime: _formatTime(startTimeController.text),
+      endTime: _formatTime(endTimeController.text),
+      isCrossDay: selectedShiftType == 'Qua đêm',
+      status: selectedStatus!,
+    );
+
+    try {
+      String message = await _APIService.updateShifts(shift);
+
+      if (message == 'Shift update successfully') {
+        EasyLoading.showSuccess('Sửa ca làm thành công!');
+        Future.delayed(Duration(seconds: 1), () {
+          Navigator.of(context).pop(true); // Trả về true khi tạo ca thành công
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi sửa ca làm: $message')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi sửa ca làm: $e')),
+      );
+    }
+  }
+
+  Future<void> _removeShift() async {
+    if (shiftNameController.text.isEmpty ||
+        startTimeController.text.isEmpty ||
+        endTimeController.text.isEmpty ||
+        selectedShiftType == null ||
+        selectedStatus == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Vui lòng điền đầy đủ thông tin!')),
+      );
+      return;
+    }
+
+    // Tạo một đối tượng Shift từ dữ liệu đã nhập
+    Shift shift = Shift(
+      shiftId: int.parse(idController.text),
+      shiftName: shiftNameController.text,
+      startTime: _formatTime(startTimeController.text),
+      endTime: _formatTime(endTimeController.text),
+      isCrossDay: selectedShiftType == 'Qua đêm',
+      status: selectedStatus!,
+    );
+
+    try {
+      String message = await _APIService.removeShifts(shift);
+
+      if (message == 'Shift deleted successfully') {
+        EasyLoading.showSuccess('Xóa ca làm thành công!');
+        Future.delayed(Duration(seconds: 1), () {
+          Navigator.of(context).pop(true); // Trả về true khi tạo ca thành công
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi xóa ca làm: $message')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi xóa ca làm: $e')),
       );
     }
   }
@@ -280,7 +363,36 @@ class _ShiftEditPageState extends State<ShiftEditPage> {
                           paddingText: 10,
                           text: 'Xóa ca',
                           onTap: () {
-                            // Xử lý sự kiện xóa
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Xác nhận xóa ca'),
+                                  content: const Text(
+                                      'Bạn có chắc chắn muốn xóa ca này không?'),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context)
+                                            .pop(); // Đóng hộp thoại
+                                      },
+                                      child: const Text('Hủy'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context)
+                                            .pop(); // Đóng hộp thoại
+                                        _removeShift(); // Gọi hàm xóa ca sau khi xác nhận
+                                      },
+                                      child: const Text(
+                                        'Xóa',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
                           },
                         ),
                       ),
@@ -289,8 +401,8 @@ class _ShiftEditPageState extends State<ShiftEditPage> {
                         child: MyButton(
                           fontsize: 20,
                           paddingText: 10,
-                          text: 'Hoàn tất',
-                          onTap: _submitShift, // Gọi hàm _submitShift
+                          text: 'Lưu',
+                          onTap: _updateShift, // Gọi hàm _submitShift
                         ),
                       ),
                     ],

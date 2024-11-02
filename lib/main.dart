@@ -56,10 +56,10 @@ class _MyAppState extends State<MyApp> {
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           builder: EasyLoading.init(),
-          //home: HomePage(),
+          home: HomePage(),
           //home: BookTicketStaffPage(),
 
-          home: LoginPage(),
+          // home: LoginPage(),
           //home: ComboTicketStaffPage(),
         ));
   }
