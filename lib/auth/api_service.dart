@@ -14,11 +14,12 @@ import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/models/work_schedule_checkIn.dart';
 import 'package:flutter_app_chat/models/work_schedule_model.dart';
-import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_combo_Ticket/combo_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:path/path.dart' as path;
+
+import '../pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_combo_Ticket/combo_model.dart';
 
 class ApiService {
   late String baseUrl;
@@ -31,7 +32,7 @@ class ApiService {
 
     // wifi cf24/24
 
-    baseUrl = 'http://192.168.1.159:8081';
+    baseUrl = 'http://192.168.1.161:8081';
   }
 
   late Response response;
@@ -150,6 +151,33 @@ class ApiService {
       // String token = data['token']; // Giả sử token được trả về trong phần body
       UserManager.instance.setUser(model, 'token');
 
+      return model;
+    } else {
+      // Nếu server trả về lỗi
+      throw Exception('Failed to login');
+    }
+  }
+
+  Future<User> findByViewIDUser(int UserID) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    final response = await http.post(
+      Uri.parse('$baseUrl/findByViewIDUser'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, int>{
+        'UserID': UserID,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Giải mã response body
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      // Truy cập vào phần 'user' từ dữ liệu response
+      final Map<String, dynamic> userData = data['user'];
+
+      User model = User.fromJson(userData);
       return model;
     } else {
       // Nếu server trả về lỗi
