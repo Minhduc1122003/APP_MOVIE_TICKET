@@ -31,8 +31,7 @@ class ApiService {
 
     // wifi cf24/24
 
-    baseUrl = 'http://192.168.1.53:8081';
-    baseUrl = 'http://192.168.1.73:8081';
+    baseUrl = 'http://192.168.1.159:8081';
   }
 
   late Response response;
@@ -70,6 +69,30 @@ class ApiService {
         headers: headers,
         body: utf8.encode(body), // Sử dụng UTF-8 encoding cho body
       );
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+
+  Future<Response> deleteConnect(String url, String token) async {
+    var headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    try {
+      return await delete(Uri.parse(url), headers: headers);
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+
+  Future<Response> putConnect(String url, String body, String token) async {
+    var headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    try {
+      return await put(Uri.parse(url), headers: headers, body: body);
     } catch (e) {
       throw e.toString();
     }
@@ -1011,6 +1034,49 @@ class ApiService {
     } catch (e) {
       print('Error: $e');
       throw Exception('Failed to create shift');
+    }
+  }
+
+  Future<String> checkUsername(String userName) async {
+    await _initBaseUrl();
+    print('Base URL: $baseUrl');
+    print('Checking username: $userName');
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/checkUsername'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'UserName': userName,
+        }),
+      );
+
+      print('Request body: ${jsonEncode({
+            'UserName': userName,
+          })}');
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        // Username đã tồn tại trong database
+        return "Username already exists"; // Báo username đã tồn tại, không thể sử dụng
+      } else if (response.statusCode == 404) {
+        // Username chưa tồn tại trong database
+        return ""; // Trả về rỗng nếu username hợp lệ (chưa tồn tại)
+      } else if (response.statusCode == 400) {
+        // Bad request
+        final Map<String, dynamic> error = jsonDecode(response.body);
+        print('Error message: ${error['message']}');
+        return error['message'];
+      } else {
+        // Các lỗi khác
+        return "Error occurred while checking username";
+      }
+    } catch (e) {
+      print('Error checking username: $e');
+      return "Error occurred while checking username";
     }
   }
 }

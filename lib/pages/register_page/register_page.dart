@@ -1,4 +1,7 @@
+import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/components/my_textfield.dart';
@@ -16,6 +19,8 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   bool _savePassword = false;
+  ApiService apiService = ApiService();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -23,12 +28,119 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _firstnameController = TextEditingController();
   final TextEditingController _checkPassword = TextEditingController();
 
+  final FocusNode _usernameFocusNode = FocusNode();
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _codeFocusNode = FocusNode();
   final FocusNode _lastnameFocusNode = FocusNode();
   final FocusNode _firstnameFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _checkPasswordFocusNode = FocusNode();
+  Timer? _debounceTimer;
+  bool _isCheckingUsername = false;
+  Timer? _usernameDebouncer;
+  String? _usernameError;
+
+  String generateSuggestedUsername(String firstName, String lastName) {
+    if (firstName.isEmpty || lastName.isEmpty) return '';
+
+    // Chuẩn hóa và loại bỏ dấu
+    String normalizedFirstName =
+        removeDiacritics(firstName.trim().toLowerCase());
+    String normalizedLastName = removeDiacritics(lastName.trim().toLowerCase());
+
+    // Tách tên thành các phần và lấy phần cuối
+    String lastPartOfFirstName = '';
+    if (normalizedFirstName.contains(' ')) {
+      List<String> parts = normalizedFirstName.split(' ');
+      lastPartOfFirstName = parts.last; // Lấy phần tử cuối cùng của mảng
+    } else {
+      lastPartOfFirstName = normalizedFirstName;
+    }
+
+    // Lấy chữ cái đầu của họ
+    String firstLetterOfLastName = normalizedLastName[0];
+
+    // Kết hợp theo format: [từ cuối của tên][chữ cái đầu của họ]
+    return '$lastPartOfFirstName$firstLetterOfLastName';
+  }
+
+// Hàm bỏ dấu tiếng Việt
+  String removeDiacritics(String text) {
+    final diacritics = {
+      'a': 'áàảãạâấầẩẫậăắằẳẵặ',
+      'e': 'éèẻẽẹêếềểễệ',
+      'i': 'íìỉĩị',
+      'o': 'óòỏõọôốồổỗộơớờởỡợ',
+      'u': 'úùủũụưứừửữự',
+      'y': 'ýỳỷỹỵ',
+      'd': 'đ',
+      // Thêm chữ hoa
+      'A': 'ÁÀẢÃẠÂẤẦẨẪẬĂẮẰẲẴẶ',
+      'E': 'ÉÈẺẼẸÊẾỀỂỄỆ',
+      'I': 'ÍÌỈĨỊ',
+      'O': 'ÓÒỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢ',
+      'U': 'ÚÙỦŨỤƯỨỪỬỮỰ',
+      'Y': 'ÝỲỶỸỴ',
+      'D': 'Đ',
+      // Các ký tự đặc biệt khác
+      '': ' -_.,@#%^&*()+=[]{}|\\/<>?!\'"`~:;' // Loại bỏ các ký tự đặc biệt
+    };
+
+    String result = text;
+
+    // Xử lý các ký tự có dấu
+    diacritics.forEach((key, value) {
+      for (var letter in value.split('')) {
+        result = result.replaceAll(letter, key);
+      }
+    });
+
+    // Loại bỏ tất cả các ký tự không phải chữ cái và số
+    result = result.replaceAll(RegExp(r'[^a-zA-Z0-9]'), ' ');
+
+    return result.toLowerCase(); // Chuyển tất cả về chữ thường
+  }
+
+  void checkAndSuggestUsername() {
+    _debounceTimer?.cancel();
+
+    if (_firstnameController.text.isNotEmpty &&
+        _lastnameController.text.isNotEmpty) {
+      _debounceTimer = Timer(const Duration(milliseconds: 2000), () async {
+        String suggestedUsername = generateSuggestedUsername(
+            _firstnameController.text, _lastnameController.text);
+
+        if (suggestedUsername.isEmpty) return;
+
+        print('Generated username: $suggestedUsername');
+
+        setState(() {
+          _isCheckingUsername = true;
+          if (_usernameController.text.isEmpty) {
+            _usernameController.text = suggestedUsername;
+          }
+        });
+
+        try {
+          String result = await apiService.checkUsername(suggestedUsername);
+          if (result.contains("exists")) {
+            // Nếu username đã tồn tại và trường username đang hiển thị username được đề xuất
+            if (_usernameController.text == suggestedUsername) {
+              int random = Random().nextInt(999) + 1;
+              String newUsername = '$suggestedUsername$random';
+              _usernameController.text = newUsername;
+            }
+          }
+        } catch (e) {
+          print('Error checking username: $e');
+        } finally {
+          setState(() {
+            _isCheckingUsername = false;
+          });
+        }
+      });
+    }
+  }
 
   // Tạo một Map để lưu trữ các lỗi
   Map<String, String?> errorMessages = {
@@ -36,6 +148,7 @@ class _RegisterPageState extends State<RegisterPage> {
     'code': null,
     'lastname': null,
     'firstname': null,
+    'username': null,
     'password': null,
   };
   String codeIs = "1"; // Placeholder for the code received
@@ -48,10 +161,12 @@ class _RegisterPageState extends State<RegisterPage> {
     final String password = _passwordController.text;
     final String lastname = _lastnameController.text;
     final String firstname = _firstnameController.text;
+    final String username = _usernameController.text;
 
     // Validate inputs
     if (email.isEmpty ||
         password.isEmpty ||
+        username.isEmpty ||
         lastname.isEmpty ||
         firstname.isEmpty == 0) {
       EasyLoading.showError("Vui lòng điền đầy đủ thông tin!");
@@ -83,6 +198,9 @@ class _RegisterPageState extends State<RegisterPage> {
       errorMessages['firstname'] = _firstnameController.text.isEmpty
           ? 'Thông tin bạn điền chưa đầy đủ'
           : null;
+      errorMessages['username'] = _usernameController.text.isEmpty
+          ? 'Thông tin bạn điền chưa đầy đủ'
+          : null;
 
       errorMessages['password'] = _passwordController.text.isEmpty
           ? 'Thông tin bạn điền chưa đầy đủ'
@@ -110,6 +228,59 @@ class _RegisterPageState extends State<RegisterPage> {
         _validatePasswordMatch(); // Validate password match when focus is lost
       }
     });
+    _lastnameController.addListener(() {
+      if (_firstnameController.text.isNotEmpty &&
+          _lastnameController.text.isNotEmpty) {
+        checkAndSuggestUsername();
+      }
+    });
+    _firstnameController.addListener(() {
+      if (_firstnameController.text.isNotEmpty &&
+          _lastnameController.text.isNotEmpty) {
+        checkAndSuggestUsername();
+      }
+    });
+    // Thêm listener cho username textfield
+    _usernameController.addListener(() {
+      // Hủy timer cũ nếu có
+      _usernameDebouncer?.cancel();
+
+      // Nếu người dùng đang nhập, đặt timer mới
+      if (_usernameController.text.isNotEmpty) {
+        setState(() {
+          _isCheckingUsername = true;
+        });
+
+        _usernameDebouncer = Timer(const Duration(milliseconds: 2), () async {
+          try {
+            String result =
+                await apiService.checkUsername(_usernameController.text);
+            setState(() {
+              _isCheckingUsername = false;
+              if (result.contains("exists") || result.contains("tồn tại")) {
+                _usernameError = "Username đã tồn tại";
+                errorMessages['username'] = _usernameError;
+              } else {
+                _usernameError = null;
+                errorMessages['username'] = null;
+              }
+            });
+          } catch (e) {
+            setState(() {
+              _isCheckingUsername = false;
+              _usernameError = null;
+              errorMessages['username'] = null;
+            });
+          }
+        });
+      } else {
+        setState(() {
+          _isCheckingUsername = false;
+          _usernameError = null;
+          errorMessages['username'] = null;
+        });
+      }
+    });
   }
 
   void _validatePasswordMatch() {
@@ -135,6 +306,11 @@ class _RegisterPageState extends State<RegisterPage> {
     // _firstnameFocusNode.dispose();
     // _passwordFocusNode.dispose();
     // _checkPassword.dispose();
+    _debounceTimer?.cancel();
+    _firstnameController.removeListener(checkAndSuggestUsername);
+    _lastnameController.removeListener(checkAndSuggestUsername);
+    _debounceTimer?.cancel();
+    _usernameDebouncer?.cancel();
     super.dispose();
   }
 
@@ -269,10 +445,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                     child: MyTextfield(
                                       isPassword: false,
                                       placeHolder: "Họ",
-                                      controller: _firstnameController,
+                                      controller: _lastnameController,
                                       sendCode: false,
-                                      focusNode: _firstnameFocusNode,
-                                      errorMessage: errorMessages['firstname'],
+                                      focusNode: _lastnameFocusNode,
+                                      errorMessage: errorMessages['lastname'],
                                     ),
                                   ),
                                   SizedBox(
@@ -282,13 +458,34 @@ class _RegisterPageState extends State<RegisterPage> {
                                     child: MyTextfield(
                                       isPassword: false,
                                       placeHolder: "Tên",
-                                      controller: _lastnameController,
+                                      controller: _firstnameController,
                                       sendCode: false,
-                                      focusNode: _lastnameFocusNode,
-                                      errorMessage: errorMessages['lastname'],
+                                      focusNode: _firstnameFocusNode,
+                                      errorMessage: errorMessages['firstname'],
                                     ),
                                   ),
                                 ],
+                              ),
+                              const SizedBox(height: 10),
+                              MyTextfield(
+                                isPassword: false,
+                                placeHolder: "Username",
+                                controller: _usernameController,
+                                focusNode: _usernameFocusNode,
+                                errorMessage: errorMessages['username'],
+                                icon: Icons.person,
+                                suffix: _isCheckingUsername
+                                    ? SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<
+                                                  Color>(
+                                              Theme.of(context).primaryColor),
+                                        ),
+                                      )
+                                    : null,
                               ),
                               const SizedBox(height: 10),
                               MyTextfield(
@@ -326,12 +523,26 @@ class _RegisterPageState extends State<RegisterPage> {
                                 text: 'Đăng ký',
                                 showIcon: false,
                                 onTap: () async {
-                                  Navigator.push(
-                                    context,
-                                    SlideFromRightPageRoute(
-                                        page: RegisterPage2()),
-                                    // (Route<dynamic> route) => false,
-                                  );
+                                  // Kiểm tra các trường thông tin
+                                  if (_validateFields()) {
+                                    // Kiểm tra username tồn tại
+                                    if (_usernameError != null) {
+                                      EasyLoading.showError(
+                                          "Username đã tồn tại!");
+                                      return;
+                                    }
+
+                                    // Nếu tất cả đều hợp lệ, chuyển sang trang tiếp theo
+                                    Navigator.push(
+                                      context,
+                                      SlideFromRightPageRoute(
+                                          page: RegisterPage2()),
+                                    );
+                                  } else {
+                                    // Hiển thị thông báo lỗi nếu có trường thông tin chưa điền
+                                    EasyLoading.showError(
+                                        "Vui lòng điền đầy đủ thông tin!");
+                                  }
                                 },
                               ),
                             ],

@@ -42,6 +42,7 @@ class MyTextfield extends StatefulWidget {
     this.comboBoxItems,
     this.isEdit = true, // Đặt giá trị mặc định cho isEdit là true
     this.onArrowTap,
+    SizedBox? suffix,
   }) : super(key: key);
 
   @override
