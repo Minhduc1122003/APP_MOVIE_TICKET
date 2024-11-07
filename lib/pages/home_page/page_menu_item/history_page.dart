@@ -24,7 +24,7 @@ class HistoryPage extends StatelessWidget {
           backgroundColor: mainColor,
           automaticallyImplyLeading: false,
           title: Text(
-            'Lịch sử giao dịch',
+            'Yêu thích',
             style: TextStyle(color: Colors.white, fontSize: 20),
           ),
           centerTitle: true,

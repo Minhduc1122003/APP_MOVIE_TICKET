@@ -24,23 +24,18 @@ class CreateAccountBloc extends Bloc<CreateAccountEvent, CreateAccountState> {
       String username = event.username;
       String fullname = event.fullname;
       int phoneNumber = event.phoneNumber;
-      String photo = event.photo;
 
       // Gọi API để tạo tài khoản người dùng
       final ApiService apiService = ApiService();
-      final User? user = await apiService.createAccount(
-          email, password, username, fullname, phoneNumber, photo);
+      final String user = await apiService.createAccount(
+          email, password, username, fullname, phoneNumber.toString());
 
-      if (user != null) {
-        print("Đăng ký tài khoản thành công");
+      print("Đăng ký tài khoản thành công");
 
-        // Lưu thông tin người dùng sau khi tạo tài khoản thành công
-        // UserManager.instance.setUser(user);
+      // Lưu thông tin người dùng sau khi tạo tài khoản thành công
+      // UserManager.instance.setUser(user);
 
-        emit(CreateAccountSuccess()); // Phát sự kiện thành công
-      } else {
-        emit(CreateAccountError()); // Xử lý lỗi nếu việc tạo tài khoản thất bại
-      }
+      emit(CreateAccountSuccess()); // Phát sự kiện thành công
     } catch (e) {
       print('Create account error: $e');
       emit(CreateAccountError()); // Xử lý lỗi khi gọi API

@@ -45,8 +45,6 @@ class _MyAppState extends State<MyApp> {
           builder: EasyLoading.init(),
           home: HomePage(),
           //home: BookTicketStaffPage(),
-
-          // home: InfoUser(),
         ));
   }
 }

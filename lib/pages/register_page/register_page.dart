@@ -5,6 +5,7 @@ import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/components/my_textfield.dart';
+import 'package:flutter_app_chat/pages/home_page/home_page.dart';
 import 'package:flutter_app_chat/pages/register_page/register_page_2.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -64,7 +65,7 @@ class _RegisterPageState extends State<RegisterPage> {
     return '$lastPartOfFirstName$firstLetterOfLastName';
   }
 
-// Hàm bỏ dấu tiếng Việt
+  // Hàm bỏ dấu tiếng Việt
   String removeDiacritics(String text) {
     final diacritics = {
       'a': 'áàảãạâấầẩẫậăắằẳẵặ',
@@ -172,24 +173,12 @@ class _RegisterPageState extends State<RegisterPage> {
       EasyLoading.showError("Vui lòng điền đầy đủ thông tin!");
       return;
     }
-
-    //   BlocProvider.of<CreateAccountBloc>(context).add(
-    //     CreateAccount(email, password, lastname, firstname),
-    //   );
-  }
-
-  // Check if the entered code matches the received one
-  void _checkCode() {
-    isCodeNotifier.value = (_codeController.text == codeIs);
   }
 
   // Hàm kiểm tra lỗi cho các trường văn bản
   bool _validateFields() {
     setState(() {
       errorMessages['email'] = _emailController.text.isEmpty
-          ? 'Thông tin bạn điền chưa đầy đủ'
-          : null;
-      errorMessages['code'] = _codeController.text.isEmpty
           ? 'Thông tin bạn điền chưa đầy đủ'
           : null;
       errorMessages['lastname'] = _lastnameController.text.isEmpty
@@ -206,7 +195,7 @@ class _RegisterPageState extends State<RegisterPage> {
           ? 'Thông tin bạn điền chưa đầy đủ'
           : null;
     });
-// Check if the passwords match
+    // Check if the passwords match
     if (_passwordController.text != _checkPassword.text) {
       errorMessages['password'] =
           'Mật khẩu nhập lại chưa đúng'; // Set error message
@@ -221,8 +210,6 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void initState() {
     super.initState();
-    _codeController.addListener(_checkCode); // Listen to code changes\
-
     _checkPasswordFocusNode.addListener(() {
       if (!_checkPasswordFocusNode.hasFocus) {
         _validatePasswordMatch(); // Validate password match when focus is lost
@@ -242,10 +229,8 @@ class _RegisterPageState extends State<RegisterPage> {
     });
     // Thêm listener cho username textfield
     _usernameController.addListener(() {
-      // Hủy timer cũ nếu có
       _usernameDebouncer?.cancel();
 
-      // Nếu người dùng đang nhập, đặt timer mới
       if (_usernameController.text.isNotEmpty) {
         setState(() {
           _isCheckingUsername = true;
@@ -296,16 +281,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   void dispose() {
-    // _codeController.removeListener(_checkCode);
-    // _checkPasswordFocusNode.dispose(); // Dispose of the focus node
-    // _codeController.dispose();
-    // isCodeNotifier.dispose();
-    // _emailFocusNode.dispose();
-    // _codeFocusNode.dispose();
-    // _lastnameFocusNode.dispose();
-    // _firstnameFocusNode.dispose();
-    // _passwordFocusNode.dispose();
-    // _checkPassword.dispose();
     _debounceTimer?.cancel();
     _firstnameController.removeListener(checkAndSuggestUsername);
     _lastnameController.removeListener(checkAndSuggestUsername);
@@ -354,7 +329,6 @@ class _RegisterPageState extends State<RegisterPage> {
           } else if (state is SendCodeSuccess) {
             setState(() {
               codeIs = state.code!;
-              _checkCode(); // Recheck the code after receiving it
             });
             EasyLoading.showSuccess(
                 "Mã đã được gửi đến ${_emailController.text}!");
@@ -523,23 +497,116 @@ class _RegisterPageState extends State<RegisterPage> {
                                 text: 'Đăng ký',
                                 showIcon: false,
                                 onTap: () async {
-                                  // Kiểm tra các trường thông tin
                                   if (_validateFields()) {
-                                    // Kiểm tra username tồn tại
-                                    if (_usernameError != null) {
-                                      EasyLoading.showError(
-                                          "Username đã tồn tại!");
-                                      return;
-                                    }
+                                    try {
+                                      BlocProvider.of<SendCodeBloc>(context)
+                                          .add(SendCode(
+                                              '', '', _emailController.text));
 
-                                    // Nếu tất cả đều hợp lệ, chuyển sang trang tiếp theo
-                                    Navigator.push(
-                                      context,
-                                      SlideFromRightPageRoute(
-                                          page: RegisterPage2()),
-                                    );
+                                      showDialog(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            title: Text('Nhập mã xác nhận'),
+                                            content: SingleChildScrollView(
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  ValueListenableBuilder<bool>(
+                                                    valueListenable:
+                                                        isCodeNotifier,
+                                                    builder: (context, isCode,
+                                                        child) {
+                                                      return MyTextfield(
+                                                        isPassword: false,
+                                                        placeHolder:
+                                                            "Mã xác nhận",
+                                                        controller:
+                                                            _codeController,
+                                                        sendCode: false,
+                                                        isCode: isCode,
+                                                        focusNode:
+                                                            _codeFocusNode,
+                                                        errorMessage:
+                                                            errorMessages[
+                                                                'code'],
+                                                        icon: Icons
+                                                            .privacy_tip_outlined,
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                child: Text('Hủy'),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                              ),
+                                              TextButton(
+                                                child: Text('Xác nhận'),
+                                                onPressed: () async {
+                                                  if (_codeController
+                                                      .text.isEmpty) {
+                                                    EasyLoading.showError(
+                                                        "Vui lòng nhập mã xác nhận!");
+                                                  } else {
+                                                    print('codeIs: $codeIs');
+                                                    if (_codeController.text ==
+                                                        codeIs) {
+                                                      try {
+                                                        final String
+                                                            CreateAccount =
+                                                            await apiService
+                                                                .createAccount(
+                                                          _emailController.text,
+                                                          _passwordController
+                                                              .text,
+                                                          _usernameController
+                                                              .text,
+                                                          "${_lastnameController.text} ${_firstnameController.text}",
+                                                          '123456789',
+                                                        );
+
+                                                        if (CreateAccount ==
+                                                            'Account created successfully') {
+                                                          EasyLoading.showSuccess(
+                                                              "Đăng ký thành công!");
+                                                          Navigator.of(context)
+                                                              .pop(); // Đóng dialog
+                                                          Navigator.push(
+                                                            context,
+                                                            SlideFromRightPageRoute(
+                                                                page:
+                                                                    HomePage()),
+                                                          );
+                                                        }
+                                                      } catch (e) {
+                                                        EasyLoading.showError(
+                                                            "Đăng ký thất bại: ${e.toString()}");
+                                                      } catch (e) {
+                                                        EasyLoading.showError(
+                                                            "Có lỗi xảy ra: ${e.toString()}");
+                                                      }
+                                                    } else {
+                                                      EasyLoading.showError(
+                                                          "Mã xác nhận không đúng!");
+                                                    }
+                                                  }
+                                                },
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    } catch (e) {
+                                      EasyLoading.showError(
+                                          "Có lỗi xảy ra: ${e.toString()}");
+                                    }
                                   } else {
-                                    // Hiển thị thông báo lỗi nếu có trường thông tin chưa điền
                                     EasyLoading.showError(
                                         "Vui lòng điền đầy đủ thông tin!");
                                   }
