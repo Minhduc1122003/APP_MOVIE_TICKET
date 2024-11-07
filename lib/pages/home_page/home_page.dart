@@ -211,7 +211,7 @@ class _HomePage extends State<HomePage> {
     return [
       _buildNavItem(Icons.movie, 'Chọn phim', 0, false),
       _buildNavItem(Icons.confirmation_number, 'Vé của tôi', 1, false),
-      _buildNavItem(Icons.history, 'Lịch sử', 2, false),
+      _buildNavItem(Icons.favorite, 'Yêu thích', 2, false),
       _buildNavItem(Icons.person, 'Tôi', 3, true),
     ];
   }

@@ -48,7 +48,7 @@ class _MyAppState extends State<MyApp> {
           //home: HomePage(),
           //home: BookTicketStaffPage(),
 
-          home: RegisterPage(),
+          home: LoginPage(),
         ));
   }
 }

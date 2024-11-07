@@ -157,30 +157,25 @@ class ApiService {
     }
   }
 
-  Future<User?> createAccount(String email, String password, String username,
-      String fullname, int phoneNumber, String photo) async {
-    var postDataAccount = {
-      'email': email,
-      'password': password,
-      'username': username,
-      'fullname': fullname,
-      'phoneNumber': phoneNumber,
-      'photo': photo
-    };
-    response = await postConnect(loginAPI, postDataAccount, '');
-    print(response.statusCode);
-    var decodedBody = utf8.decode(response.bodyBytes);
-    print(decodedBody);
-
-    if (response.statusCode == statusOk) {
-      var responseData = jsonDecode(decodedBody);
-      print(responseData);
-      User model = User.fromJson(responseData);
-
-      return model;
+  Future<String> createAccount(String email, String password, String username,
+      String fullname, String phoneNumber) async {
+    // Chuyển phoneNumber sang String
+    final response = await http.post(
+      Uri.parse('$baseUrl/createAccount'), // Đổi URL thành endpoint của bạn
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'password': password,
+        'username': username,
+        'fullname': fullname,
+        'phoneNumber': phoneNumber, // Đảm bảo phoneNumber là chuỗi
+      }),
+    );
+    if (response.statusCode == 200) {
+      final responseBody = jsonDecode(response.body);
+      return responseBody['message']; // Lấy message từ phản hồi JSON
     } else {
-      print('Login API failed with status: ${response.statusCode}');
-      return null;
+      throw Exception('Failed to send data');
     }
   }
 

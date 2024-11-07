@@ -24,12 +24,12 @@ class SendCodeBloc extends Bloc<SendCodeEvent, SendCodeState> {
       final apiService = ApiService();
       final response =
           await apiService.sendCodeToEmail(title, content, recipient);
-
+      print(response['message']);
       if (response['message'] == 'Email sent successfully') {
         print("Gửi mail thành công");
         final code = response['code'];
+        print(response['code']);
 
-        // Phát ra trạng thái SendCodeSuccess với mã code
         emit(SendCodeSuccess(code: code));
       } else {
         emit(SendCodeError());

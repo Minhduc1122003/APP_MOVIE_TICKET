@@ -9,7 +9,7 @@ class MyTicketsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     double statusBarHeight = MediaQuery.of(context).padding.top;
     List<String> tabTitles = [
-      'Chưa sử dụng',
+      'Vé chưa sử dụng',
       'a',
       'b',
     ];
@@ -106,7 +106,7 @@ class _TicketsTabContentState extends State<TicketsTabContent>
     super.build(context);
 
     Map<String, List<Map<String, String>>> ticketsByTab = {
-      'Chưa sử dụng': [
+      'Vé chưa sử dụng': [
         {
           "title": "Thám tử lừng danh Conan: Ngôi sao nằm trên bầu trời đỏ",
           "rating": "9.5/10 (9.6K đánh giá)",
