@@ -1,13 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/chat_service.dart';
-import 'package:flutter_app_chat/components/my_customIcon_keyboad_left.dart';
+import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/home_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_chat/chat_online_page.dart';
-import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_profile/admin_user_manager/admin_user_manager_page.dart';
-import 'package:flutter_app_chat/pages/login_page/login_page.dart';
-import 'package:flutter_app_chat/components/animation_page.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_profile/page_user/info_user.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -404,7 +401,7 @@ class _ProfilePage extends State<ProfilePage> {
           CircleAvatar(
             radius: 30,
             backgroundColor: Colors.blue,
-            child: (UserManager.instance.user?.photo == null)
+            child: (UserManager.instance.user?.photo != null)
                 ? Image.asset('assets/images/avatar.jpg')
                 : Image.asset(
                     'assets/images/${UserManager.instance.user?.photo}'),
@@ -465,14 +462,24 @@ class _ProfilePage extends State<ProfilePage> {
                       bottomLeft: Radius.circular(0),
                     ),
                   ),
-                  child: const Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment.center, // Căn giữa nội dung
-                    children: [
-                      Icon(Icons.qr_code, color: Colors.blue),
-                      SizedBox(width: 8),
-                      Text('Trang cá nhân'),
-                    ],
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        SlideFromRightPageRoute(
+                          page: const InfoUser(),
+                        ),
+                      );
+                    },
+                    child: const Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment.center, // Căn giữa nội dung
+                      children: [
+                        Icon(Icons.qr_code, color: Colors.blue),
+                        SizedBox(width: 8),
+                        Text('Trang cá nhân'),
+                      ],
+                    ),
                   ),
                 ),
               ),
