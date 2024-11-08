@@ -31,7 +31,7 @@ class ApiService {
 
     // wifi cf24/24
 
-    baseUrl = 'http://192.168.1.159:8081';
+    baseUrl = 'http://192.168.1.71:8081';
   }
 
   late Response response;
@@ -939,18 +939,20 @@ class ApiService {
       print('Status Code: ${response.statusCode}');
       print('Response Body: ${response.body}');
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
         print('Parsed Data: $data');
 
         // Trả về message từ phản hồi của server
         return data['message'];
+      } else if (response.statusCode == 404) {
+        throw Exception('Shift not found');
       } else {
-        throw Exception('Failed to create shift: ${response.statusCode}');
+        throw Exception('Failed to delete shift: ${response.statusCode}');
       }
     } catch (e) {
       print('Error: $e');
-      throw Exception('Failed to create shift');
+      throw Exception('Failed to delete shift');
     }
   }
 
@@ -1072,6 +1074,48 @@ class ApiService {
     } catch (e) {
       print('Error checking username: $e');
       return "Error occurred while checking username";
+    }
+  }
+
+  Future<String> updateWorkSchedules(
+      String ScheduleId, // Get from your text field
+      String StartDate, // Get from your text field
+      String EndDate, // Get from your text field
+      String DaysOfWeek) async {
+    await _initBaseUrl(); // Ensure that baseUrl is initialized
+    print('Base URL: $baseUrl');
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/updateWorkSchedules'), // Update the endpoint
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'ScheduleId': ScheduleId,
+          'StartDate': StartDate,
+          'EndDate': EndDate,
+          'DaysOfWeek': DaysOfWeek,
+        }),
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        print('Parsed Data: $data');
+
+        // Return the message from the server response
+        return data['message'];
+      } else if (response.statusCode == 404) {
+        throw Exception('Work schedule not found');
+      } else {
+        throw Exception('Failed to update schedule: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to update schedule');
     }
   }
 }

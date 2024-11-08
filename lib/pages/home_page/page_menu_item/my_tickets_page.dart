@@ -10,8 +10,8 @@ class MyTicketsPage extends StatelessWidget {
     double statusBarHeight = MediaQuery.of(context).padding.top;
     List<String> tabTitles = [
       'Vé chưa sử dụng',
-      'a',
-      'b',
+      'Vé đã mua',
+      'Phim đã xem',
     ];
 
     return SafeArea(
@@ -109,45 +109,27 @@ class _TicketsTabContentState extends State<TicketsTabContent>
       'Vé chưa sử dụng': [
         {
           "title": "Thám tử lừng danh Conan: Ngôi sao nằm trên bầu trời đỏ",
-          "rating": "9.5/10 (9.6K đánh giá)",
-          "genre": "Hoạt hình, Hành sự, Bí ẩn, Hành động",
           "cinema": "Panthers Tô Ký",
-          "duration": "111p",
           "showtime": "23:45 | 13/08/2024",
-          "seat": "F6, F7",
-          "status": "Đã thanh toán",
-          "price": "150.000 VND",
           "image": "assets/images/postermada.jpg",
         },
         // Add more tickets here
       ],
-      'a': [
+      'Vé đã mua': [
         {
-          "title": "Phim hủy 1",
-          "rating": "8.0/10 (1K đánh giá)",
-          "genre": "Kinh dị, Hài",
-          "cinema": "Galaxy Cinema",
-          "duration": "95p",
-          "showtime": "20:00 | 15/08/2024",
-          "seat": "A1, A2",
-          "status": "Đã hủy",
-          "price": "120.000 VND",
-          "image": "assets/images/slide2.jpg",
+          "title": "Thám tử lừng danh Conan: Ngôi sao nằm trên bầu trời đỏ",
+          "cinema": "Panthers Tô Ký",
+          "showtime": "23:45 | 13/08/2024",
+          "image": "assets/images/postermada.jpg",
         },
         // Add more tickets here
       ],
-      'b': [
+      'Phim đã xem': [
         {
-          "title": "Phim chưa thanh toán 1",
-          "rating": "7.5/10 (500 đánh giá)",
-          "genre": "Hành động, Phiêu lưu",
-          "cinema": "CineStar",
-          "duration": "110p",
-          "showtime": "18:00 | 16/08/2024",
-          "seat": "B5, B6",
-          "status": "Chưa thanh toán",
-          "price": "130.000 VND",
-          "image": "assets/images/slide3.jpg",
+          "title": "Thám tử lừng danh Conan: Ngôi sao nằm trên bầu trời đỏ",
+          "cinema": "Panthers Tô Ký",
+          "showtime": "23:45 | 13/08/2024",
+          "image": "assets/images/postermada.jpg",
         },
       ],
     };
@@ -202,31 +184,7 @@ class _TicketsTabContentState extends State<TicketsTabContent>
                             ),
                             SizedBox(height: 5),
                             Text(
-                              ticket['rating']!,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              ticket['genre']!,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
                               ticket['cinema']!,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              ticket['duration']!,
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey[600],
@@ -238,30 +196,6 @@ class _TicketsTabContentState extends State<TicketsTabContent>
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey[600],
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              "Chỗ ngồi: ${ticket['seat']}",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              "Trạng thái: ${ticket['status']}",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.green,
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              "Tổng thanh toán: ${ticket['price']}",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.red,
                               ),
                             ),
                           ],

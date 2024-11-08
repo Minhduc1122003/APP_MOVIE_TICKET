@@ -123,21 +123,6 @@ class _ShiftManagerPageState extends State<ShiftManagerPage> {
                             expandedItems: [
                               UtilityButton(
                                 color: mainColor,
-                                title: 'Thiết lập vị trí',
-                                icon: Icons.bar_chart,
-                                textStyle: TextStyle(fontSize: 16),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    SlideFromRightPageRoute(
-                                      page:
-                                          LocationListPage(), // Thay editPage() bằng trang cần chuyển tới
-                                    ),
-                                  );
-                                },
-                              ),
-                              UtilityButton(
-                                color: mainColor,
                                 title: 'Thiết lập ca làm',
                                 icon: Icons
                                     .account_box, // Đổi thành icon phù hợp với "Chi tiết người dùng"
@@ -148,6 +133,21 @@ class _ShiftManagerPageState extends State<ShiftManagerPage> {
                                     SlideFromRightPageRoute(
                                       page:
                                           ShiftListPage(), // Thay editPage() bằng trang cần chuyển tới
+                                    ),
+                                  );
+                                },
+                              ),
+                              UtilityButton(
+                                color: mainColor,
+                                title: 'Thiết lập vị trí',
+                                icon: Icons.bar_chart,
+                                textStyle: TextStyle(fontSize: 16),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    SlideFromRightPageRoute(
+                                      page:
+                                          LocationListPage(), // Thay editPage() bằng trang cần chuyển tới
                                     ),
                                   );
                                 },
