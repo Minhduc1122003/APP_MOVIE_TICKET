@@ -31,7 +31,7 @@ class ApiService {
 
     // wifi cf24/24
 
-    baseUrl = 'http://192.168.1.159:8081';
+    baseUrl = 'http://192.168.1.164:8081';
   }
 
   late Response response;
@@ -1001,7 +1001,7 @@ class ApiService {
   }
 
   Future<String> removeLocationShifts(int locationId) async {
-    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    await _initBaseUrl();
     print('Base URL: $baseUrl');
 
     try {
@@ -1055,13 +1055,10 @@ class ApiService {
       print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
-        // Username đã tồn tại trong database
-        return "Username already exists"; // Báo username đã tồn tại, không thể sử dụng
+        return "Username already exists";
       } else if (response.statusCode == 404) {
-        // Username chưa tồn tại trong database
-        return ""; // Trả về rỗng nếu username hợp lệ (chưa tồn tại)
+        return "";
       } else if (response.statusCode == 400) {
-        // Bad request
         final Map<String, dynamic> error = jsonDecode(response.body);
         print('Error message: ${error['message']}');
         return error['message'];
