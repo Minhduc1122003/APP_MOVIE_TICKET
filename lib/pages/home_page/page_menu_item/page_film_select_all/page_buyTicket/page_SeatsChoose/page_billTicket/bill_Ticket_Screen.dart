@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
+import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/models/Chair_modal.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_detail/detail_invoice.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:intl/intl.dart';
 
@@ -402,7 +404,17 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                       text: 'Thanh toán',
                       isBold: true,
                       onTap: () {
-                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          SlideFromRightPageRoute(
+                              page: DetailInvoice(
+                            movieID: widget.movieID,
+                            quantity: selectedCount,
+                            sumPrice: (_movieDetails!.price! * selectedCount),
+                            showTimeID: widget.showTimeID,
+                            seatCodes: seatIDList,
+                          )),
+                        );
                       },
                     ),
                   ),

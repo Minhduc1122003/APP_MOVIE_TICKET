@@ -488,9 +488,9 @@ class _ShowtimeEditManagerPageState extends State<ShowtimeEditManagerPage> {
 
   Future<void> _fetchShowtimes() async {
     try {
-      final fetchedShowtimes = await apiService.getShowtimeListForAdmin();
+      var fetchedShowtimes = await apiService.getShowtimeListForAdmin();
+      fetchedShowtimes = [];
 
-      // Kiểm tra nếu dữ liệu trả về là mảng rỗng
       if (fetchedShowtimes.isEmpty) {
         print('đã vào mảng null');
         _moviesFuture = apiService.getMoviesDangChieu();

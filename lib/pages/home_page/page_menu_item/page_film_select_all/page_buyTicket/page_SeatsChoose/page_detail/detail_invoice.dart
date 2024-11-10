@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
+import 'package:flutter_app_chat/models/user_model.dart';
+import 'package:flutter_app_chat/pages/home_page/home_page.dart';
+import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../../../../auth/api_service.dart';
 
@@ -31,7 +36,8 @@ class DetailInvoiceState extends State<DetailInvoice>
   void initState() {
     super.initState();
     _apiService = ApiService();
-    _insertBuyTicket();
+    // _insertBuyTicket();
+    _createMomoPayment();
   }
 
   Future<void> _insertBuyTicket() async {
@@ -71,6 +77,34 @@ class DetailInvoiceState extends State<DetailInvoice>
       print("Thành công: $response");
     } catch (e) {
       print("Lỗi khi gọi API: $e");
+    }
+  }
+
+  Future<void> _launchUrl(Uri url) async {
+    if (!await launchUrl(url)) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
+  Future<void> _createMomoPayment() async {
+    try {
+      String formattedDate = DateFormat('MMddHHmmss').format(DateTime.now());
+      print(
+        "${UserManager.instance.user?.userId}${widget.movieID}${widget.showTimeID}$formattedDate",
+      );
+
+      // Gọi hàm tạo thanh toán MoMo từ ApiService
+      final payUrl = await _apiService.createMomoPayment(
+        200000, // Truyền số tiền cần thanh toán
+
+        "${UserManager.instance.user?.userId}${widget.movieID}${widget.showTimeID}$formattedDate",
+        'Thanh toán vé xem phim ${UserManager.instance.user?.fullName}', // Thông tin đơn hàng
+      );
+
+      // Mở URL thanh toán MoMo trong trình duyệt
+      await _launchUrl(Uri.parse(payUrl));
+    } catch (e) {
+      print("Lỗi khi gọi API thanh toán MoMo: $e");
     }
   }
 
@@ -126,8 +160,8 @@ class DetailInvoiceState extends State<DetailInvoice>
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(
                                           10), // Làm tròn góc cho ảnh
-                                      child: Image.network(
-                                        '',
+                                      child: Image.asset(
+                                        'assets/images/baothuditimchu.jpg',
                                         fit: BoxFit.cover,
                                       ),
                                     ),
@@ -418,10 +452,15 @@ class DetailInvoiceState extends State<DetailInvoice>
                   ),
                   child: InkWell(
                     onTap: () {
-                      Navigator.pop(context);
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        SlideFromLeftPageRoute(page: HomePage()),
+                        (Route<dynamic> route) =>
+                            false, // Xóa tất cả các route trước đó
+                      );
                     },
                     child: const Text(
-                      'Đóng',
+                      'Về trang chủ',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
