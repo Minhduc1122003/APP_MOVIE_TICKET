@@ -17,8 +17,10 @@ class BillTicketScreen extends StatefulWidget {
   final String endTime;
   final List<int> seatCodes;
   final int quantity;
-  final double sumPrice;
-
+  final double ticketPrice;
+  final int quantityCombo;
+  final double totalComboPrice;
+  final List<int> titleCombo;
   const BillTicketScreen({
     Key? key,
     required this.movieID,
@@ -28,8 +30,11 @@ class BillTicketScreen extends StatefulWidget {
     required this.startTime,
     required this.endTime,
     required this.quantity,
-    required this.sumPrice,
+    required this.ticketPrice,
     required this.seatCodes,
+    required this.quantityCombo,
+    required this.totalComboPrice,
+    required this.titleCombo,
   }) : super(key: key);
 
   @override
@@ -51,6 +56,7 @@ class _BillTicketScreenState extends State<BillTicketScreen>
     _apiService = ApiService();
     _loadChairs();
     _loadMovieDetails();
+    print(widget.quantityCombo);
   }
 
   Future<void> _loadChairs() async {
@@ -164,28 +170,22 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                             child: Row(
                               children: [
                                 Image.asset(
-                                  'assets/images/henhovoisatnhan.jpg', // Replace with actual image URL
+                                  'assets/images/${_movieDetails!.posterUrl}', // Replace with actual image URL
                                   width: 100,
                                   height: 150,
                                   fit: BoxFit.cover,
                                 ),
-                                const SizedBox(width: 16),
-                                const Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Quái vật không gian',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      Text('2D Phụ đề'),
-                                      Text('PANTHERS Tô Ký - Rap 2'),
-                                      Text('17:30 - T5 12/09/2024'),
-                                    ],
+                                SizedBox(width: 16),
+                                Expanded(
+                                  child: AutoSizeText(
+                                    _movieDetails!.title,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    minFontSize: 14,
                                   ),
                                 ),
                               ],
@@ -206,15 +206,18 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                   children: [
                                     Text(
                                         '${widget.quantity} Vé xem phim - ${widget.seatCodes}'),
-                                    Text('${formatPrice(widget.sumPrice)} VND'),
+                                    Text(
+                                        '${formatPrice(widget.ticketPrice)} VND'),
                                   ],
                                 ),
-                                const Row(
+                                Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text('1x Combo solo - bắp nước'),
-                                    Text('94.000 VND'),
+                                    Text(
+                                        '${widget.quantityCombo} - ${widget.titleCombo}'),
+                                    Text(
+                                        '${formatPrice(widget.totalComboPrice)} VND'),
                                   ],
                                 ),
                                 Divider(),
@@ -223,7 +226,8 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text('Tổng cộng:'),
-                                    Text('${formatPrice(widget.sumPrice)} VND'),
+                                    Text(
+                                        '${formatPrice(widget.ticketPrice + widget.totalComboPrice)} VND'),
                                   ],
                                 ),
                               ],

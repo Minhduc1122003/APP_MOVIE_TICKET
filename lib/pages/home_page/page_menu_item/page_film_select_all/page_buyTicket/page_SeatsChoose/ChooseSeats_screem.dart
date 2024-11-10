@@ -471,7 +471,8 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                                 page: ComboTicketScreen(
                               movieID: widget.movieID,
                               quantity: selectedCount,
-                              sumPrice: (_movieDetails!.price! * selectedCount),
+                              ticketPrice:
+                                  (_movieDetails!.price! * selectedCount),
                               showTimeID: widget.showTimeID,
                               seatCodes: seatIDList,
                               showtimeDate: widget.showtimeDate,

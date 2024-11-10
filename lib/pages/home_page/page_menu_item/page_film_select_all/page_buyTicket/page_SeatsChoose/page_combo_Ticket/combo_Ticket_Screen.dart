@@ -20,7 +20,7 @@ class ComboTicketScreen extends StatefulWidget {
   final String endTime;
   final List<int> seatCodes;
   final int quantity;
-  final double sumPrice;
+  final double ticketPrice;
 
   const ComboTicketScreen({
     Key? key,
@@ -31,7 +31,7 @@ class ComboTicketScreen extends StatefulWidget {
     required this.startTime,
     required this.endTime,
     required this.quantity,
-    required this.sumPrice,
+    required this.ticketPrice,
     required this.seatCodes,
   }) : super(key: key);
 
@@ -50,6 +50,10 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
   List<int> seatIDList = [];
   List<Combo> comboItems = [];
   List<Combo> nonComboItems = [];
+  Map<int, int> itemCounts = {};
+  late final int quantityCombo = 0;
+  late final int totalComboPrice = 0;
+  List<int> titleCombo = [];
 
   @override
   void initState() {
@@ -58,6 +62,10 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
     _loadChairs();
     _loadMovieDetails();
     _loadComboItems(); // Add this
+  }
+
+  bool hasSelectedItems() {
+    return itemCounts.values.any((count) => count > 0);
   }
 
   Future<void> _loadComboItems() async {
@@ -156,7 +164,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                                 ),
                                 SizedBox(
                                   height:
-                                      500, // Set a fixed height for the TabBarView
+                                      430, // Set a fixed height for the TabBarView
                                   child: TabBarView(
                                     children: [
                                       // Combo tab content
@@ -174,6 +182,8 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                                                   formatPrice(combo.price) +
                                                       ' VND',
                                                   combo.image,
+                                                  itemId: combo
+                                                      .comboId, // Sử dụng comboId thay vì id
                                                 );
                                               },
                                             ),
@@ -193,6 +203,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                                                   formatPrice(item.price) +
                                                       ' VND',
                                                   item.image,
+                                                  itemId: item.comboId,
                                                 );
                                               },
                                             ),
@@ -293,8 +304,85 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                       ),
                     ],
                   ),
+                  // Row 1: Tiền vé
                   Padding(
                     padding: EdgeInsets.fromLTRB(10, 10, 10, 5),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Expanded(
+                          child: AutoSizeText(
+                            'Tiền vé',
+                            style: TextStyle(
+                              fontSize: 14,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(8.0, 0, 5, 0),
+                          child: AutoSizeText(
+                            // Chỉ lấy giá tiền vé
+                            formatPrice(widget.ticketPrice) + ' VND',
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 14,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+// Row 2: Tiền combo
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Expanded(
+                          child: AutoSizeText(
+                            'Tiền combo',
+                            style: TextStyle(
+                              fontSize: 14,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(8.0, 0, 5, 0),
+                          child: AutoSizeText(
+                            // Chỉ lấy tổng giá tiền combo
+                            formatPrice(
+                                    itemCounts.entries.fold(0.0, (sum, entry) {
+                                  final item = [...comboItems, ...nonComboItems]
+                                      .firstWhere(
+                                          (item) => item.comboId == entry.key);
+                                  return sum + (item.price * entry.value);
+                                })) +
+                                ' VND',
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 14,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(
+                    height: 0,
+                    thickness: 3,
+                    color: Color(0xfff0f0f0),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -313,7 +401,17 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                         Padding(
                           padding: EdgeInsets.fromLTRB(8.0, 0, 5, 0),
                           child: AutoSizeText(
-                            formatPrice(widget.sumPrice) + 'VND',
+                            // Tính tổng giá trị combo và cộng với widget.sumPrice
+                            formatPrice(widget.ticketPrice +
+                                    itemCounts.entries.fold(0.0, (sum, entry) {
+                                      final item = [
+                                        ...comboItems,
+                                        ...nonComboItems
+                                      ].firstWhere(
+                                          (item) => item.comboId == entry.key);
+                                      return sum + (item.price * entry.value);
+                                    })) +
+                                'VND',
                             style: const TextStyle(
                               color: Colors.red,
                               fontSize: 18,
@@ -327,32 +425,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                       ],
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(15),
-                    child: MyButton(
-                      fontsize: 20,
-                      paddingText: 10,
-                      text: 'Tiếp tục',
-                      isBold: true,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          SlideFromRightPageRoute(
-                              page: BillTicketScreen(
-                            movieID: widget.movieID,
-                            quantity: widget.quantity,
-                            sumPrice: widget.sumPrice,
-                            showTimeID: widget.showTimeID,
-                            seatCodes: widget.seatCodes,
-                            showtimeDate: widget.showtimeDate,
-                            startTime: widget.startTime,
-                            endTime: widget.endTime,
-                            cinemaRoomID: widget.cinemaRoomID,
-                          )),
-                        );
-                      },
-                    ),
-                  ),
+                  _buildBottomButtons(),
                 ],
               ),
       ),
@@ -361,142 +434,586 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
 
   @override
   bool get wantKeepAlive => true;
-}
 
-Widget _buildComboItem(
-    String title, String description, String price, String imagePath) {
-  return Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: Row(
-      children: [
-        Expanded(
-          flex: 1,
-          child: SizedBox(
-            width: 100,
-            height: 120,
-            child: Image.network(
-              imagePath,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Image.asset('assets/images/combo1.png');
-              },
-            ),
-          ),
-        ),
-        Expanded(
-          flex: 2,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildBottomButtons() {
+    return Padding(
+      padding: const EdgeInsets.all(15),
+      child: hasSelectedItems()
+          ? Row(
               children: [
-                Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-                Text(description),
-                Text(price, style: TextStyle(color: Colors.red)),
-                Row(
-                  children: [
-                    IconButton(icon: Icon(Icons.remove), onPressed: () {}),
-                    Text('0'),
-                    IconButton(icon: Icon(Icons.add), onPressed: () {}),
-                  ],
+                SizedBox(
+                  width: 100, // Khoảng 1/3 của nút tiếp tục
+                  child: MyButton(
+                    text: '', // Để trống vì chỉ muốn hiển thị icon
+                    fontsize: 20,
+                    paddingText: 10,
+                    showIcon: true, // Hiển thị icon
+                    isBold: true,
+                    onTap: () {
+                      _showCartItems();
+                    },
+                  ),
+                ),
+                SizedBox(width: 10), // Khoảng cách giữa 2 nút
+                // Nút tiếp tục
+                Expanded(
+                  child: MyButton(
+                    fontsize: 20,
+                    paddingText: 10,
+                    text: 'Tiếp tục',
+                    isBold: true,
+                    onTap: () {
+                      titleCombo.clear();
+
+                      // In ra danh sách combo đã chọn
+                      print('Danh sách combo đã chọn:');
+                      itemCounts.forEach((comboId, quantity) {
+                        final item = [...comboItems, ...nonComboItems]
+                            .firstWhere((item) => item.comboId == comboId);
+                        print('${item.comboId}');
+                        titleCombo.add(item.comboId);
+                      });
+
+                      // Tính tổng tiền combo
+                      double totalComboPrice =
+                          itemCounts.entries.fold(0.0, (sum, entry) {
+                        final item = [...comboItems, ...nonComboItems]
+                            .firstWhere((item) => item.comboId == entry.key);
+                        return sum + (item.price * entry.value);
+                      });
+                      print(
+                          'Số lượng combo : ${itemCounts.values.fold(0, (sum, count) => sum + count)}');
+
+                      print(
+                          'Tổng tiền combo: ${formatPrice(totalComboPrice)} VND');
+                      print(
+                          'Tổng tiền vé: ${formatPrice(widget.ticketPrice)} VND');
+                      print(
+                          'Tổng cộng: ${formatPrice(widget.ticketPrice + totalComboPrice)} VND');
+
+                      // Chuyển đến màn hình BillTicketScreen
+                      Navigator.push(
+                        context,
+                        SlideFromRightPageRoute(
+                          page: BillTicketScreen(
+                            movieID: widget.movieID,
+                            quantity: widget.quantity,
+                            ticketPrice: widget.ticketPrice,
+                            showTimeID: widget.showTimeID,
+                            seatCodes: widget.seatCodes,
+                            showtimeDate: widget.showtimeDate,
+                            startTime: widget.startTime,
+                            endTime: widget.endTime,
+                            cinemaRoomID: widget.cinemaRoomID,
+                            quantityCombo: itemCounts.values
+                                .fold(0, (sum, count) => sum + count),
+                            totalComboPrice: totalComboPrice,
+                            titleCombo: titleCombo,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ],
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
+            )
+          : MyButton(
+              fontsize: 20,
+              paddingText: 10,
+              text: 'Tiếp tục',
+              isBold: true,
+              onTap: () {
+                titleCombo.clear();
+                // In ra danh sách combo đã chọn
+                print('Danh sách combo đã chọn:');
+                itemCounts.forEach((comboId, quantity) {
+                  final item = [...comboItems, ...nonComboItems]
+                      .firstWhere((item) => item.comboId == comboId);
+                  print('${item.comboId}');
+                  titleCombo.add(item.comboId);
+                });
 
-Widget _buildSingleItem(
-    String title, String description, String price, String imagePath) {
-  return Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: Row(
-      children: [
-        Expanded(
-          flex: 1,
-          child: SizedBox(
-            width: 100,
-            height: 120,
-            child: Image.network(
-              imagePath,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Image.asset('assets/images/combo1.png');
+                // Tính tổng tiền combo
+                double totalComboPrice =
+                    itemCounts.entries.fold(0.0, (sum, entry) {
+                  final item = [...comboItems, ...nonComboItems]
+                      .firstWhere((item) => item.comboId == entry.key);
+                  return sum + (item.price * entry.value);
+                });
+                print('Tổng tiền combo: ${formatPrice(totalComboPrice)} VND');
+                print('Tổng tiền vé: ${formatPrice(widget.ticketPrice)} VND');
+                print(
+                    'Tổng cộng: ${formatPrice(widget.ticketPrice + totalComboPrice)} VND');
+
+                // Chuyển đến màn hình BillTicketScreen
+                Navigator.push(
+                  context,
+                  SlideFromRightPageRoute(
+                    page: BillTicketScreen(
+                      movieID: widget.movieID,
+                      quantity: widget.quantity,
+                      ticketPrice: widget.ticketPrice,
+                      showTimeID: widget.showTimeID,
+                      seatCodes: widget.seatCodes,
+                      showtimeDate: widget.showtimeDate,
+                      startTime: widget.startTime,
+                      endTime: widget.endTime,
+                      cinemaRoomID: widget.cinemaRoomID,
+                      quantityCombo: itemCounts.values
+                          .fold(0, (sum, count) => sum + count),
+                      totalComboPrice: totalComboPrice,
+                      titleCombo: titleCombo,
+                    ),
+                  ),
+                );
               },
             ),
-          ),
-        ),
-        Expanded(
-          flex: 2,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-                Text(description),
-                Text(price, style: TextStyle(color: Colors.red)),
-                Row(
-                  children: [
-                    IconButton(icon: Icon(Icons.remove), onPressed: () {}),
-                    Text('0'),
-                    IconButton(icon: Icon(Icons.add), onPressed: () {}),
-                  ],
-                ),
-              ],
+    );
+  }
+
+// Method để hiển thị modal bottom sheet chứa các items trong giỏ hàng
+  void _showCartItems() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            double totalPrice = itemCounts.entries.fold(0, (sum, entry) {
+              final item = [...comboItems, ...nonComboItems]
+                  .firstWhere((item) => item.comboId == entry.key);
+              return sum + (item.price * entry.value);
+            });
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.6,
+              padding: const EdgeInsets.all(15),
+              child: Column(
+                children: [
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Danh sách đã chọn',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: mainColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+
+                  // Existing content
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          if (itemCounts.keys.any((key) => comboItems
+                              .any((combo) => combo.comboId == key))) ...[
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    'Combo',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: mainColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            _buildItemsListWithState(true, setModalState),
+                          ],
+                          if (itemCounts.keys.any((key) => nonComboItems
+                              .any((item) => item.comboId == key))) ...[
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    'Sản phẩm bán lẻ',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: mainColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            _buildItemsListWithState(false, setModalState),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Footer
+                  Container(
+                    padding: EdgeInsets.only(top: 10),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(color: Colors.grey.shade300),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Tổng số lượng:',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 5),
+                                Text(
+                                  'Tổng tiền:',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '${itemCounts.values.fold(0, (sum, count) => sum + count)} sản phẩm',
+                                  style: TextStyle(
+                                    color: mainColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 5),
+                                Text(
+                                  '${formatPrice(totalPrice)} VND',
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildItemsListWithState(bool isCombo, StateSetter setModalState) {
+    final filteredItems = itemCounts.entries.where((entry) {
+      final item = [...comboItems, ...nonComboItems]
+          .firstWhere((item) => item.comboId == entry.key);
+      return isCombo == comboItems.any((combo) => combo.comboId == entry.key);
+    }).toList();
+
+    return Column(
+      children: filteredItems.map((entry) {
+        final item = [...comboItems, ...nonComboItems]
+            .firstWhere((item) => item.comboId == entry.key);
+
+        return Container(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: Colors.grey.shade200),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    Text(
+                      item.subtitle,
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      '${formatPrice(item.price)} VND',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.remove, color: mainColor, size: 20),
+                    onPressed: () {
+                      setState(() {
+                        itemCounts[entry.key] =
+                            (itemCounts[entry.key] ?? 0) - 1;
+                        if (itemCounts[entry.key]! <= 0) {
+                          itemCounts.remove(entry.key);
+                        }
+                      });
+                      setModalState(() {});
+                    },
+                    constraints: BoxConstraints(
+                      minWidth: 25,
+                      minHeight: 25,
+                    ),
+                    padding: EdgeInsets.zero,
+                  ),
+                  Container(
+                    constraints: BoxConstraints(minWidth: 32),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        left: BorderSide(color: mainColor),
+                        right: BorderSide(color: mainColor),
+                      ),
+                    ),
+                    child: Text(
+                      entry.value.toString(),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.add, color: mainColor, size: 20),
+                    onPressed: () {
+                      setState(() {
+                        itemCounts[entry.key] =
+                            (itemCounts[entry.key] ?? 0) + 1;
+                      });
+                      setModalState(() {});
+                    },
+                    constraints: BoxConstraints(
+                      minWidth: 25,
+                      minHeight: 25,
+                    ),
+                    padding: EdgeInsets.zero,
+                  ),
+                  // Nút xóa cho từng mục
+                  SizedBox(width: 10),
+                  IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red, size: 20),
+                    onPressed: () {
+                      setState(() {
+                        itemCounts.remove(entry.key);
+                      });
+                      setModalState(() {});
+                    },
+                    constraints: BoxConstraints(
+                      minWidth: 25,
+                      minHeight: 25,
+                    ),
+                    padding: EdgeInsets.zero,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
 
-Widget _buildInfoItem(String title, [String? value, String? value3]) {
-  return Column(
-    crossAxisAlignment:
-        CrossAxisAlignment.center, // Căn giữa theo chiều ngang cho Column
-    children: [
-      if (value != null &&
-          value.isNotEmpty) // Kiểm tra giá trị value có tồn tại và không rỗng
-        Text(
-          value,
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
-      if (value3 != null &&
-          value3.isNotEmpty) // Kiểm tra giá trị value3 có tồn tại và không rỗng
-        Text(
-          value3,
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
-    ],
-  );
-}
-
-Widget _buildLegendItem(Color color, String label, {bool isEmpty = false}) {
-  return Row(
-    children: [
-      Container(
-        width: 16,
-        height: 16,
-        decoration: BoxDecoration(
-          color: isEmpty ? Colors.white : color, // Set color based on isEmpty
-          border: isEmpty
-              ? Border.all(color: mainColor, width: 1) // Border for empty
-              : null, // No border if not empty
-          borderRadius:
-              BorderRadius.circular(isEmpty ? 4 : 2), // Radius based on isEmpty
-        ),
+  Widget _buildComboItem(
+      String title, String description, String price, String imagePath,
+      {required int itemId}) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 1,
+            child: SizedBox(
+              width: 100,
+              height: 120,
+              child: Image.network(
+                imagePath,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset('assets/images/combo1.png');
+                },
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(description),
+                  Text(price, style: TextStyle(color: Colors.red)),
+                  itemCounts[itemId] == null || itemCounts[itemId] == 0
+                      ? ElevatedButton(
+                          child: Text('Thêm'),
+                          onPressed: () {
+                            setState(() {
+                              itemCounts[itemId] = 1;
+                            });
+                          },
+                        )
+                      : Row(
+                          children: [
+                            IconButton(
+                                icon: Icon(Icons.remove),
+                                onPressed: () {
+                                  setState(() {
+                                    itemCounts[itemId] =
+                                        (itemCounts[itemId] ?? 0) - 1;
+                                    if (itemCounts[itemId]! <= 0) {
+                                      itemCounts.remove(itemId);
+                                    }
+                                  });
+                                }),
+                            Text('${itemCounts[itemId] ?? 0}'),
+                            IconButton(
+                                icon: Icon(Icons.add),
+                                onPressed: () {
+                                  setState(() {
+                                    itemCounts[itemId] =
+                                        (itemCounts[itemId] ?? 0) + 1;
+                                  });
+                                }),
+                          ],
+                        ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
-      const SizedBox(width: 4),
-      Text(label, style: const TextStyle(fontSize: 12)),
-    ],
-  );
+    );
+  }
+
+  Widget _buildSingleItem(
+      String title, String description, String price, String imagePath,
+      {required int itemId}) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 1,
+            child: SizedBox(
+              width: 100,
+              height: 120,
+              child: Image.network(
+                imagePath,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset('assets/images/combo1.png');
+                },
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(description),
+                  Text(price, style: TextStyle(color: Colors.red)),
+                  itemCounts[itemId] == null || itemCounts[itemId] == 0
+                      ? ElevatedButton(
+                          child: Text('Thêm'),
+                          onPressed: () {
+                            setState(() {
+                              itemCounts[itemId] = 1;
+                            });
+                          },
+                        )
+                      : Row(
+                          children: [
+                            IconButton(
+                                icon: Icon(Icons.remove),
+                                onPressed: () {
+                                  setState(() {
+                                    itemCounts[itemId] =
+                                        (itemCounts[itemId] ?? 0) - 1;
+                                    if (itemCounts[itemId]! <= 0) {
+                                      itemCounts.remove(itemId);
+                                    }
+                                  });
+                                }),
+                            Text('${itemCounts[itemId] ?? 0}'),
+                            IconButton(
+                                icon: Icon(Icons.add),
+                                onPressed: () {
+                                  setState(() {
+                                    itemCounts[itemId] =
+                                        (itemCounts[itemId] ?? 0) + 1;
+                                  });
+                                }),
+                          ],
+                        ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoItem(String title, [String? value, String? value3]) {
+    return Column(
+      crossAxisAlignment:
+          CrossAxisAlignment.center, // Căn giữa theo chiều ngang cho Column
+      children: [
+        if (value != null &&
+            value.isNotEmpty) // Kiểm tra giá trị value có tồn tại và không rỗng
+          Text(
+            value,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+        if (value3 != null &&
+            value3
+                .isNotEmpty) // Kiểm tra giá trị value3 có tồn tại và không rỗng
+          Text(
+            value3,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+      ],
+    );
+  }
 }
 
 class CurvedLinePainter extends CustomPainter {
