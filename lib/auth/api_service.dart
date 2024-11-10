@@ -14,11 +14,12 @@ import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/models/work_schedule_checkIn.dart';
 import 'package:flutter_app_chat/models/work_schedule_model.dart';
-import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_combo_Ticket/combo_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:path/path.dart' as path;
+
+import '../pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_combo_Ticket/combo_model.dart';
 
 class ApiService {
   late String baseUrl;
@@ -150,6 +151,33 @@ class ApiService {
       // String token = data['token']; // Giả sử token được trả về trong phần body
       UserManager.instance.setUser(model, 'token');
 
+      return model;
+    } else {
+      // Nếu server trả về lỗi
+      throw Exception('Failed to login');
+    }
+  }
+
+  Future<User> findByViewIDUser(int UserID) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    final response = await http.post(
+      Uri.parse('$baseUrl/findByViewIDUser'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, int>{
+        'UserID': UserID,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Giải mã response body
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      // Truy cập vào phần 'user' từ dữ liệu response
+      final Map<String, dynamic> userData = data['user'];
+
+      User model = User.fromJson(userData);
       return model;
     } else {
       // Nếu server trả về lỗi
@@ -1003,7 +1031,7 @@ class ApiService {
   }
 
   Future<String> removeLocationShifts(int locationId) async {
-    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    await _initBaseUrl();
     print('Base URL: $baseUrl');
 
     try {
@@ -1057,13 +1085,10 @@ class ApiService {
       print('Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
-        // Username đã tồn tại trong database
-        return "Username already exists"; // Báo username đã tồn tại, không thể sử dụng
+        return "Username already exists";
       } else if (response.statusCode == 404) {
-        // Username chưa tồn tại trong database
-        return ""; // Trả về rỗng nếu username hợp lệ (chưa tồn tại)
+        return "";
       } else if (response.statusCode == 400) {
-        // Bad request
         final Map<String, dynamic> error = jsonDecode(response.body);
         print('Error message: ${error['message']}');
         return error['message'];

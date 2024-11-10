@@ -31,8 +31,7 @@ class _TimekeepingScreenState extends State<TimekeepingScreen> {
   bool _isLocationPermissionGranted = false;
   LatLng? _currentPosition;
   GoogleMapController? _mapController;
-  final LatLng _targetPosition =
-      LatLng(10.830126, 106.618113); // Tọa độ nơi làm việc
+  final LatLng _targetPosition = LatLng(10.830126, 106.618113);
   final double banKinh = 50;
   String? _selectedImagePath; // Biến lưu đường dẫn ảnh đã chọn
   final TextEditingController shiftController = TextEditingController();
@@ -44,12 +43,15 @@ class _TimekeepingScreenState extends State<TimekeepingScreen> {
       Completer<GoogleMapController>();
   Set<Marker> allMarkers = {};
   GoogleMapController? mapController;
+  Set<Circle> _circles = {};
+
   @override
   void initState() {
     super.initState();
     _startTimer();
     _checkLocationPermission();
     _APIService = ApiService();
+    _initializeCurrentPosition();
   }
 
   @override
@@ -59,17 +61,50 @@ class _TimekeepingScreenState extends State<TimekeepingScreen> {
     super.dispose();
   }
 
+  Future<void> _initializeCurrentPosition() async {
+    // Kiểm tra và lấy tọa độ hiện tại
+    await _requestLocationPermission();
+    if (_isLocationPermissionGranted) {
+      Position pos = await Geolocator.getCurrentPosition();
+      setState(() {
+        position = LatLng(pos.latitude, pos.longitude);
+      });
+    }
+  }
+
   setSelectpalce(String placeId) async {
     final GoogleMapController controller = await _controller.future;
     controller.animateCamera(CameraUpdate.newLatLngZoom(position, 16.5));
     setState(() {});
   }
 
-  void _moveCameraToShift(String latitude, String longitude) async {
+  void _moveCameraToShift(
+      String latitude, String longitude, double radius) async {
     final GoogleMapController controller = await _controller.future;
     LatLng targetPosition =
         LatLng(double.parse(latitude), double.parse(longitude));
     controller.animateCamera(CameraUpdate.newLatLngZoom(targetPosition, 16.5));
+    setState(() {
+      allMarkers.clear(); // Xóa marker cũ nếu cần
+      allMarkers.add(
+        Marker(
+          markerId: MarkerId('selectedShift'),
+          position: LatLng(double.parse(latitude), double.parse(longitude)),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          infoWindow: InfoWindow(title: 'Ca làm đã chọn'),
+        ),
+      );
+      _circles.add(
+        Circle(
+          circleId: CircleId('shiftRadius'),
+          center: LatLng(double.parse(latitude), double.parse(longitude)),
+          radius: radius, //
+          fillColor: Colors.blue.withOpacity(0.2),
+          strokeColor: Colors.blue, // Màu viền vòng tròn
+          strokeWidth: 1, // Độ dày viền
+        ),
+      );
+    });
   }
 
   Future<void> setSelectLatitudeAndLongitude() async {
@@ -133,6 +168,10 @@ class _TimekeepingScreenState extends State<TimekeepingScreen> {
 
     double currentLatitude = _currentPosition!.latitude;
     double currentLongitude = _currentPosition!.longitude;
+    print('vi tri cua toi: $currentLatitude');
+    print('vi tri cua toi: $currentLongitude');
+    print('vi tri dich: ${_targetPosition.latitude}');
+    print('vi tri dich: ${_targetPosition.longitude}');
 
     double distance = Geolocator.distanceBetween(
       currentLatitude,
@@ -140,6 +179,7 @@ class _TimekeepingScreenState extends State<TimekeepingScreen> {
       _targetPosition.latitude,
       _targetPosition.longitude,
     );
+    print(distance);
 
     if (distance <= banKinh) {
       EasyLoading.showSuccess('Chấm công thành công lúc $_currentTime');
@@ -169,7 +209,7 @@ class _TimekeepingScreenState extends State<TimekeepingScreen> {
       case 4: // Thứ Năm
         dayOfWeek = 'T5';
         break;
-      case 5: // Thứ Sáu
+      case 5: // Thứ Sáu-
         dayOfWeek = 'T6';
         break;
       case 6: // Thứ Bảy
@@ -275,8 +315,8 @@ class _TimekeepingScreenState extends State<TimekeepingScreen> {
                                   controller.text = shift.shiftName;
                                   _selectedShift = shift;
                                 });
-                                _moveCameraToShift(
-                                    shift.latitude, shift.longitude);
+                                _moveCameraToShift(shift.latitude,
+                                    shift.longitude, shift.radius);
 
                                 Navigator.pop(context);
                               },
@@ -323,7 +363,7 @@ class _TimekeepingScreenState extends State<TimekeepingScreen> {
               preferredSize: Size.fromHeight(30.0),
               child: Container(
                 height: 40,
-                child: TabBar(
+                child: const TabBar(
                   dividerHeight: 0,
                   indicatorColor: Colors.blue,
                   indicator: BoxDecoration(
@@ -336,7 +376,7 @@ class _TimekeepingScreenState extends State<TimekeepingScreen> {
                   indicatorSize: TabBarIndicatorSize.tab,
                   labelColor: Colors.blue,
                   unselectedLabelColor: Colors.white,
-                  tabs: const [Tab(text: 'Chấm công'), Tab(text: 'Lịch sử')],
+                  tabs: [Tab(text: 'Chấm công'), Tab(text: 'Lịch sử')],
                 ),
               ),
             ),
@@ -398,17 +438,7 @@ class _TimekeepingScreenState extends State<TimekeepingScreen> {
                                             (GoogleMapController controller) {
                                           _controller.complete(controller);
                                         },
-                                        circles: {
-                                          Circle(
-                                            circleId:
-                                                const CircleId("myCircle"),
-                                            radius: 150,
-                                            center: position,
-                                            fillColor: const Color.fromRGBO(
-                                                100, 100, 100, 0.3),
-                                            strokeWidth: 0,
-                                          )
-                                        },
+                                        circles: _circles,
                                         markers: allMarkers,
                                       ),
                                     )

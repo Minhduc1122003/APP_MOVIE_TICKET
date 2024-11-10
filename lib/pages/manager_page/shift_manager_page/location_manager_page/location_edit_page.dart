@@ -301,7 +301,6 @@ class _LocationEditPageState extends State<LocationEditPage> {
     print(radiusController.text);
     print(idShift);
     int shiftId = idShift!;
-    // Tạo một đối tượng Shift từ dữ liệu đã nhập
 
     try {
       // Gọi API để gửi dữ liệu và lấy message
