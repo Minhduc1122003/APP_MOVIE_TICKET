@@ -18,6 +18,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:path/path.dart' as path;
+import 'package:url_launcher/url_launcher.dart';
 
 import '../pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_combo_Ticket/combo_model.dart';
 
@@ -946,6 +947,89 @@ class ApiService {
     } catch (e) {
       print('Error: $e');
       throw Exception('Failed to create shift');
+    }
+  }
+
+  Future<String> createMomoPayment(
+      double amount, String orderId, String orderInfo) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    print('Base URL: $baseUrl');
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/create-momo-payment'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'amount': amount,
+        'orderId': orderId,
+        'orderInfo': orderInfo,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      print('Response data: $data'); // In ra để kiểm tra phản hồi từ server
+      if (data['payUrl'] != null) {
+        return data['payUrl'];
+      } else {
+        throw Exception('Missing payUrl in the response');
+      }
+    } else {
+      throw Exception('Failed to create payment');
+    }
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri)) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
+  Future<void> initiateMomoPayment(
+      double amount, String orderId, String orderInfo) async {
+    try {
+      final payUrl = await createMomoPayment(amount, orderId, orderInfo);
+      print("Payment URL: $payUrl");
+
+      // Mở URL thanh toán trong trình duyệt hoặc ứng dụng MoMo
+      await _launchUrl(payUrl);
+
+      // Đợi callback từ MoMo hoặc kiểm tra trạng thái thanh toán
+      await _checkPaymentStatus(orderId);
+    } catch (e) {
+      print("Error during payment process: $e");
+    }
+  }
+
+  Future<void> _checkPaymentStatus(String orderId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/check-payment-status?orderId=$orderId'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final status = data['status'];
+
+        if (status == 'success') {
+          print("Payment successful!");
+          // Xử lý khi thanh toán thành công
+        } else if (status == 'invalid_signature') {
+          print("Invalid signature detected.");
+          // Hiển thị lỗi khi chữ ký không hợp lệ
+        } else {
+          print("Payment failed or pending.");
+        }
+      } else {
+        throw Exception('Failed to check payment status');
+      }
+    } catch (e) {
+      print("Error during payment status check: $e");
     }
   }
 
