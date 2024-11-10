@@ -4,7 +4,7 @@ import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/my_tickets_page.dart';
-import 'package:flutter_app_chat/pages/home_page/page_menu_item/history_page.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/favorite_page.dart';
 import 'package:flutter_app_chat/pages/home_page/check_user_page.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'dart:async';
@@ -127,7 +127,7 @@ class _HomePage extends State<HomePage> {
                       scrollNotifier: _scrollNotifier,
                     ),
                     MyTicketsPage(),
-                    HistoryPage(),
+                    FavoritePage(),
                     CheckUserPage(),
                   ],
                 ),
@@ -161,7 +161,7 @@ class _HomePage extends State<HomePage> {
   Widget _buildBottomNavBar(double navBarHeight) {
     return CurvedNavigationBar(
       items: _navigatorItems,
-      height: navBarHeight, // Sử dụng chiều cao truyền vào
+      height: navBarHeight,
       backgroundColor: bgColor,
       animationCurve: Curves.easeInOut,
       buttonBackgroundColor: Colors.white,
@@ -170,6 +170,11 @@ class _HomePage extends State<HomePage> {
         setState(() {
           _page = index;
           bgColor = _getPageBackgroundColor(index);
+
+          // Kiểm tra nếu đang chuyển đến tab "Chọn phim"
+          if (index == 2) {
+            _fetchMovies(); // Reload lại dữ liệu phim
+          }
         });
       },
     );

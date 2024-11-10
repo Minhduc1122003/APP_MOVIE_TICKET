@@ -3,24 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
-import 'package:flutter_app_chat/components/my_movie_item.dart';
-import 'package:flutter_app_chat/components/my_textfield.dart';
-import 'package:flutter_app_chat/models/Movie_modal.dart';
-import 'package:flutter_app_chat/models/Shift_modal.dart';
-import 'package:flutter_app_chat/models/user_manager.dart';
-import 'package:flutter_app_chat/models/work_schedule_checkIn.dart';
-import 'package:flutter_app_chat/pages/manager_page/book_ticket_staff_page/GridView_Card_FilmSapchieu.dart';
-import 'package:flutter_app_chat/pages/manager_page/book_ticket_staff_page/film_sapchieu_staff.dart';
-import 'package:flutter_app_chat/pages/manager_page/checkin_checkout_manager/bloc/timekeeping_bloc.dart';
-import 'package:flutter_app_chat/pages/manager_page/checkin_checkout_manager/check_in_history_calendar.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 
 class ComboTicketStaffPage extends StatefulWidget {
   const ComboTicketStaffPage();

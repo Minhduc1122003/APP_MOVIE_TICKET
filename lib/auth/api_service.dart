@@ -1143,4 +1143,34 @@ class ApiService {
       throw Exception('Failed to update schedule');
     }
   }
+
+  Future<List<Map<String, dynamic>>> getFilmFavourire(int userID) async {
+    await _initBaseUrl();
+    try {
+      // Gửi yêu cầu GET đến API
+      final response = await http.get(
+        Uri.parse('$baseUrl/getFilmFavourire/$userID'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        // Parse JSON và lấy dữ liệu từ trường "data"
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        final List<dynamic> data = jsonResponse['data'];
+
+        // Chuyển đổi List<dynamic> thành List<Map<String, dynamic>>
+        return data.map((item) => Map<String, dynamic>.from(item)).toList();
+      } else {
+        throw Exception('Failed to get movies: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to get movies');
+    }
+  }
 }

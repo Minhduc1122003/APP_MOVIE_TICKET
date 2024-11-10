@@ -44,7 +44,7 @@ class _MyAppState extends State<MyApp> {
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           builder: EasyLoading.init(),
-          home: LoginPage(),
+          home: HomePage(),
           //home: BookTicketStaffPage(),
         ));
   }

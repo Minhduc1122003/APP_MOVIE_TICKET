@@ -114,10 +114,10 @@ class _BookTicketStaffPageState extends State<BookTicketStaffPage> {
             padding: const EdgeInsets.all(8),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              mainAxisSpacing: 10.0,
-              crossAxisSpacing: 10.0,
+              mainAxisSpacing: 5.0,
+              crossAxisSpacing: 5.0,
               childAspectRatio:
-                  0.50, // Thay đổi từ 0.65 thành 0.55 để có thêm chiều cao
+                  0.40, // Thay đổi từ 0.65 thành 0.55 để có thêm chiều cao
             ),
             itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
