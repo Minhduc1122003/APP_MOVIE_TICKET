@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
@@ -20,7 +22,7 @@ class BillTicketScreen extends StatefulWidget {
   final double ticketPrice;
   final int quantityCombo;
   final double totalComboPrice;
-  final List<int> titleCombo;
+  final List<String> titleCombo;
   const BillTicketScreen({
     Key? key,
     required this.movieID,
@@ -50,6 +52,9 @@ class _BillTicketScreenState extends State<BillTicketScreen>
   List<Map<String, dynamic>> selectedChairsInfo =
       []; // List to store selected chair info
   List<int> seatIDList = [];
+  late Timer _timer;
+  late int _remainingTime; // Thời gian còn lại tính bằng giây
+
   @override
   void initState() {
     super.initState();
@@ -57,6 +62,26 @@ class _BillTicketScreenState extends State<BillTicketScreen>
     _loadChairs();
     _loadMovieDetails();
     print(widget.quantityCombo);
+    _remainingTime = 15 * 60;
+    _startTimer();
+  }
+
+  String _formatRemainingTime() {
+    int minutes = _remainingTime ~/ 60;
+    int seconds = _remainingTime % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_remainingTime > 0) {
+        setState(() {
+          _remainingTime--;
+        });
+      } else {
+        _timer.cancel(); // Dừng khi thời gian còn lại bằng 0
+      }
+    });
   }
 
   Future<void> _loadChairs() async {
@@ -97,6 +122,12 @@ class _BillTicketScreenState extends State<BillTicketScreen>
   }
 
   @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     super.build(context);
     return SafeArea(
@@ -132,29 +163,26 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                           SizedBox(height: 4),
                           Container(
                             decoration: BoxDecoration(
-                              color:
-                                  mainColor, // Đặt màu nền theo mainColor của bạn
-                              borderRadius: BorderRadius.circular(8), // Bo góc
+                              color: mainColor,
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            padding: const EdgeInsets.all(
-                                2), // Thêm padding để tạo khoảng cách giữa border và nội dung
+                            padding: const EdgeInsets.all(2),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const Text(
                                   'Thời gian còn lại',
                                   style: TextStyle(
-                                    color: Colors
-                                        .white, // Đổi màu chữ thành màu trắng
+                                    color: Colors.white,
                                     fontSize: 16,
                                   ),
                                 ),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 4, vertical: 8),
-                                  child: const Text(
-                                    '8:23',
-                                    style: TextStyle(
+                                  child: Text(
+                                    _formatRemainingTime(), // Hiển thị thời gian đếm ngược
+                                    style: const TextStyle(
                                       color: Colors.purple,
                                       fontSize: 16,
                                     ),
@@ -168,29 +196,75 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                           Padding(
                             padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
                             child: Row(
+                              crossAxisAlignment: CrossAxisAlignment
+                                  .start, // Căn các phần tử từ đầu theo chiều dọc
                               children: [
+                                // Hình ảnh
                                 Image.asset(
-                                  'assets/images/${_movieDetails!.posterUrl}', // Replace with actual image URL
+                                  'assets/images/${_movieDetails!.posterUrl}',
                                   width: 100,
                                   height: 150,
                                   fit: BoxFit.cover,
                                 ),
                                 SizedBox(width: 16),
+                                // Phần thông tin
                                 Expanded(
-                                  child: AutoSizeText(
-                                    _movieDetails!.title,
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    minFontSize: 14,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment
+                                        .start, // Căn các phần tử từ đầu
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      AutoSizeText(
+                                        _movieDetails!.title,
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        minFontSize: 14,
+                                      ),
+                                      SizedBox(height: 8),
+                                      AutoSizeText(
+                                        "${widget.startTime} - ${widget.endTime}",
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.normal,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        minFontSize: 12,
+                                      ),
+                                      SizedBox(height: 8),
+                                      AutoSizeText(
+                                        _movieDetails!.cinemaName,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.normal,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        minFontSize: 12,
+                                      ),
+                                      SizedBox(height: 8),
+                                      AutoSizeText(
+                                        _movieDetails!.age,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.normal,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        minFontSize: 12,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
                           ),
+
                           const Divider(thickness: 1, color: Colors.grey),
                           // Transaction Information
                           Padding(
@@ -205,7 +279,7 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                        '${widget.quantity} Vé xem phim - ${widget.seatCodes}'),
+                                        '${widget.quantity} Vé - ${widget.seatCodes}'),
                                     Text(
                                         '${formatPrice(widget.ticketPrice)} VND'),
                                   ],
@@ -300,10 +374,6 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                               children: [
                                 Text('Phương thức thanh toán'),
                                 SizedBox(height: 8),
-                                ListTile(
-                                  leading: Icon(Icons.credit_card),
-                                  title: Text('ATM/ VISA/ MASTER/ JCB/ QRCODE'),
-                                ),
                                 ListTile(
                                   leading: Icon(Icons.qr_code),
                                   title: Text('VNPAY'),

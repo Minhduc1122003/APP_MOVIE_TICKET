@@ -53,7 +53,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
   Map<int, int> itemCounts = {};
   late final int quantityCombo = 0;
   late final int totalComboPrice = 0;
-  List<int> titleCombo = [];
+  List<String> titleCombo = [];
 
   @override
   void initState() {
@@ -470,8 +470,8 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                       itemCounts.forEach((comboId, quantity) {
                         final item = [...comboItems, ...nonComboItems]
                             .firstWhere((item) => item.comboId == comboId);
-                        print('${item.comboId}');
-                        titleCombo.add(item.comboId);
+                        print('${item.title}');
+                        titleCombo.add(item.title);
                       });
 
                       // Tính tổng tiền combo
@@ -529,8 +529,8 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                 itemCounts.forEach((comboId, quantity) {
                   final item = [...comboItems, ...nonComboItems]
                       .firstWhere((item) => item.comboId == comboId);
-                  print('${item.comboId}');
-                  titleCombo.add(item.comboId);
+                  print('${item.title}');
+                  titleCombo.add(item.title);
                 });
 
                 // Tính tổng tiền combo
