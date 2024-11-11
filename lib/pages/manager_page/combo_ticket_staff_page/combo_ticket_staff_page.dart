@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_combo_Ticket/combo_model.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 
 class ComboTicketStaffPage extends StatefulWidget {
@@ -14,8 +15,11 @@ class ComboTicketStaffPage extends StatefulWidget {
 
 class _ComboTicketStaffPageState extends State<ComboTicketStaffPage> {
   late ApiService _apiService;
-  Map<String, int> selectedCombos = {};
-  Map<String, int> selectedSingleItems = {};
+  List<Combo> comboItems = []; // Danh sách combo bắp nước
+  List<Combo> singleItems = []; // Danh sách combo bán lẻ
+  bool isLoading = true;
+  Map<int, int> selectedCombos = {};
+  Map<int, int> selectedSingleItems = {};
 
   int get totalItems => [
         ...selectedCombos.values,
@@ -26,34 +30,62 @@ class _ComboTicketStaffPageState extends State<ComboTicketStaffPage> {
   void initState() {
     super.initState();
     _apiService = ApiService();
+    _loadData();
   }
 
-  void updateItemQuantity(String itemName, bool isCombo, int change) {
+  Future<void> _loadData() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      // Gọi cả 2 API
+      final combos = await _apiService.getAllIsCombo();
+      final singles = await _apiService.getAllIsNotCombo();
+
+      setState(() {
+        comboItems = combos;
+        singleItems = singles;
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading data: $e');
+      setState(() {
+        isLoading = false;
+      });
+      // Hiển thị thông báo lỗi
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Không thể tải dữ liệu. Vui lòng thử lại sau.')),
+      );
+    }
+  }
+
+  void updateItemQuantity(int comboId, bool isCombo, int change) {
     setState(() {
       if (isCombo) {
-        selectedCombos[itemName] = (selectedCombos[itemName] ?? 0) + change;
-        if (selectedCombos[itemName] == 0) {
-          selectedCombos.remove(itemName);
+        selectedCombos[comboId] = (selectedCombos[comboId] ?? 0) + change;
+        if (selectedCombos[comboId] == 0) {
+          selectedCombos.remove(comboId);
         }
       } else {
-        selectedSingleItems[itemName] =
-            (selectedSingleItems[itemName] ?? 0) + change;
-        if (selectedSingleItems[itemName] == 0) {
-          selectedSingleItems.remove(itemName);
+        selectedSingleItems[comboId] =
+            (selectedSingleItems[comboId] ?? 0) + change;
+        if (selectedSingleItems[comboId] == 0) {
+          selectedSingleItems.remove(comboId);
         }
       }
     });
   }
 
-  Widget _buildQuantityControls(String itemName, bool isCombo) {
+  Widget _buildQuantityControls(int comboId, bool isCombo) {
     final quantity = isCombo
-        ? selectedCombos[itemName] ?? 0
-        : selectedSingleItems[itemName] ?? 0;
+        ? selectedCombos[comboId] ?? 0
+        : selectedSingleItems[comboId] ?? 0;
 
     return Container(
       child: quantity == 0
           ? ElevatedButton(
-              onPressed: () => updateItemQuantity(itemName, isCombo, 1),
+              onPressed: () => updateItemQuantity(comboId, isCombo, 1),
               style: ElevatedButton.styleFrom(
                 backgroundColor: mainColor,
                 shape: RoundedRectangleBorder(
@@ -78,7 +110,7 @@ class _ComboTicketStaffPageState extends State<ComboTicketStaffPage> {
                 children: [
                   IconButton(
                     icon: Icon(Icons.remove, color: mainColor, size: 20),
-                    onPressed: () => updateItemQuantity(itemName, isCombo, -1),
+                    onPressed: () => updateItemQuantity(comboId, isCombo, -1),
                   ),
                   Text(
                     quantity.toString(),
@@ -86,7 +118,7 @@ class _ComboTicketStaffPageState extends State<ComboTicketStaffPage> {
                   ),
                   IconButton(
                     icon: Icon(Icons.add, color: mainColor, size: 20),
-                    onPressed: () => updateItemQuantity(itemName, isCombo, 1),
+                    onPressed: () => updateItemQuantity(comboId, isCombo, 1),
                   ),
                 ],
               ),
@@ -94,7 +126,7 @@ class _ComboTicketStaffPageState extends State<ComboTicketStaffPage> {
     );
   }
 
-  Widget _buildComboItem(String title, String description, String price) {
+  Widget _buildComboItem(Combo combo) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
@@ -104,9 +136,12 @@ class _ComboTicketStaffPageState extends State<ComboTicketStaffPage> {
             child: SizedBox(
               width: 100,
               height: 120,
-              child: Image.asset(
-                'assets/images/combo1.png',
+              child: Image.network(
+                combo.image,
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset('assets/images/combo1.png');
+                },
               ),
             ),
           ),
@@ -117,10 +152,12 @@ class _ComboTicketStaffPageState extends State<ComboTicketStaffPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text(description),
-                  Text(price, style: TextStyle(color: Colors.red)),
-                  _buildQuantityControls(title, true),
+                  Text(combo.title,
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(combo.subtitle),
+                  Text('${combo.price.toStringAsFixed(0)} VND',
+                      style: TextStyle(color: Colors.red)),
+                  _buildQuantityControls(combo.comboId, true),
                 ],
               ),
             ),
@@ -130,14 +167,24 @@ class _ComboTicketStaffPageState extends State<ComboTicketStaffPage> {
     );
   }
 
-  Widget _buildSingleItem(String title, String description, String price) {
+  Widget _buildSingleItem(Combo item) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
         children: [
           Expanded(
             flex: 1,
-            child: Image.asset('assets/single_item_image.png'),
+            child: SizedBox(
+              width: 100,
+              height: 120,
+              child: Image.network(
+                item.image,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset('assets/images/combo1.png');
+                },
+              ),
+            ),
           ),
           Expanded(
             flex: 2,
@@ -146,10 +193,12 @@ class _ComboTicketStaffPageState extends State<ComboTicketStaffPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text(description),
-                  Text(price, style: TextStyle(color: Colors.red)),
-                  _buildQuantityControls(title, false),
+                  Text(item.title,
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(item.subtitle),
+                  Text('${item.price.toStringAsFixed(0)} VND',
+                      style: TextStyle(color: Colors.red)),
+                  _buildQuantityControls(item.comboId, false),
                 ],
               ),
             ),
@@ -210,47 +259,25 @@ class _ComboTicketStaffPageState extends State<ComboTicketStaffPage> {
             Expanded(
               child: TabBarView(
                 children: [
-                  // Combo tab content
-                  ListView(
-                    children: [
-                      _buildComboItem(
-                        'COMBO SOLO',
-                        '1 bắp ngọt 60oz + 1 coke 32oz',
-                        '94,000 VND',
-                      ),
-                      _buildComboItem(
-                        'COMBO COUPLE',
-                        '1 bắp ngọt 60oz + 2 coke 32oz',
-                        '115,000 VND',
-                      ),
-                      _buildComboItem(
-                        'COMBO SOLO',
-                        '1 bắp ngọt 60oz + 1 coke 32oz',
-                        '94,000 VND',
-                      ),
-                      _buildComboItem(
-                        'COMBO COUPLE',
-                        '1 bắp ngọt 60oz + 2 coke 32oz',
-                        '115,000 VND',
-                      ),
-                    ],
-                  ),
+                  // Combo bắp nước tab
+                  isLoading
+                      ? Center(child: CircularProgressIndicator())
+                      : ListView.builder(
+                          itemCount: comboItems.length,
+                          itemBuilder: (context, index) {
+                            return _buildComboItem(comboItems[index]);
+                          },
+                        ),
 
-                  // Bán lẻ tab content
-                  ListView(
-                    children: [
-                      _buildSingleItem(
-                        'BẮP NGỌT',
-                        '1 bắp ngọt 60oz',
-                        '49,000 VND',
-                      ),
-                      _buildSingleItem(
-                        'COCA 32OZ',
-                        '1 coke Coca 32oz',
-                        '39,000 VND',
-                      ),
-                    ],
-                  ),
+                  // Combo bán lẻ tab
+                  isLoading
+                      ? Center(child: CircularProgressIndicator())
+                      : ListView.builder(
+                          itemCount: singleItems.length,
+                          itemBuilder: (context, index) {
+                            return _buildSingleItem(singleItems[index]);
+                          },
+                        ),
                 ],
               ),
             ),
@@ -399,7 +426,12 @@ class _ComboTicketStaffPageState extends State<ComboTicketStaffPage> {
     );
   }
 
-  Widget _buildSelectedItem(String name, int quantity, bool isCombo) {
+  Widget _buildSelectedItem(int comboId, int quantity, bool isCombo) {
+    // Tìm combo/item tương ứng từ danh sách để lấy thông tin
+    final item = isCombo
+        ? comboItems.firstWhere((c) => c.comboId == comboId)
+        : singleItems.firstWhere((s) => s.comboId == comboId);
+
     return Container(
       padding: EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
@@ -415,7 +447,7 @@ class _ComboTicketStaffPageState extends State<ComboTicketStaffPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  name,
+                  item.title,
                   style: TextStyle(fontWeight: FontWeight.w500),
                 ),
                 Text(
@@ -436,17 +468,15 @@ class _ComboTicketStaffPageState extends State<ComboTicketStaffPage> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Nút giảm
                 IconButton(
                   icon: Icon(Icons.remove, color: mainColor, size: 20),
-                  onPressed: () => updateItemQuantity(name, isCombo, -1),
+                  onPressed: () => updateItemQuantity(comboId, isCombo, -1),
                   constraints: BoxConstraints(
                     minWidth: 25,
                     minHeight: 25,
                   ),
                   padding: EdgeInsets.zero,
                 ),
-                // Hiển thị số lượng
                 Container(
                   constraints: BoxConstraints(minWidth: 32),
                   alignment: Alignment.center,
@@ -464,10 +494,9 @@ class _ComboTicketStaffPageState extends State<ComboTicketStaffPage> {
                     ),
                   ),
                 ),
-                // Nút tăng
                 IconButton(
                   icon: Icon(Icons.add, color: mainColor, size: 20),
-                  onPressed: () => updateItemQuantity(name, isCombo, 1),
+                  onPressed: () => updateItemQuantity(comboId, isCombo, 1),
                   constraints: BoxConstraints(
                     minWidth: 25,
                     minHeight: 25,

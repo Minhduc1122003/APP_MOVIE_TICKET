@@ -4,6 +4,7 @@ import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/auth/content_film_infomation.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
+import 'package:flutter_app_chat/models/actor_model.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/bloc/film_info_Bloc.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/buyTicket_page.dart';
@@ -88,8 +89,7 @@ class _FilmInformationState extends State<FilmInformation>
                               MovieInfo(),
                               RatingSection(),
                               PlotSummary(),
-                              CastAndCrew(),
-                              BuyTicketButton(),
+                              CastAndCrew(movieId: widget.movieId),
                             ],
                           ),
                         ),
@@ -636,6 +636,11 @@ class PlotSummary extends StatelessWidget {
 }
 
 class CastAndCrew extends StatelessWidget {
+  final ApiService _apiService = ApiService();
+  final int movieId; // Thêm tham số movieId
+
+  CastAndCrew({required this.movieId}); // Constructor với movieId
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -646,17 +651,45 @@ class CastAndCrew extends StatelessWidget {
           Text('Đạo diễn & Diễn viên',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           SizedBox(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildActorItem('assets/images/postermada.jpg', 'Actor 1'),
-                SizedBox(width: 8),
-                _buildActorItem('assets/images/postermada.jpg', 'Actor 2'),
-                SizedBox(width: 8),
-                _buildActorItem('assets/images/postermada.jpg', 'Actor 3'),
-              ],
-            ),
+          FutureBuilder<List<Actor>>(
+            future: _apiService.getActor(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+
+              if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              }
+
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Text('Không có dữ liệu diễn viên');
+              }
+
+              // Lọc danh sách actor theo movieId
+              final actorsInMovie = snapshot.data!
+                  .where((actor) => actor.movieId == movieId)
+                  .toList();
+
+              if (actorsInMovie.isEmpty) {
+                return Text('Không có dữ liệu diễn viên cho phim này');
+              }
+
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: actorsInMovie.map((actor) {
+                    return Padding(
+                      padding: EdgeInsets.only(right: 8),
+                      child: _buildActorItem(
+                        'assets/images/combo1.png', // Lấy ảnh từ assets
+                        actor.name,
+                      ),
+                    );
+                  }).toList(),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -668,11 +701,27 @@ class CastAndCrew extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child:
-              Image.asset(imagePath, width: 80, height: 80, fit: BoxFit.cover),
+          child: Image.asset(
+            imagePath,
+            width: 80,
+            height: 80,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Image.asset(
+                'assets/images/default_avatar.jpg',
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+              );
+            },
+          ),
         ),
         SizedBox(height: 4),
-        Text(name, style: TextStyle(fontSize: 12)),
+        Text(
+          name,
+          style: TextStyle(fontSize: 12),
+          textAlign: TextAlign.center,
+        ),
       ],
     );
   }

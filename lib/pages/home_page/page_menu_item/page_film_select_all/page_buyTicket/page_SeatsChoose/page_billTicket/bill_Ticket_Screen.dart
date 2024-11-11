@@ -290,10 +290,46 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                        '${widget.quantityCombo} - ${widget.titleCombo}'),
-                                    Text(
-                                        '${formatPrice(widget.totalComboPrice)} VND'),
+                                    Expanded(
+                                      flex:
+                                          2, // Điều chỉnh tỷ lệ không gian cho phần title
+                                      child: Row(
+                                        children: [
+                                          Text('${widget.quantityCombo} - '),
+                                          Expanded(
+                                            // child: FittedBox(
+                                            //   fit: BoxFit.scaleDown,
+                                            //   alignment: Alignment.centerLeft,
+                                            //
+                                            //   child: Text(
+                                            //     '${widget.titleCombo}',
+                                            //     maxLines: 1,
+                                            //     overflow: TextOverflow.ellipsis,
+                                            //
+                                            //
+                                            //   ),
+                                            // ),
+                                            child: AutoSizeText(
+                                              '${widget.titleCombo}',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              minFontSize: 11,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex:
+                                          1, // Điều chỉnh tỷ lệ không gian cho phần giá
+                                      child: Text(
+                                        '${formatPrice(widget.totalComboPrice)} VND',
+                                        textAlign: TextAlign.right,
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 Divider(),

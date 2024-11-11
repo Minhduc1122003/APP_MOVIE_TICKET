@@ -8,6 +8,7 @@ import 'package:flutter_app_chat/models/Location_modal.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/Shift_modal.dart';
 import 'package:flutter_app_chat/models/ShowTime_modal.dart';
+import 'package:flutter_app_chat/models/actor_model.dart';
 import 'package:flutter_app_chat/models/chat_item_model.dart';
 import 'package:flutter_app_chat/models/showTimeForAdmin_model.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
@@ -33,7 +34,7 @@ class ApiService {
 
     // wifi cf24/24
 
-    baseUrl = 'http://192.168.1.63:8081';
+    baseUrl = 'http://192.168.1.7:8081';
   }
 
   late Response response;
@@ -1255,6 +1256,33 @@ class ApiService {
     } catch (e) {
       print('Error: $e');
       throw Exception('Failed to get movies');
+    }
+  }
+
+  Future<List<Actor>> getActor() async {
+    await _initBaseUrl();
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/getActor'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        if (responseData['success'] == true) {
+          final List<dynamic> actorList = responseData['data'];
+          return actorList.map((item) => Actor.fromJson(item)).toList();
+        } else {
+          throw Exception('API returned error: ${responseData['message']}');
+        }
+      } else {
+        throw Exception('Failed to get actors: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to get actors');
     }
   }
 }
