@@ -1,26 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
-import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/pages/home_page/home_page.dart';
-import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/page_SeatsChoose/page_detail/detail_invoice2.dart';
-import 'package:flutter_app_chat/themes/colorsTheme.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../../../../auth/api_service.dart';
 
-class DetailInvoice extends StatefulWidget {
+class DetailInvoice2 extends StatefulWidget {
   final int movieID;
   final int showTimeID;
   final List<int> seatCodes;
   final int quantity;
   final double sumPrice;
 
-  const DetailInvoice({
+  const DetailInvoice2({
     Key? key,
     required this.movieID,
     required this.quantity,
@@ -30,21 +25,18 @@ class DetailInvoice extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  DetailInvoiceState createState() => DetailInvoiceState();
+  DetailInvoice2State createState() => DetailInvoice2State();
 }
 
-class DetailInvoiceState extends State<DetailInvoice>
-    with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
+class DetailInvoice2State extends State<DetailInvoice2>
+    with AutomaticKeepAliveClientMixin {
   late ApiService _apiService;
-  late final String idTicket;
-  String? _payUrl;
+
   @override
   void initState() {
     super.initState();
     _apiService = ApiService();
     // _insertBuyTicket();
-    _createMomoPayment();
-    WidgetsBinding.instance.addObserver(this); // Thêm observer
   }
 
   Future<void> _insertBuyTicket() async {
@@ -96,87 +88,23 @@ class DetailInvoiceState extends State<DetailInvoice>
   Future<void> _createMomoPayment() async {
     try {
       String formattedDate = DateFormat('MMddHHmmss').format(DateTime.now());
-      idTicket =
-          '${UserManager.instance.user?.userId}${widget.movieID}${widget.showTimeID}$formattedDate';
+      print(
+        "${UserManager.instance.user?.userId}${widget.movieID}${widget.showTimeID}$formattedDate",
+      );
 
-      // Gọi API để tạo URL thanh toán
+      // Gọi hàm tạo thanh toán MoMo từ ApiService
       final payUrl = await _apiService.createMomoPayment(
-        123456,
-        idTicket,
+        widget.sumPrice, // Truyền số tiền cần thanh toán
+
+        "${UserManager.instance.user?.userId}${widget.movieID}${widget.showTimeID}$formattedDate",
         'Thanh toán vé xem phim ${UserManager.instance.user?.fullName}', // Thông tin đơn hàng
       );
 
-      // Lưu URL thanh toán vào biến và cập nhật giao diện
-      setState(() {
-        _payUrl = payUrl;
-      });
+      // Mở URL thanh toán MoMo trong trình duyệt
       await _launchUrl(Uri.parse(payUrl));
     } catch (e) {
       print("Lỗi khi gọi API thanh toán MoMo: $e");
     }
-  }
-
-  Future<void> _checkStatus() async {
-    try {
-      EasyLoading.show();
-      print(idTicket);
-      final statusMessage = await _apiService.checkTransactionStatus(idTicket);
-      print(statusMessage);
-
-      if (statusMessage ==
-          "Transaction is initiated, waiting for user confirmation.") {
-        EasyLoading.dismiss();
-
-        EasyLoading.showInfo('Đang đợi thanh toán...',
-            duration: const Duration(seconds: 2));
-      } else if (statusMessage == "Successful.") {
-        EasyLoading.dismiss();
-
-        EasyLoading.showSuccess('Thanh toán thành công!',
-            duration: const Duration(seconds: 2));
-        Navigator.push(
-          context,
-          SlideFromRightPageRoute(
-              page: DetailInvoice2(
-            movieID: widget.movieID,
-            quantity: widget.quantity,
-            sumPrice: widget.sumPrice,
-            showTimeID: widget.showTimeID,
-            seatCodes: widget.seatCodes,
-          )),
-        );
-      } else {
-        EasyLoading.dismiss();
-
-        EasyLoading.showError('Lỗi: $statusMessage',
-            duration: const Duration(seconds: 2));
-      }
-    } catch (e) {
-      print("Lỗi khi kiểm tra trạng thái giao dịch: $e");
-      EasyLoading.showError('Lỗi khi kiểm tra trạng thái giao dịch',
-          duration: const Duration(seconds: 3));
-    }
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance
-        .removeObserver(this); // Gỡ observer khi widget bị huỷ
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed) {
-      // Ứng dụng quay lại foreground
-      _checkPaymentStatus();
-    }
-  }
-
-  Future<void> _checkPaymentStatus() async {
-    print('Người dùng đã quay lại app');
-    _checkStatus();
   }
 
   @override
@@ -184,7 +112,7 @@ class DetailInvoiceState extends State<DetailInvoice>
     super.build(context);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: mainColor,
+        backgroundColor: const Color(0XFF6F3CD7),
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_outlined,
@@ -196,7 +124,7 @@ class DetailInvoiceState extends State<DetailInvoice>
           },
         ),
         title: const Text(
-          'Thanh toán',
+          'Hóa đơn vé',
           style: TextStyle(color: Colors.white, fontSize: 20),
         ),
         centerTitle: true,
@@ -223,32 +151,87 @@ class DetailInvoiceState extends State<DetailInvoice>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   SizedBox(
-                                    width: 20,
+                                    width: MediaQuery.of(context).size.width *
+                                        0.3, // Chiều rộng bằng 50% màn hình
+                                    // Chiều cao bằng 30% màn hình
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                          10), // Làm tròn góc cho ảnh
+                                      child: Image.asset(
+                                        'assets/images/baothuditimchu.jpg',
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
                                   ),
-                                  ColorFiltered(
-                                    colorFilter: ColorFilter.mode(
-                                        Colors.black, BlendMode.srcIn),
-                                    child: Image.asset(
-                                      'assets/images/logoText.png',
-                                      width: 280,
-                                      height: 100,
-                                      fit: BoxFit.cover,
+                                  const SizedBox(width: 20),
+                                  // Sử dụng Container để điều chỉnh chiều cao
+                                  Container(
+                                    // Giới hạn chiều cao để căn chỉnh phần tử lên trên
+                                    constraints: const BoxConstraints(
+                                        maxHeight: 130), // Giới hạn chiều cao
+                                    alignment: Alignment
+                                        .topLeft, // Căn chỉnh ở trên cùng bên trái
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Đất rừng phương nam',
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        const Text('2D PHỤ ĐỀ',
+                                            style: TextStyle(fontSize: 16)),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 3,
+                                              horizontal:
+                                                  5), // Tạo khoảng trống xung quanh chữ
+                                          decoration: BoxDecoration(
+                                            color: Colors
+                                                .deepOrange, // Nền màu vàng
+                                            borderRadius: BorderRadius.circular(
+                                                10), // Bo góc tròn
+                                          ),
+                                          child: const Text(
+                                            'T13', // Nội dung chữ
+                                            style: TextStyle(
+                                              color:
+                                                  Colors.white, // Màu chữ trắng
+                                              fontSize:
+                                                  14, // Kích thước chữ lớn hơn
+                                              fontWeight: FontWeight
+                                                  .bold, // Tùy chọn: Chữ đậm hơn
+                                            ),
+                                          ),
+                                        )
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
+                              const SizedBox(height: 10),
                               const Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
                                 children: [
-                                  Text(
-                                    'Vui lòng quét mã để thực hiện thanh toán',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'PANTHERs Tô Ký',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(' - '),
+                                      Text(
+                                        'Rạp 3',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      )
+                                    ],
                                   ),
                                 ],
                               ),
@@ -297,19 +280,12 @@ class DetailInvoiceState extends State<DetailInvoice>
                                   width: 150,
                                   height: 150,
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: Colors.black12,
                                     borderRadius: BorderRadius.circular(
-                                        10), // Bo góc cho QR code
+                                        10), // QR code rounded corners
                                   ),
-                                  child: _payUrl == null
-                                      ? const Center(
-                                          child:
-                                              CircularProgressIndicator()) // Hiển thị loading nếu URL chưa sẵn sàng
-                                      : QrImageView(
-                                          data: _payUrl.toString(),
-                                          version: QrVersions.auto,
-                                          size: 200.0,
-                                        ),
+                                  child: const Center(
+                                      child: Icon(Icons.qr_code_scanner)),
                                 ),
                               ),
                               const SizedBox(height: 20),
@@ -417,14 +393,11 @@ class DetailInvoiceState extends State<DetailInvoice>
                                 endIndent: 10, // Khoảng cách từ phải
                               ),
                               const SizedBox(height: 10),
-                              Row(
+                              const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text('Mã vé: $idTicket'),
+                                  Text('Mã vé: 279942'),
                                 ],
-                              ),
-                              SizedBox(
-                                height: 10,
                               ),
                               const Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
@@ -456,68 +429,7 @@ class DetailInvoiceState extends State<DetailInvoice>
                                     ),
                                   ),
                                 ],
-                              ),
-                              SizedBox(
-                                height: 20,
-                              ),
-                              ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        Colors.deepOrangeAccent, // Màu của nút
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(
-                                          8), // Bo tròn góc
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 12, horizontal: 20),
-                                  ),
-                                  onPressed: () async {
-                                    await _launchUrl(Uri.parse(_payUrl!));
-                                  },
-                                  child: const Row(
-                                    mainAxisAlignment: MainAxisAlignment
-                                        .center, // Căn giữa theo chiều ngang
-                                    children: [
-                                      Expanded(
-                                        child: Align(
-                                          alignment: Alignment
-                                              .center, // Căn giữa văn bản
-                                          child: Text(
-                                            'Tiếp tục thanh toán',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      Icon(
-                                        Icons.arrow_forward_ios,
-                                        color: Colors.white,
-                                        size: 15,
-                                      ), // Mũi tên bên phải
-                                    ],
-                                  )),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              const Divider(
-                                color: Colors.grey, // Màu của đường kẻ
-                                thickness: 1, // Độ dày của đường kẻ
-                                indent: 10, // Khoảng cách từ trái
-                                endIndent: 10, // Khoảng cách từ phải
-                              ),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              MyButton(
-                                  fontsize: 18,
-                                  paddingText: 14,
-                                  text: 'Kiểm tra thanh toán',
-                                  onTap: () {
-                                    _checkStatus();
-                                  }),
+                              )
                             ],
                           ),
                         ),
@@ -527,6 +439,37 @@ class DetailInvoiceState extends State<DetailInvoice>
                 ),
               ),
               // Nút Đóng nằm cố định ở dưới cùng của màn hình hoặc cuộn
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 0, 10, 20),
+                child: Container(
+                  width: double.infinity,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4F75FF), // Nền màu cam
+                    borderRadius: BorderRadius.circular(5), // Làm tròn góc nút
+                  ),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        SlideFromLeftPageRoute(page: HomePage()),
+                        (Route<dynamic> route) =>
+                            false, // Xóa tất cả các route trước đó
+                      );
+                    },
+                    child: const Text(
+                      'Về trang chủ',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
             ],
           );
         },
