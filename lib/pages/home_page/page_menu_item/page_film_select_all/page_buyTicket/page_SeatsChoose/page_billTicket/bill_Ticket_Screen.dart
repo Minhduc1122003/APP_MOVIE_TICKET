@@ -25,6 +25,7 @@ class BillTicketScreen extends StatefulWidget {
   final int quantityCombo;
   final double totalComboPrice;
   final List<String> titleCombo;
+
   const BillTicketScreen({
     Key? key,
     required this.movieID,
@@ -56,6 +57,10 @@ class _BillTicketScreenState extends State<BillTicketScreen>
   List<int> seatIDList = [];
   late Timer _timer;
   late int _remainingTime; // Thời gian còn lại tính bằng giây
+  late int voucher = 30;
+  final ScrollController _scrollController = ScrollController();
+  bool _isScrolled = false;
+  String _selectedPaymentMethod = '';
 
   @override
   void initState() {
@@ -66,6 +71,19 @@ class _BillTicketScreenState extends State<BillTicketScreen>
     print(widget.quantityCombo);
     _remainingTime = 15 * 60;
     _startTimer();
+    _scrollController.addListener(_scrollListener);
+  }
+
+  void _scrollListener() {
+    if (_scrollController.offset > 10 && !_isScrolled) {
+      setState(() {
+        _isScrolled = true;
+      });
+    } else if (_scrollController.offset <= 10 && _isScrolled) {
+      setState(() {
+        _isScrolled = false;
+      });
+    }
   }
 
   String _formatRemainingTime() {
@@ -126,6 +144,8 @@ class _BillTicketScreenState extends State<BillTicketScreen>
   @override
   void dispose() {
     _timer.cancel();
+    _scrollController.removeListener(_scrollListener);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -156,302 +176,406 @@ class _BillTicketScreenState extends State<BillTicketScreen>
         backgroundColor: Colors.white,
         body: _movieDetails == null
             ? Center(child: CircularProgressIndicator())
-            : Column(
+            : Stack(
                 children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          SizedBox(height: 4),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: mainColor,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            padding: const EdgeInsets.all(2),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  'Thời gian còn lại',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 4, vertical: 8),
-                                  child: Text(
-                                    _formatRemainingTime(), // Hiển thị thời gian đếm ngược
-                                    style: const TextStyle(
-                                      color: Colors.purple,
-                                      fontSize: 16,
+                  Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          controller: _scrollController,
+                          child: Column(
+                            children: [
+                              SizedBox(
+                                  height: _isScrolled
+                                      ? 50
+                                      : 4), // Thêm space khi có fixed container
+                              Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: AnimatedOpacity(
+                                  duration: Duration(milliseconds: 300),
+                                  opacity: _isScrolled ? 0 : 1,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: mainColor,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    padding: const EdgeInsets.all(2),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Text(
+                                          'Thời gian còn lại: ',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 4, vertical: 8),
+                                          child: Text(
+                                            _formatRemainingTime(),
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 18,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
+                              ),
 
-                          SizedBox(height: 16),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment
-                                  .start, // Căn các phần tử từ đầu theo chiều dọc
-                              children: [
-                                // Hình ảnh
-                                Image.asset(
-                                  'assets/images/${_movieDetails!.posterUrl}',
-                                  width: 100,
-                                  height: 150,
-                                  fit: BoxFit.cover,
-                                ),
-                                SizedBox(width: 16),
-                                // Phần thông tin
-                                Expanded(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment
-                                        .start, // Căn các phần tử từ đầu
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      AutoSizeText(
-                                        _movieDetails!.title,
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        minFontSize: 14,
-                                      ),
-                                      SizedBox(height: 8),
-                                      AutoSizeText(
-                                        "${widget.startTime} - ${widget.endTime}",
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.normal,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        minFontSize: 12,
-                                      ),
-                                      SizedBox(height: 8),
-                                      AutoSizeText(
-                                        _movieDetails!.cinemaName,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.normal,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        minFontSize: 12,
-                                      ),
-                                      SizedBox(height: 8),
-                                      AutoSizeText(
-                                        _movieDetails!.age,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.normal,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        minFontSize: 12,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const Divider(thickness: 1, color: Colors.grey),
-                          // Transaction Information
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Thông tin giao dịch'),
-                                SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                              SizedBox(height: 16),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment
+                                      .start, // Căn các phần tử từ đầu theo chiều dọc
                                   children: [
-                                    Text(
-                                        '${widget.quantity} Vé - ${widget.seatCodes}'),
-                                    Text(
-                                        '${formatPrice(widget.ticketPrice)} VND'),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
+                                    // Hình ảnh
+                                    Image.asset(
+                                      'assets/images/${_movieDetails!.posterUrl}',
+                                      width: 100,
+                                      height: 150,
+                                      fit: BoxFit.cover,
+                                    ),
+                                    SizedBox(width: 16),
+                                    // Phần thông tin
                                     Expanded(
-                                      flex:
-                                          2, // Điều chỉnh tỷ lệ không gian cho phần title
-                                      child: Row(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment
+                                            .start, // Căn các phần tử từ đầu
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Text('${widget.quantityCombo} - '),
-                                          Expanded(
-                                            // child: FittedBox(
-                                            //   fit: BoxFit.scaleDown,
-                                            //   alignment: Alignment.centerLeft,
-                                            //
-                                            //   child: Text(
-                                            //     '${widget.titleCombo}',
-                                            //     maxLines: 1,
-                                            //     overflow: TextOverflow.ellipsis,
-                                            //
-                                            //
-                                            //   ),
-                                            // ),
-                                            child: AutoSizeText(
-                                              '${widget.titleCombo}',
-                                              style: const TextStyle(
-                                                fontSize: 14,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              minFontSize: 11,
+                                          AutoSizeText(
+                                            _movieDetails!.title,
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
                                             ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            minFontSize: 14,
+                                          ),
+                                          SizedBox(height: 8),
+                                          AutoSizeText(
+                                            "${widget.startTime} - ${widget.endTime}",
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.normal,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            minFontSize: 12,
+                                          ),
+                                          SizedBox(height: 8),
+                                          AutoSizeText(
+                                            _movieDetails!.cinemaName,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.normal,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            minFontSize: 12,
+                                          ),
+                                          SizedBox(height: 8),
+                                          AutoSizeText(
+                                            _movieDetails!.age,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.normal,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            minFontSize: 12,
                                           ),
                                         ],
                                       ),
                                     ),
-                                    Expanded(
-                                      flex:
-                                          1, // Điều chỉnh tỷ lệ không gian cho phần giá
-                                      child: Text(
-                                        '${formatPrice(widget.totalComboPrice)} VND',
-                                        textAlign: TextAlign.right,
+                                  ],
+                                ),
+                              ),
+
+                              Divider(thickness: 1, color: Colors.grey),
+                              // Transaction Information
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Thông tin giao dịch'),
+                                    SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                            '${widget.quantity} Vé - ${widget.seatCodes}'),
+                                        Text(
+                                            '${formatPrice(widget.ticketPrice)} VND'),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          flex:
+                                              2, // Điều chỉnh tỷ lệ không gian cho phần title
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                  '${widget.quantityCombo} - '), // Số lượng combo = 0
+                                              Expanded(
+                                                child: AutoSizeText(
+                                                  '${widget.titleCombo.isEmpty ? 'Không có combo' : widget.titleCombo}', // Kiểm tra nếu không có combo
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  minFontSize: 11,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 1,
+                                          child: Text(
+                                            '${formatPrice(widget.totalComboPrice)} VND', // Giá combo = 0
+                                            textAlign: TextAlign.right,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Divider(),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('Tổng cộng:'),
+                                        Text(
+                                            '${formatPrice(widget.ticketPrice + widget.totalComboPrice)} VND'),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Divider(thickness: 1, color: Colors.grey),
+                              // Voucher Section
+                              Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(Icons.percent,
+                                            color: Colors.purple),
+                                        SizedBox(width: 8),
+                                        Text('PANTHERs Voucher'),
+                                      ],
+                                    ),
+                                    Text(
+                                      '${voucher}.000 VND', // Hiển thị giá trị voucher
+                                      style: TextStyle(color: Colors.blue),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Divider(thickness: 1, color: Colors.grey),
+                              // Total Payment Information
+                              Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('Tổng thanh toán:'),
+                                        Text(
+                                            '${formatPrice(widget.ticketPrice + widget.totalComboPrice)} VND'),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('Giảm giá voucher:'),
+                                        Text('${voucher}.000 VND'),
+                                      ],
+                                    ),
+                                    Divider(),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('Còn lại:',
+                                            style:
+                                                TextStyle(color: Colors.red)),
+                                        Text(
+                                            '${formatPrice((widget.ticketPrice + widget.totalComboPrice) - (voucher * 1000))} VND',
+                                            style:
+                                                TextStyle(color: Colors.red)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Divider(thickness: 1, color: Colors.grey),
+                              // Payment Methods
+                              Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Phương thức thanh toán'),
+                                    SizedBox(height: 8),
+                                    // Nút VNPAY
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        elevation: 1,
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        minimumSize: Size(double.infinity, 50),
+                                        backgroundColor: _selectedPaymentMethod ==
+                                                'VNPAY'
+                                            ? mainColor
+                                            : Colors
+                                                .white, // Thay đổi màu sắc dựa trên trạng thái
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _selectedPaymentMethod = 'VNPAY';
+                                        });
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.qr_code,
+                                              color: Colors.blue),
+                                          SizedBox(width: 16),
+                                          Text('VNPAY'),
+                                          Spacer(),
+                                          Icon(Icons.arrow_forward_ios,
+                                              size: 16),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    // Nút MOMO
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        elevation: 1,
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        minimumSize: Size(double.infinity, 50),
+                                        backgroundColor: _selectedPaymentMethod ==
+                                                'MOMO'
+                                            ? mainColor
+                                            : Colors
+                                                .white, // Thay đổi màu sắc dựa trên trạng thái
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _selectedPaymentMethod = 'MOMO';
+                                        });
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.mobile_friendly,
+                                              color: Colors.pink),
+                                          SizedBox(width: 16),
+                                          Text('MOMO'),
+                                          Spacer(),
+                                          Icon(Icons.arrow_forward_ios,
+                                              size: 16),
+                                        ],
                                       ),
                                     ),
                                   ],
                                 ),
-                                Divider(),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Tổng cộng:'),
-                                    Text(
-                                        '${formatPrice(widget.ticketPrice + widget.totalComboPrice)} VND'),
-                                  ],
-                                ),
-                              ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const Divider(
+                        height: 0,
+                        thickness: 6,
+                        color: Color(0xfff0f0f0),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(15),
+                        child: MyButton(
+                          fontsize: 20,
+                          paddingText: 10,
+                          text: 'Thanh toán',
+                          isBold: true,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              SlideFromRightPageRoute(
+                                  page: DetailInvoice(
+                                movieID: widget.movieID,
+                                quantity: selectedCount,
+                                sumPrice:
+                                    (_movieDetails!.price! * selectedCount),
+                                showTimeID: widget.showTimeID,
+                                seatCodes: seatIDList,
+                              )),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  AnimatedPositioned(
+                    duration: Duration(milliseconds: 300),
+                    top: _isScrolled ? 10 : -100, // Thay đổi từ 0 thành 10
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(8),
+                          bottomRight: Radius.circular(8),
+                        ),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Thời gian còn lại:',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
                             ),
                           ),
-                          const Divider(thickness: 1, color: Colors.grey),
-                          // Voucher Section
-                          const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.percent, color: Colors.purple),
-                                    SizedBox(width: 8),
-                                    Text('PANTHERs Voucher'),
-                                  ],
-                                ),
-                                Text('-30K',
-                                    style: TextStyle(color: Colors.blue)),
-                              ],
-                            ),
-                          ),
-                          const Divider(thickness: 1, color: Colors.grey),
-                          // Total Payment Information
-                          const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Tổng thanh toán'),
-                                SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Tổng thanh toán:'),
-                                    Text('154.000 VND'),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Giảm giá voucher:'),
-                                    Text('30.000 VND'),
-                                  ],
-                                ),
-                                Divider(),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Còn lại:',
-                                        style: TextStyle(color: Colors.red)),
-                                    Text('124.000 VND',
-                                        style: TextStyle(color: Colors.red)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Divider(thickness: 1, color: Colors.grey),
-                          // Payment Methods
-                          const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Phương thức thanh toán'),
-                                SizedBox(height: 8),
-                                ListTile(
-                                  leading: Icon(Icons.qr_code),
-                                  title: Text('VNPAY'),
-                                ),
-                                ListTile(
-                                  leading: Icon(Icons.mobile_friendly),
-                                  title: Text('MOMO'),
-                                ),
-                              ],
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 8),
+                            child: Text(
+                              _formatRemainingTime(),
+                              style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                  const Divider(
-                    height: 0,
-                    thickness: 6,
-                    color: Color(0xfff0f0f0),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(15),
-                    child: MyButton(
-                      fontsize: 20,
-                      paddingText: 10,
-                      text: 'Thanh toán',
-                      isBold: true,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          SlideFromRightPageRoute(
-                              page: DetailInvoice(
-                            movieID: widget.movieID,
-                            quantity: selectedCount,
-                            sumPrice: (_movieDetails!.price! * selectedCount),
-                            showTimeID: widget.showTimeID,
-                            seatCodes: seatIDList,
-                          )),
-                        );
-                      },
                     ),
                   ),
                 ],

@@ -90,6 +90,7 @@ class _FilmInformationState extends State<FilmInformation>
                               RatingSection(),
                               PlotSummary(),
                               CastAndCrew(movieId: widget.movieId),
+                              SizedBox(height: 80),
                             ],
                           ),
                         ),

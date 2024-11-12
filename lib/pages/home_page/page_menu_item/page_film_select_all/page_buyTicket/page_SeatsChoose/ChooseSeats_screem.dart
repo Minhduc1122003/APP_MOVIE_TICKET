@@ -388,6 +388,36 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                       text: 'Đặt vé ngay',
                       isBold: true,
                       onTap: () {
+                        // Kiểm tra xem đã chọn ghế chưa
+                        if (selectedCount == 0 || seatIDList.isEmpty) {
+                          // Hiển thị thông báo nếu chưa chọn ghế
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text('Thông báo'),
+                                content: const Text(
+                                    'Vui lòng chọn ghế trước khi tiếp tục.'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text(
+                                      'Đồng ý',
+                                      style: TextStyle(
+                                        color: mainColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                          return; // Dừng thực thi hàm
+                        }
+
                         // Kiểm tra người dùng đã đăng nhập chưa
                         if (UserManager.instance.user?.userId == null) {
                           showDialog(
@@ -422,8 +452,7 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                                 actions: <Widget>[
                                   TextButton(
                                     onPressed: () {
-                                      Navigator.of(context)
-                                          .pop(); // Đóng hộp thoại
+                                      Navigator.of(context).pop();
                                     },
                                     child: const Text('Hủy',
                                         style: TextStyle(color: Colors.black)),
@@ -456,15 +485,7 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                             },
                           );
                         } else {
-                          print(widget.movieID);
-                          print(selectedCount);
-                          print((_movieDetails!.price! * selectedCount));
-                          print(widget.showTimeID);
-                          print(seatIDList);
-                          print(widget.showtimeDate);
-                          print(widget.startTime);
-                          print(widget.endTime);
-                          print(widget.cinemaRoomID);
+                          // Tiếp tục với logic hiện tại khi đã chọn ghế và đã đăng nhập
                           Navigator.push(
                             context,
                             SlideFromRightPageRoute(
@@ -481,31 +502,6 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                               cinemaRoomID: widget.cinemaRoomID,
                             )),
                           );
-
-                          // Navigator.push(
-                          //   context,
-                          //   SlideFromRightPageRoute(
-                          //       page: DetailInvoice(
-                          //     movieID: widget.movieID,
-                          //     quantity: selectedCount,
-                          //     sumPrice: (_movieDetails!.price! * selectedCount),
-                          //     showTimeID: widget.showTimeID,
-                          //     seatCodes: seatIDList,
-                          //   )),
-                          // );
-
-                          // Navigator.push(
-                          //   context,
-                          //   SlideFromRightPageRoute(
-                          //     page: BillTicketScreen(
-                          //         movieID: widget.movieID,
-                          //         quantity: selectedCount,
-                          //         sumPrice:
-                          //             (_movieDetails!.price! * selectedCount),
-                          //         showTimeID: widget.showTimeID,
-                          //         seatCodes: seatIDList),
-                          //   ),
-                          // );
                         }
                       },
                     ),

@@ -22,8 +22,10 @@ class _FavoritePageState extends State<FavoritePage> {
   void initState() {
     super.initState();
     _apiService = ApiService();
+    if (UserManager.instance.user != null) {
+      _fetchFavoriteFilms();
+    }
 
-    // Gọi hàm getFilmFavourire và đổ dữ liệu vào listFilmFavourire
     _fetchFavoriteFilms();
   }
 
@@ -36,7 +38,6 @@ class _FavoritePageState extends State<FavoritePage> {
       });
     } catch (e) {
       print('Error fetching favorite films: $e');
-      // Xử lý lỗi nếu cần, như hiển thị thông báo lỗi
     }
   }
 
@@ -73,71 +74,108 @@ class _FavoritePageState extends State<FavoritePage> {
               Positioned.fill(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                  child: listFilmFavourire.isEmpty
-                      ? Center(child: CircularProgressIndicator())
-                      : GridView.builder(
-                          padding: EdgeInsets.all(10),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3, // Thay đổi số cột thành 3
-                            crossAxisSpacing: 2,
-                            mainAxisSpacing: 2,
-                            childAspectRatio:
-                                0.55, // Điều chỉnh tỷ lệ khung hình của mỗi ô để chúng nhỏ lại
-                          ),
-                          itemCount: listFilmFavourire.length,
-                          itemBuilder: (context, index) {
-                            final film = listFilmFavourire[index];
-                            return Card(
-                              elevation: 3,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Expanded(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: Colors.black.withOpacity(
-                                              0.1), // Màu và độ trong suốt của border
-                                          width: 2, // Độ rộng của border
-                                        ),
-                                        borderRadius: BorderRadius.circular(
-                                            8), // Làm tròn góc của border
-                                      ),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                            8), // Làm tròn góc hình ảnh
-                                        child: Image.asset(
-                                          'assets/images/${film['PosterUrl']}',
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text(
-                                      film['Title'] ?? 'No Title',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
+                  child: _buildContent(),
                 ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildContent() {
+    // Kiểm tra trạng thái đăng nhập
+    if (UserManager.instance.user == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.favorite_border,
+              size: 70,
+              color: Colors.grey,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Bạn chưa đăng nhập',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Vui lòng đăng nhập để xem phim yêu thích',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Hiển thị loading khi đang tải dữ liệu
+    if (listFilmFavourire.isEmpty) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    // Hiển thị danh sách phim yêu thích
+    return GridView.builder(
+      padding: EdgeInsets.all(10),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 2,
+        mainAxisSpacing: 2,
+        childAspectRatio: 0.55,
+      ),
+      itemCount: listFilmFavourire.length,
+      itemBuilder: (context, index) {
+        final film = listFilmFavourire[index];
+        return Card(
+          elevation: 3,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.black.withOpacity(0.1),
+                      width: 2,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.asset(
+                      'assets/images/${film['PosterUrl']}',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  film['Title'] ?? 'No Title',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
