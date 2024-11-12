@@ -34,7 +34,7 @@ class ApiService {
 
     // wifi cf24/24
 
-    baseUrl = 'http://192.168.1.7:8081';
+    baseUrl = 'http://192.168.1.75:8081';
   }
 
   late Response response;
@@ -1283,6 +1283,34 @@ class ApiService {
     } catch (e) {
       print('Error: $e');
       throw Exception('Failed to get actors');
+    }
+  }
+
+  Future<String> checkTransactionStatus(String orderId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/check-transaction-status?orderId=$orderId'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+        // Kiểm tra và trả về thông báo từ phản hồi
+        if (responseData.containsKey('message')) {
+          return responseData['message'] as String;
+        } else {
+          throw Exception('Message key not found in response');
+        }
+      } else {
+        throw Exception(
+            'Failed to check transaction status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to check transaction status');
     }
   }
 }
