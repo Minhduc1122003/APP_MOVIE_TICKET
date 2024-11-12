@@ -39,46 +39,6 @@ class DetailInvoice2State extends State<DetailInvoice2>
     // _insertBuyTicket();
   }
 
-  Future<void> _insertBuyTicket() async {
-    try {
-      // Cộng các chuỗi từ userId, quantity, showTimeID
-      String combinedString = UserManager.instance.user!.userId.toString() +
-          widget.quantity.toString() +
-          widget.showTimeID.toString();
-
-      String firstSeatCode =
-          widget.seatCodes.isNotEmpty ? widget.seatCodes[0].toString() : '';
-
-      combinedString += firstSeatCode;
-
-      int finalResult;
-      try {
-        finalResult = int.parse(combinedString);
-        print("finalResult: $finalResult");
-      } catch (e) {
-        print("Error: $e");
-        finalResult = 0; // Hoặc một giá trị mặc định khác
-      }
-
-// Gọi hàm insertBuyTicket với finalResult
-      final response = await _apiService.insertBuyTicket(
-        finalResult, // Sử dụng finalResult đã chuyển đổi
-        '${UserManager.instance.user?.userId}',
-        widget.movieID,
-        widget.quantity,
-        widget.sumPrice.toDouble(),
-        widget.showTimeID,
-        widget.seatCodes,
-      );
-
-      // Xử lý phản hồi
-      // Có thể hiển thị thông báo hoặc thực hiện hành động nào đó với dữ liệu nhận được
-      print("Thành công: $response");
-    } catch (e) {
-      print("Lỗi khi gọi API: $e");
-    }
-  }
-
   Future<void> _launchUrl(Uri url) async {
     if (!await launchUrl(url)) {
       throw Exception('Could not launch $url');

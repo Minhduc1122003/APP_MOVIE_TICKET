@@ -45,7 +45,7 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
   late int selectedCount = 0; // This will track the number of selected seats
   List<Map<String, dynamic>> selectedChairsInfo =
       []; // List to store selected chair info
-  List<int> seatIDList = [];
+  List<Map<String, dynamic>> seatIDList = [];
   @override
   void initState() {
     super.initState();
@@ -169,8 +169,7 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                                             selectedChairsInfo.removeWhere(
                                                 (chair) =>
                                                     chair['id'] == chairId);
-                                            seatIDList.remove(
-                                                chairId); // Xóa ID khỏi seatIDList
+                                            seatIDList.remove(chairId);
                                           } else {
                                             // Kiểm tra nếu ghế đã được chọn trước đó
                                             if (selectedChairsInfo.any(
@@ -188,8 +187,11 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                                                 'id': chairId,
                                                 'code': chairCode,
                                               });
-                                              seatIDList.add(
-                                                  chairId); // Thêm ID vào seatIDList
+                                              seatIDList.add({
+                                                'id': chairId,
+                                                'code':
+                                                    chairCode, // Thêm code vào seatIDList
+                                              });
                                             }
                                           }
                                           // Ghi log thông tin ghế đã chọn

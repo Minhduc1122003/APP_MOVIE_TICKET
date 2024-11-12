@@ -18,7 +18,7 @@ class ComboTicketScreen extends StatefulWidget {
   final String showtimeDate;
   final String startTime;
   final String endTime;
-  final List<int> seatCodes;
+  final List<Map<String, dynamic>> seatCodes;
   final int quantity;
   final double ticketPrice;
 
@@ -53,7 +53,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
   Map<int, int> itemCounts = {};
   late final int quantityCombo = 0;
   late final int totalComboPrice = 0;
-  List<String> titleCombo = [];
+  final List<Map<String, dynamic>> infoCombo = [];
 
   @override
   void initState() {
@@ -463,15 +463,23 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                     text: 'Tiếp tục',
                     isBold: true,
                     onTap: () {
-                      titleCombo.clear();
-
-                      // In ra danh sách combo đã chọn
+                      infoCombo.clear();
+// In ra danh sách combo đã chọn
                       print('Danh sách combo đã chọn:');
                       itemCounts.forEach((comboId, quantity) {
+                        // Tìm item trong danh sách comboItems và nonComboItems
                         final item = [...comboItems, ...nonComboItems]
                             .firstWhere((item) => item.comboId == comboId);
-                        print('${item.title}');
-                        titleCombo.add(item.title);
+
+                        // In ra tên combo và số lượng
+                        print('${item.title} - Số lượng: $quantity');
+
+                        // Thêm thông tin combo vào infoCombo
+                        infoCombo.add({
+                          'comboId': comboId,
+                          'title': item.title,
+                          'quantity': quantity,
+                        });
                       });
 
                       // Tính tổng tiền combo
@@ -481,17 +489,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                             .firstWhere((item) => item.comboId == entry.key);
                         return sum + (item.price * entry.value);
                       });
-                      print(
-                          'Số lượng combo : ${itemCounts.values.fold(0, (sum, count) => sum + count)}');
 
-                      print(
-                          'Tổng tiền combo: ${formatPrice(totalComboPrice)} VND');
-                      print(
-                          'Tổng tiền vé: ${formatPrice(widget.ticketPrice)} VND');
-                      print(
-                          'Tổng cộng: ${formatPrice(widget.ticketPrice + totalComboPrice)} VND');
-
-                      // Chuyển đến màn hình BillTicketScreen
                       Navigator.push(
                         context,
                         SlideFromRightPageRoute(
@@ -508,7 +506,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                             quantityCombo: itemCounts.values
                                 .fold(0, (sum, count) => sum + count),
                             totalComboPrice: totalComboPrice,
-                            titleCombo: titleCombo,
+                            titleCombo: infoCombo,
                           ),
                         ),
                       );
@@ -523,14 +521,23 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
               text: 'Tiếp tục',
               isBold: true,
               onTap: () {
-                titleCombo.clear();
-                // In ra danh sách combo đã chọn
+                infoCombo.clear();
+// In ra danh sách combo đã chọn
                 print('Danh sách combo đã chọn:');
                 itemCounts.forEach((comboId, quantity) {
+                  // Tìm item trong danh sách comboItems và nonComboItems
                   final item = [...comboItems, ...nonComboItems]
                       .firstWhere((item) => item.comboId == comboId);
-                  print('${item.title}');
-                  titleCombo.add(item.title);
+
+                  // In ra tên combo và số lượng
+                  print('${item.title} - Số lượng: $quantity');
+
+                  // Thêm thông tin combo vào infoCombo
+                  infoCombo.add({
+                    'comboId': comboId,
+                    'title': item.title,
+                    'quantity': quantity,
+                  });
                 });
 
                 // Tính tổng tiền combo
@@ -562,7 +569,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                       quantityCombo: itemCounts.values
                           .fold(0, (sum, count) => sum + count),
                       totalComboPrice: totalComboPrice,
-                      titleCombo: titleCombo,
+                      titleCombo: infoCombo,
                     ),
                   ),
                 );

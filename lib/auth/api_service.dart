@@ -34,7 +34,6 @@ class ApiService {
 
     // wifi cf24/24
 
-    baseUrl = 'http://192.168.1.41:8081';
     baseUrl = 'http://192.168.1.75:8081';
   }
 
@@ -510,7 +509,7 @@ class ApiService {
       );
 
       print('Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
+      print('Response Body From getChair: ${response.body}');
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
@@ -527,27 +526,20 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> insertBuyTicket(
-      int buyTicketId,
-      String userId,
-      int movieId,
-      int quantity,
-      double totalPrice,
-      int showtimeId,
-      List<int> seatIDs) async {
+  Future<Map<String, dynamic>> insertBuyTicket(String buyTicketId, int userId,
+      int movieId, int showtimeId, String seatIDs, String comboIDs) async {
     await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
 
     final response = await http.post(
       Uri.parse('$baseUrl/insertBuyTicket'), // Đổi URL thành endpoint của bạn
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        'buyTicketId': buyTicketId,
-        'userId': userId,
-        'movieId': movieId,
-        'quantity': quantity,
-        'totalPrice': totalPrice, // Lỗi trước đây đã được sửa
-        'showtimeId': showtimeId,
-        'seatIDs': seatIDs
+        'BuyTicketId': buyTicketId,
+        'UserId': userId,
+        'MovieID': movieId,
+        'ShowtimeID': showtimeId,
+        'SeatIDs': seatIDs, // Lỗi trước đây đã được sửa
+        'ComboIDs': comboIDs,
       }),
     );
 

@@ -19,6 +19,8 @@ class DetailInvoice extends StatefulWidget {
   final List<int> seatCodes;
   final int quantity;
   final double sumPrice;
+  final String idTicket;
+  final double tongTienConLai;
 
   const DetailInvoice({
     Key? key,
@@ -27,6 +29,8 @@ class DetailInvoice extends StatefulWidget {
     required this.sumPrice,
     required this.showTimeID,
     required this.seatCodes,
+    required this.idTicket,
+    required this.tongTienConLai,
   }) : super(key: key);
 
   @override
@@ -36,7 +40,6 @@ class DetailInvoice extends StatefulWidget {
 class DetailInvoiceState extends State<DetailInvoice>
     with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
   late ApiService _apiService;
-  late final String idTicket;
   String? _payUrl;
   @override
   void initState() {
@@ -45,46 +48,6 @@ class DetailInvoiceState extends State<DetailInvoice>
     // _insertBuyTicket();
     _createMomoPayment();
     WidgetsBinding.instance.addObserver(this); // Thêm observer
-  }
-
-  Future<void> _insertBuyTicket() async {
-    try {
-      // Cộng các chuỗi từ userId, quantity, showTimeID
-      String combinedString = UserManager.instance.user!.userId.toString() +
-          widget.quantity.toString() +
-          widget.showTimeID.toString();
-
-      String firstSeatCode =
-          widget.seatCodes.isNotEmpty ? widget.seatCodes[0].toString() : '';
-
-      combinedString += firstSeatCode;
-
-      int finalResult;
-      try {
-        finalResult = int.parse(combinedString);
-        print("finalResult: $finalResult");
-      } catch (e) {
-        print("Error: $e");
-        finalResult = 0; // Hoặc một giá trị mặc định khác
-      }
-
-// Gọi hàm insertBuyTicket với finalResult
-      final response = await _apiService.insertBuyTicket(
-        finalResult, // Sử dụng finalResult đã chuyển đổi
-        '${UserManager.instance.user?.userId}',
-        widget.movieID,
-        widget.quantity,
-        widget.sumPrice.toDouble(),
-        widget.showTimeID,
-        widget.seatCodes,
-      );
-
-      // Xử lý phản hồi
-      // Có thể hiển thị thông báo hoặc thực hiện hành động nào đó với dữ liệu nhận được
-      print("Thành công: $response");
-    } catch (e) {
-      print("Lỗi khi gọi API: $e");
-    }
   }
 
   Future<void> _launchUrl(Uri url) async {
@@ -96,13 +59,11 @@ class DetailInvoiceState extends State<DetailInvoice>
   Future<void> _createMomoPayment() async {
     try {
       String formattedDate = DateFormat('MMddHHmmss').format(DateTime.now());
-      idTicket =
-          '${UserManager.instance.user?.userId}${widget.movieID}${widget.showTimeID}$formattedDate';
 
       // Gọi API để tạo URL thanh toán
       final payUrl = await _apiService.createMomoPayment(
-        123456,
-        idTicket,
+        widget.tongTienConLai,
+        widget.idTicket,
         'Thanh toán vé xem phim ${UserManager.instance.user?.fullName}', // Thông tin đơn hàng
       );
 
@@ -119,8 +80,9 @@ class DetailInvoiceState extends State<DetailInvoice>
   Future<void> _checkStatus() async {
     try {
       EasyLoading.show();
-      print(idTicket);
-      final statusMessage = await _apiService.checkTransactionStatus(idTicket);
+      print(widget.idTicket);
+      final statusMessage =
+          await _apiService.checkTransactionStatus(widget.idTicket);
       print(statusMessage);
 
       if (statusMessage ==
@@ -420,7 +382,7 @@ class DetailInvoiceState extends State<DetailInvoice>
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text('Mã vé: $idTicket'),
+                                  Text('Mã vé: ${widget.idTicket}'),
                                 ],
                               ),
                               SizedBox(

@@ -19,12 +19,12 @@ class BillTicketScreen extends StatefulWidget {
   final String showtimeDate;
   final String startTime;
   final String endTime;
-  final List<int> seatCodes;
+  final List<Map<String, dynamic>> seatCodes;
   final int quantity;
   final double ticketPrice;
   final int quantityCombo;
   final double totalComboPrice;
-  final List<String> titleCombo;
+  final List<Map<String, dynamic>> titleCombo;
 
   const BillTicketScreen({
     Key? key,
@@ -61,9 +61,27 @@ class _BillTicketScreenState extends State<BillTicketScreen>
   final ScrollController _scrollController = ScrollController();
   bool _isScrolled = false;
   String _selectedPaymentMethod = '';
+  late final String idTicket;
+  String seatsID = '';
+  String comboIDList = '';
+  String countComboID = '';
+  String result = '';
+  double tongTienConLai = 0.0;
 
   @override
   void initState() {
+    List<String> comboIDList =
+        widget.titleCombo.map((combo) => combo['comboId'].toString()).toList();
+    List<String> countComboID =
+        widget.titleCombo.map((combo) => combo['quantity'].toString()).toList();
+
+    seatsID = widget.seatCodes.map((seats) => seats['id']).join(',');
+
+    result = List.generate(comboIDList.length, (index) {
+      return '${comboIDList[index]}:${countComboID[index]}';
+    }).join(',');
+    tongTienConLai =
+        (widget.ticketPrice + widget.totalComboPrice) - (voucher * 1000);
     super.initState();
     _apiService = ApiService();
     _loadChairs();
@@ -72,6 +90,7 @@ class _BillTicketScreenState extends State<BillTicketScreen>
     _remainingTime = 15 * 60;
     _startTimer();
     _scrollController.addListener(_scrollListener);
+    _insertBuyTicket();
   }
 
   void _scrollListener() {
@@ -141,6 +160,27 @@ class _BillTicketScreenState extends State<BillTicketScreen>
     return formatter.format(price);
   }
 
+  Future<void> _insertBuyTicket() async {
+    String formattedDate = DateFormat('MMddHHmmss').format(DateTime.now());
+
+    idTicket =
+        '${UserManager.instance.user?.userId}${widget.movieID}${widget.showTimeID}$formattedDate';
+    print('object');
+    try {
+      final response = await _apiService.insertBuyTicket(
+          idTicket,
+          UserManager.instance.user!.userId,
+          widget.movieID,
+          widget.showTimeID,
+          seatsID,
+          result);
+
+      print("Thành công: $response");
+    } catch (e) {
+      print("Lỗi khi gọi API: $e");
+    }
+  }
+
   @override
   void dispose() {
     _timer.cancel();
@@ -168,7 +208,7 @@ class _BillTicketScreenState extends State<BillTicketScreen>
             },
           ),
           title: const Text(
-            'Thanh toán',
+            'Thông tin thanh toán',
             style: TextStyle(color: Colors.white, fontSize: 20),
           ),
           centerTitle: true,
@@ -315,7 +355,7 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                            '${widget.quantity} Vé - ${widget.seatCodes}'),
+                                            '${widget.quantity} Vé - ${widget.seatCodes.map((seat) => seat['code']).join(', ')}'),
                                         Text(
                                             '${formatPrice(widget.ticketPrice)} VND'),
                                       ],
@@ -333,7 +373,7 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                                   '${widget.quantityCombo} - '), // Số lượng combo = 0
                                               Expanded(
                                                 child: AutoSizeText(
-                                                  '${widget.titleCombo.isEmpty ? 'Không có combo' : widget.titleCombo}', // Kiểm tra nếu không có combo
+                                                  '${widget.titleCombo.isEmpty ? 'Không có combo' : widget.titleCombo.map((combo) => combo['title']).join(', ')}', // Kiểm tra nếu không có combo
                                                   style: const TextStyle(
                                                     fontSize: 14,
                                                   ),
@@ -532,6 +572,8 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                     (_movieDetails!.price! * selectedCount),
                                 showTimeID: widget.showTimeID,
                                 seatCodes: seatIDList,
+                                idTicket: idTicket,
+                                tongTienConLai: tongTienConLai,
                               )),
                             );
                           },
@@ -541,7 +583,7 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                   ),
                   AnimatedPositioned(
                     duration: Duration(milliseconds: 300),
-                    top: _isScrolled ? 10 : -100, // Thay đổi từ 0 thành 10
+                    top: _isScrolled ? 0 : -100, // Thay đổi từ 0 thành 10
                     left: 0,
                     right: 0,
                     child: Container(
