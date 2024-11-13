@@ -1,27 +1,52 @@
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
+import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/pages/home_page/home_page.dart';
+import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:intl/intl.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../../../../auth/api_service.dart';
 
 class DetailInvoice2 extends StatefulWidget {
-  final int movieID;
   final int showTimeID;
-  final List<int> seatCodes;
   final int quantity;
   final double sumPrice;
+  final String idTicket;
+  final double tongTienConLai;
+  final List<Map<String, dynamic>> seatCodes;
+  final double ticketPrice;
+  final int quantityCombo;
+  final double totalComboPrice;
+  final List<Map<String, dynamic>> titleCombo;
+  final int cinemaRoomID;
+  final String showtimeDate;
+  final String startTime;
+  final String endTime;
+  final MovieDetails? movieDetails;
 
   const DetailInvoice2({
     Key? key,
-    required this.movieID,
     required this.quantity,
     required this.sumPrice,
     required this.showTimeID,
     required this.seatCodes,
+    required this.idTicket,
+    required this.tongTienConLai,
+    required this.ticketPrice,
+    required this.quantityCombo,
+    required this.totalComboPrice,
+    required this.titleCombo,
+    required this.cinemaRoomID,
+    required this.showtimeDate,
+    required this.startTime,
+    required this.endTime,
+    required this.movieDetails,
   }) : super(key: key);
 
   @override
@@ -31,48 +56,23 @@ class DetailInvoice2 extends StatefulWidget {
 class DetailInvoice2State extends State<DetailInvoice2>
     with AutomaticKeepAliveClientMixin {
   late ApiService _apiService;
+  late String qrText = '';
 
   @override
   void initState() {
     super.initState();
     _apiService = ApiService();
-    // _insertBuyTicket();
-  }
-
-  Future<void> _launchUrl(Uri url) async {
-    if (!await launchUrl(url)) {
-      throw Exception('Could not launch $url');
-    }
-  }
-
-  Future<void> _createMomoPayment() async {
-    try {
-      String formattedDate = DateFormat('MMddHHmmss').format(DateTime.now());
-      print(
-        "${UserManager.instance.user?.userId}${widget.movieID}${widget.showTimeID}$formattedDate",
-      );
-
-      // Gọi hàm tạo thanh toán MoMo từ ApiService
-      final payUrl = await _apiService.createMomoPayment(
-        widget.sumPrice, // Truyền số tiền cần thanh toán
-
-        "${UserManager.instance.user?.userId}${widget.movieID}${widget.showTimeID}$formattedDate",
-        'Thanh toán vé xem phim ${UserManager.instance.user?.fullName}', // Thông tin đơn hàng
-      );
-
-      // Mở URL thanh toán MoMo trong trình duyệt
-      await _launchUrl(Uri.parse(payUrl));
-    } catch (e) {
-      print("Lỗi khi gọi API thanh toán MoMo: $e");
-    }
+    qrText =
+        '${widget.movieDetails!.title} ${widget.cinemaRoomID} ${widget.startTime}';
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
+      backgroundColor: basicColor,
       appBar: AppBar(
-        backgroundColor: const Color(0XFF6F3CD7),
+        backgroundColor: mainColor,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_outlined,
@@ -102,8 +102,7 @@ class DetailInvoice2State extends State<DetailInvoice2>
                         child: Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: const Color(
-                                0xffd7e3fa), // Màu nền của thẻ ticket
+                            color: Colors.white, // Màu nền của thẻ ticket
                             borderRadius: BorderRadius.circular(
                                 15), // Làm tròn góc với bán kính 15
                           ),
@@ -119,75 +118,106 @@ class DetailInvoice2State extends State<DetailInvoice2>
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(
                                           10), // Làm tròn góc cho ảnh
-                                      child: Image.asset(
-                                        'assets/images/baothuditimchu.jpg',
+                                      child: Image.network(
+                                        widget.movieDetails!.posterUrl,
                                         fit: BoxFit.cover,
                                       ),
                                     ),
                                   ),
                                   const SizedBox(width: 20),
                                   // Sử dụng Container để điều chỉnh chiều cao
-                                  Container(
-                                    // Giới hạn chiều cao để căn chỉnh phần tử lên trên
-                                    constraints: const BoxConstraints(
-                                        maxHeight: 130), // Giới hạn chiều cao
-                                    alignment: Alignment
-                                        .topLeft, // Căn chỉnh ở trên cùng bên trái
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Đất rừng phương nam',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        const Text('2D PHỤ ĐỀ',
-                                            style: TextStyle(fontSize: 16)),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 3,
-                                              horizontal:
-                                                  5), // Tạo khoảng trống xung quanh chữ
-                                          decoration: BoxDecoration(
-                                            color: Colors
-                                                .deepOrange, // Nền màu vàng
-                                            borderRadius: BorderRadius.circular(
-                                                10), // Bo góc tròn
-                                          ),
-                                          child: const Text(
-                                            'T13', // Nội dung chữ
+                                  Expanded(
+                                    child: Container(
+                                      // Giới hạn chiều cao để căn chỉnh phần tử lên trên
+                                      constraints: const BoxConstraints(
+                                          maxHeight: 130), // Giới hạn chiều cao
+                                      alignment: Alignment
+                                          .topLeft, // Căn chỉnh ở trên cùng bên trái
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          AutoSizeText(
+                                            '${widget.movieDetails?.title}', // Đảm bảo xử lý null safety
                                             style: TextStyle(
-                                              color:
-                                                  Colors.white, // Màu chữ trắng
-                                              fontSize:
-                                                  14, // Kích thước chữ lớn hơn
-                                              fontWeight: FontWeight
-                                                  .bold, // Tùy chọn: Chữ đậm hơn
+                                              fontWeight:
+                                                  FontWeight.bold, // Font đậm
+                                            ),
+                                            maxLines:
+                                                2, // Giới hạn tối đa 2 dòng
+                                            minFontSize:
+                                                16, // Kích thước font nhỏ nhất
+                                            maxFontSize:
+                                                18, // Kích thước font lớn nhất
+                                            overflow: TextOverflow
+                                                .clip, // Văn bản bị cắt nếu vượt quá không gian
+                                          ),
+                                          SizedBox(
+                                            height: 10,
+                                          ),
+                                          Text(
+                                            '${(widget.movieDetails?.voiceover == true) ? 'Lồng tiếng' : ''}'
+                                            '${(widget.movieDetails?.voiceover == true && widget.movieDetails?.subTitle == true) ? ' - ' : ''}'
+                                            '${(widget.movieDetails?.subTitle == true) ? 'Phụ Đề' : ''}',
+                                            style: TextStyle(
+                                              fontSize: 13,
                                             ),
                                           ),
-                                        )
-                                      ],
+                                          SizedBox(
+                                            height: 10,
+                                          ),
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 3,
+                                                horizontal:
+                                                    5), // Tạo khoảng trống xung quanh chữ
+                                            decoration: BoxDecoration(
+                                              color: Colors
+                                                  .deepOrange, // Nền màu vàng
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      10), // Bo góc tròn
+                                            ),
+                                            child: Text(
+                                              widget.movieDetails!
+                                                  .age, // Nội dung chữ
+                                              style: const TextStyle(
+                                                color: Colors
+                                                    .white, // Màu chữ trắng
+                                                fontSize:
+                                                    13, // Kích thước chữ lớn hơn
+                                                fontWeight: FontWeight
+                                                    .bold, // Tùy chọn: Chữ đậm hơn
+                                              ),
+                                            ),
+                                          )
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 10),
-                              const Row(
+                              Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
                                 children: [
                                   Row(
                                     children: [
                                       Text(
-                                        'PANTHERs Tô Ký',
+                                        '${widget.movieDetails?.cinemaName}',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20,
+                                            color: Colors.deepOrange),
+                                      ),
+                                      Text(
+                                        ' - ',
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold),
                                       ),
-                                      Text(' - '),
                                       Text(
-                                        'Rạp 3',
+                                        'Rạp ${widget.cinemaRoomID}',
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold),
                                       )
@@ -196,7 +226,7 @@ class DetailInvoice2State extends State<DetailInvoice2>
                                 ],
                               ),
                               const SizedBox(height: 5),
-                              const Row(
+                              Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
                                 children: [
@@ -206,9 +236,9 @@ class DetailInvoice2State extends State<DetailInvoice2>
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
                                         children: [
-                                          Text('Thứ 6, '),
+                                          Text('Ngày: '),
                                           Text(
-                                            '30/08/2024',
+                                            '${widget.showtimeDate}',
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold),
                                           )
@@ -224,7 +254,7 @@ class DetailInvoice2State extends State<DetailInvoice2>
                                         children: [
                                           Text('Suất chiếu: '),
                                           Text(
-                                            '22:00',
+                                            '${widget.startTime}',
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold),
                                           )
@@ -240,15 +270,47 @@ class DetailInvoice2State extends State<DetailInvoice2>
                                   width: 150,
                                   height: 150,
                                   decoration: BoxDecoration(
-                                    color: Colors.black12,
+                                    color: basicColor,
                                     borderRadius: BorderRadius.circular(
-                                        10), // QR code rounded corners
+                                        10), // Bo góc cho QR code
                                   ),
-                                  child: const Center(
-                                      child: Icon(Icons.qr_code_scanner)),
+                                  child: qrText == ''
+                                      ? const Center(
+                                          child:
+                                              CircularProgressIndicator()) // Hiển thị loading nếu URL chưa sẵn sàng
+                                      : QrImageView(
+                                          data: qrText.toString(),
+                                          version: QrVersions.auto,
+                                          size: 200.0,
+                                        ),
                                 ),
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 10),
+                              const Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Đưa mã này cho nhân viên soát vé để vào rạp',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.deepOrangeAccent),
+                                          )
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 20,
+                              ),
                               const Column(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [

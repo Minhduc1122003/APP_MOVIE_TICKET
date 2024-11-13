@@ -350,8 +350,8 @@ class _FilmSlideshowState extends State<FilmSlideshow> {
               final imageIndex = index % widget.imageList.length;
               return AspectRatio(
                 aspectRatio: 16 / 9,
-                child: Image.network(
-                  widget.imageList[imageIndex],
+                child: Image.asset(
+                  '${widget.imageList[imageIndex]}',
                   fit: BoxFit.contain,
                 ),
               );

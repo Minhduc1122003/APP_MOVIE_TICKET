@@ -19,8 +19,8 @@ class BillTicketScreen extends StatefulWidget {
   final String showtimeDate;
   final String startTime;
   final String endTime;
-  final List<Map<String, dynamic>> seatCodes;
   final int quantity;
+  final List<Map<String, dynamic>> seatCodes;
   final double ticketPrice;
   final int quantityCombo;
   final double totalComboPrice;
@@ -357,7 +357,7 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                         Text(
                                             '${widget.quantity} Vé - ${widget.seatCodes.map((seat) => seat['code']).join(', ')}'),
                                         Text(
-                                            '${formatPrice(widget.ticketPrice)} VND'),
+                                            '${formatPrice(widget.ticketPrice)}đ'),
                                       ],
                                     ),
                                     Row(
@@ -389,7 +389,7 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                         Expanded(
                                           flex: 1,
                                           child: Text(
-                                            '${formatPrice(widget.totalComboPrice)} VND', // Giá combo = 0
+                                            '${formatPrice(widget.totalComboPrice)}đ', // Giá combo = 0
                                             textAlign: TextAlign.right,
                                           ),
                                         ),
@@ -566,14 +566,22 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                               context,
                               SlideFromRightPageRoute(
                                   page: DetailInvoice(
-                                movieID: widget.movieID,
+                                movieDetails: _movieDetails,
                                 quantity: selectedCount,
                                 sumPrice:
                                     (_movieDetails!.price! * selectedCount),
                                 showTimeID: widget.showTimeID,
-                                seatCodes: seatIDList,
+                                seatCodes: widget.seatCodes,
                                 idTicket: idTicket,
                                 tongTienConLai: tongTienConLai,
+                                quantityCombo: widget.quantityCombo,
+                                ticketPrice: widget.ticketPrice,
+                                titleCombo: widget.titleCombo,
+                                totalComboPrice: widget.totalComboPrice,
+                                showtimeDate: widget.showtimeDate,
+                                cinemaRoomID: widget.cinemaRoomID,
+                                startTime: widget.startTime,
+                                endTime: widget.endTime,
                               )),
                             );
                           },

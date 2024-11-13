@@ -117,8 +117,6 @@ class _MyListviewCardItemState extends State<MyListviewCardItem> {
   }
 
   Widget _buildFilmImage(String imageUrl) {
-    print('--------------------Image');
-    print('$imageUrl');
     return Container(
       constraints: const BoxConstraints(maxWidth: 150, maxHeight: 220),
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),

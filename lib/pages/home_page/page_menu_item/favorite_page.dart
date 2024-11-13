@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
@@ -7,12 +8,19 @@ import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
+final favoritePageKey = GlobalKey<FavoritePageState>();
+
 class FavoritePage extends StatefulWidget {
+  final Function? onRefresh;
+
+  FavoritePage({this.onRefresh, Key? key}) : super(key: key ?? favoritePageKey);
+
   @override
-  _FavoritePageState createState() => _FavoritePageState();
+  // Đổi tên từ _FavoritePageState thành FavoritePageState
+  FavoritePageState createState() => FavoritePageState();
 }
 
-class _FavoritePageState extends State<FavoritePage> {
+class FavoritePageState extends State<FavoritePage> {
   late ApiService _apiService;
   List<Map<String, dynamic>> listFilmFavourire =
       []; // Khai báo listFilmFavourire với kiểu dữ liệu phù hợp
@@ -25,19 +33,26 @@ class _FavoritePageState extends State<FavoritePage> {
     if (UserManager.instance.user != null) {
       _fetchFavoriteFilms();
     }
-
-    _fetchFavoriteFilms();
   }
 
   Future<void> _fetchFavoriteFilms() async {
+    print('đã gọi load data');
     try {
       List<Map<String, dynamic>> films =
           await _apiService.getFilmFavourire(UserManager.instance.user!.userId);
       setState(() {
         listFilmFavourire = films;
       });
+      // Gọi callback onRefresh nếu có
+      widget.onRefresh?.call();
     } catch (e) {
       print('Error fetching favorite films: $e');
+    }
+  }
+
+  void refreshFavorites() {
+    if (UserManager.instance.user != null) {
+      _fetchFavoriteFilms();
     }
   }
 
@@ -58,27 +73,27 @@ class _FavoritePageState extends State<FavoritePage> {
           centerTitle: true,
         ),
         backgroundColor: Colors.white,
-        body: BlocListener<SendCodeBloc, SendCodeState>(
-          listener: (context, state) async {
-            if (state is SendCodeError) {
-              print('login LoginError');
-              EasyLoading.showError('Sai tài khoản hoặc mật khẩu');
-            } else if (state is SendCodeWaiting) {
-              EasyLoading.show(status: 'Loading...');
-            } else if (state is SendCodeSuccess) {
-              await Future.delayed(Duration(milliseconds: 150));
-            }
-          },
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                  child: _buildContent(),
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: ColorFiltered(
+                colorFilter: ColorFilter.mode(
+                  Colors.white.withOpacity(0.7),
+                  BlendMode.srcOver,
+                ),
+                child: Image.asset(
+                  'assets/images/background.png',
+                  fit: BoxFit.cover,
                 ),
               ),
-            ],
-          ),
+            ),
+            Positioned.fill(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                child: _buildContent(),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -152,8 +167,8 @@ class _FavoritePageState extends State<FavoritePage> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.asset(
-                      'assets/images/${film['PosterUrl']}',
+                    child: CachedNetworkImage(
+                      imageUrl: '${film['PosterUrl']}',
                       fit: BoxFit.cover,
                     ),
                   ),

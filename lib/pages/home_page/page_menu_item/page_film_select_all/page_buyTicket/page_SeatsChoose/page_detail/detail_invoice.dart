@@ -1,6 +1,8 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
+import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/pages/home_page/home_page.dart';
@@ -14,23 +16,39 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../../../../auth/api_service.dart';
 
 class DetailInvoice extends StatefulWidget {
-  final int movieID;
   final int showTimeID;
-  final List<int> seatCodes;
   final int quantity;
   final double sumPrice;
   final String idTicket;
   final double tongTienConLai;
+  final List<Map<String, dynamic>> seatCodes;
+  final double ticketPrice;
+  final int quantityCombo;
+  final double totalComboPrice;
+  final List<Map<String, dynamic>> titleCombo;
+  final int cinemaRoomID;
+  final String showtimeDate;
+  final String startTime;
+  final String endTime;
+  final MovieDetails? movieDetails;
 
   const DetailInvoice({
     Key? key,
-    required this.movieID,
     required this.quantity,
     required this.sumPrice,
     required this.showTimeID,
     required this.seatCodes,
     required this.idTicket,
     required this.tongTienConLai,
+    required this.ticketPrice,
+    required this.quantityCombo,
+    required this.totalComboPrice,
+    required this.titleCombo,
+    required this.cinemaRoomID,
+    required this.showtimeDate,
+    required this.startTime,
+    required this.endTime,
+    required this.movieDetails,
   }) : super(key: key);
 
   @override
@@ -92,19 +110,32 @@ class DetailInvoiceState extends State<DetailInvoice>
         EasyLoading.showInfo('Đang đợi thanh toán...',
             duration: const Duration(seconds: 2));
       } else if (statusMessage == "Successful.") {
+        String result =
+            await _apiService.updateStatusBuyTicketInfo(widget.idTicket);
         EasyLoading.dismiss();
-
+        print('result: $result');
         EasyLoading.showSuccess('Thanh toán thành công!',
             duration: const Duration(seconds: 2));
+
         Navigator.push(
           context,
           SlideFromRightPageRoute(
               page: DetailInvoice2(
-            movieID: widget.movieID,
             quantity: widget.quantity,
             sumPrice: widget.sumPrice,
             showTimeID: widget.showTimeID,
             seatCodes: widget.seatCodes,
+            idTicket: widget.idTicket,
+            tongTienConLai: widget.tongTienConLai,
+            quantityCombo: widget.quantityCombo,
+            ticketPrice: widget.ticketPrice,
+            titleCombo: widget.titleCombo,
+            totalComboPrice: widget.totalComboPrice,
+            showtimeDate: widget.showtimeDate,
+            cinemaRoomID: widget.cinemaRoomID,
+            startTime: widget.startTime,
+            endTime: widget.endTime,
+            movieDetails: widget.movieDetails,
           )),
         );
       } else {
@@ -215,7 +246,7 @@ class DetailInvoiceState extends State<DetailInvoice>
                                 ],
                               ),
                               const SizedBox(height: 5),
-                              const Row(
+                              Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
                                 children: [
@@ -225,9 +256,9 @@ class DetailInvoiceState extends State<DetailInvoice>
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
                                         children: [
-                                          Text('Thứ 6, '),
+                                          Text('Rạp ${widget.cinemaRoomID}'),
                                           Text(
-                                            '30/08/2024',
+                                            ' - ${widget.showtimeDate}',
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold),
                                           )
@@ -243,7 +274,7 @@ class DetailInvoiceState extends State<DetailInvoice>
                                         children: [
                                           Text('Suất chiếu: '),
                                           Text(
-                                            '22:00',
+                                            '${widget.startTime}',
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold),
                                           )
@@ -275,7 +306,7 @@ class DetailInvoiceState extends State<DetailInvoice>
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              const Column(
+                              Column(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
                                   Row(
@@ -288,7 +319,7 @@ class DetailInvoiceState extends State<DetailInvoice>
                                         child: Align(
                                           alignment: Alignment
                                               .topCenter, // Đặt text ở góc trên bên trái
-                                          child: Text('Ghế: '),
+                                          child: Text('  Ghế: '),
                                         ),
                                       ),
                                       Expanded(
@@ -297,7 +328,7 @@ class DetailInvoiceState extends State<DetailInvoice>
                                           alignment: Alignment
                                               .topLeft, // Đặt text ở góc trên bên trái
                                           child: Text(
-                                            'G5, G4 ',
+                                            ' ${widget.seatCodes.map((seat) => seat['code']).join(', ')}',
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold),
                                             textAlign: TextAlign
@@ -311,7 +342,7 @@ class DetailInvoiceState extends State<DetailInvoice>
                                           alignment: Alignment
                                               .topRight, // Đặt text ở góc trên bên trái
                                           child: Text(
-                                            '110,000đ',
+                                            '${formatPrice(widget.ticketPrice)}đ',
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold),
                                             textAlign: TextAlign
@@ -337,7 +368,8 @@ class DetailInvoiceState extends State<DetailInvoice>
                                         child: Align(
                                           alignment: Alignment
                                               .topCenter, // Đặt text ở góc trên bên trái
-                                          child: Text('1x '),
+                                          child: Text(
+                                              '   ${widget.quantityCombo}  - '),
                                         ),
                                       ),
                                       Expanded(
@@ -345,12 +377,14 @@ class DetailInvoiceState extends State<DetailInvoice>
                                         child: Align(
                                           alignment: Alignment
                                               .topLeft, // Đặt text ở góc trên bên trái
-                                          child: Text(
-                                            'iCombo 1 Big STD',
-                                            style: TextStyle(
+                                          child: AutoSizeText(
+                                            '${widget.titleCombo.isEmpty ? 'Không có combo' : widget.titleCombo.map((combo) => combo['title']).join(', ')}', // Kiểm tra nếu không có combo
+                                            style: const TextStyle(
+                                                fontSize: 14,
                                                 fontWeight: FontWeight.bold),
-                                            textAlign: TextAlign
-                                                .left, // Căn văn bản sang trái
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            minFontSize: 11,
                                           ),
                                         ),
                                       ),
@@ -360,7 +394,7 @@ class DetailInvoiceState extends State<DetailInvoice>
                                           alignment: Alignment
                                               .topRight, // Đặt text ở góc trên bên trái
                                           child: Text(
-                                            '69,000đ',
+                                            '${formatPrice(widget.totalComboPrice)}đ', // Giá combo = 0
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold),
                                             textAlign: TextAlign
@@ -388,7 +422,7 @@ class DetailInvoiceState extends State<DetailInvoice>
                               SizedBox(
                                 height: 10,
                               ),
-                              const Row(
+                              Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment
                                     .start, // Căn theo chiều dọc ở vị trí đầu (top)
@@ -397,7 +431,7 @@ class DetailInvoiceState extends State<DetailInvoice>
                                     child: Align(
                                       alignment: Alignment
                                           .topLeft, // Đặt text ở góc trên bên trái
-                                      child: Text('Thanh toán: ',
+                                      child: Text('Tổng tiền: ',
                                           style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               fontSize: 20)),
@@ -408,7 +442,7 @@ class DetailInvoiceState extends State<DetailInvoice>
                                       alignment: Alignment
                                           .topRight, // Đặt text ở góc trên bên trái
                                       child: Text(
-                                        '179,000đ',
+                                        '${formatPrice(widget.tongTienConLai)}đ',
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 22,
@@ -420,7 +454,7 @@ class DetailInvoiceState extends State<DetailInvoice>
                                 ],
                               ),
                               SizedBox(
-                                height: 20,
+                                height: 10,
                               ),
                               ElevatedButton(
                                   style: ElevatedButton.styleFrom(
@@ -498,4 +532,9 @@ class DetailInvoiceState extends State<DetailInvoice>
 
   @override
   bool get wantKeepAlive => true;
+}
+
+String formatPrice(double price) {
+  final formatter = NumberFormat('#,###', 'vi');
+  return formatter.format(price);
 }

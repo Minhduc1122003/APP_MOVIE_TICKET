@@ -127,7 +127,8 @@ class _HomePage extends State<HomePage> {
                       scrollNotifier: _scrollNotifier,
                     ),
                     MyTicketsPage(),
-                    FavoritePage(),
+                    FavoritePage(
+                        key: favoritePageKey), // Sử dụng favoritePageKey
                     CheckUserPage(),
                   ],
                 ),
@@ -173,7 +174,8 @@ class _HomePage extends State<HomePage> {
 
           // Kiểm tra nếu đang chuyển đến tab "Chọn phim"
           if (index == 2) {
-            _fetchMovies(); // Reload lại dữ liệu phim
+            // Gọi refresh cho FavoritePage
+            favoritePageKey.currentState?.refreshFavorites();
           }
         });
       },

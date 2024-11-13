@@ -81,6 +81,8 @@ class _LoginPageState extends State<LoginPage> {
           } else if (state is LoginSuccess) {
             // Fetch data after successful login
             if (widget.isBack) {
+              hideLoadingSpinner(context);
+
               Navigator.of(context).pop();
             } else {
               if (UserManager.instance.user?.role == 0) {
