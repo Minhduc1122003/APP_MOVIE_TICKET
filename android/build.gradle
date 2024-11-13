@@ -1,13 +1,16 @@
 buildscript {
-    // ...
-}
-plugins {
-    // ...
+    ext.kotlin_version = '1.9.0' // Cập nhật phiên bản Kotlin
+    repositories {
+        google()
+        mavenCentral()
+    }
 
-    // Add the dependency for the Google services Gradle plugin
-        id 'com.google.gms.google-services' version '4.4.2'
-
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.1.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version" // Sử dụng biến kotlin_version
+    }
 }
+
 allprojects {
     repositories {
         google()
@@ -15,12 +18,12 @@ allprojects {
     }
 }
 
-rootProject.buildDir = "../build"
+rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
 subprojects {
-    project.evaluationDependsOn(":app")
+    project.evaluationDependsOn(':app')
 }
 
 tasks.register("clean", Delete) {
