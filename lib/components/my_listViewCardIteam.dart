@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
@@ -116,28 +117,24 @@ class _MyListviewCardItemState extends State<MyListviewCardItem> {
   }
 
   Widget _buildFilmImage(String imageUrl) {
+    print('--------------------Image');
+    print('$imageUrl');
     return Container(
       constraints: const BoxConstraints(maxWidth: 150, maxHeight: 220),
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: Image.asset(
-          imageUrl,
-          width: 150,
-          height: 220,
-          fit: BoxFit.cover,
-          frameBuilder: (BuildContext context, Widget child, int? frame,
-              bool wasSynchronouslyLoaded) {
-            if (wasSynchronouslyLoaded) {
-              return child;
-            }
-            return AnimatedOpacity(
-              child: child,
-              opacity: frame == null ? 0 : 1,
-              duration: const Duration(seconds: 1),
-              curve: Curves.easeOut,
-            );
-          },
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
+          width: 150, // Chiều rộng của ảnh
+          height: 220, // Chiều cao của ảnh
+          fit: BoxFit.cover, // Cách co giãn ảnh để vừa vặn với kích thước
+          placeholder: (context, url) =>
+              const CircularProgressIndicator(), // Hiển thị vòng tròn khi đang tải
+          errorWidget: (context, url, error) => const Icon(
+              Icons.error), // Hiển thị icon lỗi nếu tải ảnh không thành công
+          fadeInDuration:
+              const Duration(seconds: 1), // Thời gian hiệu ứng fade-in
         ),
       ),
     );

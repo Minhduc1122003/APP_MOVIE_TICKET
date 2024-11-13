@@ -33,8 +33,9 @@ class ApiService {
     // String? ip = await info.getWifiIP(); // 192.168.1.43
 
     // wifi cf24/24
+    // baseUrl = 'http://192.168.10.17:8081';
 
-    baseUrl = 'http://192.168.1.75:8081';
+    baseUrl = 'https://nodejs-sql-server-api.onrender.com';
   }
 
   late Response response;

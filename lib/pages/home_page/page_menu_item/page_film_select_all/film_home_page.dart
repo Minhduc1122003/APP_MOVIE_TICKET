@@ -214,7 +214,7 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
   List<Map<String, dynamic>> _mapMoviesToFilmList(List<MovieDetails> movies) {
     return movies.map((movie) {
       return {
-        'image': 'assets/images/${movie.posterUrl}',
+        'image': '${movie.posterUrl}',
         'title': movie.title,
         'rating': movie.averageRating,
         'genre': movie.genres,
@@ -350,7 +350,7 @@ class _FilmSlideshowState extends State<FilmSlideshow> {
               final imageIndex = index % widget.imageList.length;
               return AspectRatio(
                 aspectRatio: 16 / 9,
-                child: Image.asset(
+                child: Image.network(
                   widget.imageList[imageIndex],
                   fit: BoxFit.contain,
                 ),
@@ -545,7 +545,7 @@ class _FilmCarouselState extends State<FilmCarousel> {
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(
                                             10), // Bỏ cong góc nếu cần
-                                        child: Image.asset(
+                                        child: Image.network(
                                           film['image'],
                                           fit: BoxFit.cover,
                                           width: double.infinity,

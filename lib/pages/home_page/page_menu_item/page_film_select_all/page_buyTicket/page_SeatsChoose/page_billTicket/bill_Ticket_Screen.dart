@@ -276,8 +276,8 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                       .start, // Căn các phần tử từ đầu theo chiều dọc
                                   children: [
                                     // Hình ảnh
-                                    Image.asset(
-                                      'assets/images/${_movieDetails!.posterUrl}',
+                                    Image.network(
+                                      '${_movieDetails!.posterUrl}',
                                       width: 100,
                                       height: 150,
                                       fit: BoxFit.cover,

@@ -220,8 +220,8 @@ class _MovieHeaderState extends State<MovieHeader>
                     border: Border.all(color: Colors.black, width: 10),
                     borderRadius: BorderRadius.circular(15),
                   ),
-                  child: Image.asset(
-                    'assets/images/${movieDetails.posterUrl}',
+                  child: Image.network(
+                    '${movieDetails.posterUrl}',
                     width: 130,
                     height: 200,
                     fit: BoxFit.cover,

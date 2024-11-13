@@ -60,8 +60,8 @@ class MyListViewCardItem extends StatelessWidget {
                           .center, // Căn giữa theo chiều dọc và chiều ngang
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(
-                          'assets/images/$imageUrl',
+                        child: Image.network(
+                          imageUrl,
                           width: 100,
                           height: 150,
                           fit: BoxFit.cover,

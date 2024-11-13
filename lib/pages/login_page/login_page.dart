@@ -80,7 +80,6 @@ class _LoginPageState extends State<LoginPage> {
             showLoadingSpinner(context);
           } else if (state is LoginSuccess) {
             // Fetch data after successful login
-            hideLoadingSpinner(context);
             if (widget.isBack) {
               Navigator.of(context).pop();
             } else {
@@ -88,6 +87,8 @@ class _LoginPageState extends State<LoginPage> {
                 ApiService apiService = ApiService();
                 final moviesDangChieu = await apiService.getMoviesDangChieu();
                 final moviesSapChieu = await apiService.getMoviesSapChieu();
+                hideLoadingSpinner(context);
+
                 Navigator.pushAndRemoveUntil(
                   context,
                   SlideFromLeftPageRoute(

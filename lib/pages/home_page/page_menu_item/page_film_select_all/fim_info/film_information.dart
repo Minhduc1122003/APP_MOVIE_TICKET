@@ -164,8 +164,8 @@ class _MovieHeaderState extends State<MovieHeader>
                         color: Colors.black, width: 10), // Viền cho hình ảnh
                     borderRadius: BorderRadius.circular(15), // Bo góc cho viền
                   ),
-                  child: Image.asset(
-                    'assets/images/${state.movieDetails?.posterUrl}',
+                  child: Image.network(
+                    '${state.movieDetails?.posterUrl}',
                     // Thêm fallback cho URL poster
                     width: 130,
                     height: 200,
