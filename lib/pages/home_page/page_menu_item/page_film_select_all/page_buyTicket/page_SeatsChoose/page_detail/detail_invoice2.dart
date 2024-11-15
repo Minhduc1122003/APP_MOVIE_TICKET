@@ -311,7 +311,7 @@ class DetailInvoice2State extends State<DetailInvoice2>
                               SizedBox(
                                 height: 20,
                               ),
-                              const Column(
+                              Column(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
                                   Row(
@@ -320,7 +320,7 @@ class DetailInvoice2State extends State<DetailInvoice2>
                                         .start, // Căn theo chiều dọc ở vị trí đầu (top)
                                     children: [
                                       Expanded(
-                                        flex: 1,
+                                        flex: 2,
                                         child: Align(
                                           alignment: Alignment
                                               .topCenter, // Đặt text ở góc trên bên trái
@@ -328,12 +328,12 @@ class DetailInvoice2State extends State<DetailInvoice2>
                                         ),
                                       ),
                                       Expanded(
-                                        flex: 5,
+                                        flex: 4,
                                         child: Align(
                                           alignment: Alignment
                                               .topLeft, // Đặt text ở góc trên bên trái
                                           child: Text(
-                                            'G5, G4 ',
+                                            ' ${widget.seatCodes.map((seat) => seat['code']).join(', ')}',
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold),
                                             textAlign: TextAlign
@@ -347,7 +347,7 @@ class DetailInvoice2State extends State<DetailInvoice2>
                                           alignment: Alignment
                                               .topRight, // Đặt text ở góc trên bên trái
                                           child: Text(
-                                            '110,000đ',
+                                            '${formatPrice(widget.ticketPrice)}đ',
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold),
                                             textAlign: TextAlign
@@ -369,11 +369,11 @@ class DetailInvoice2State extends State<DetailInvoice2>
                                         .start, // Căn theo chiều dọc ở vị trí đầu (top)
                                     children: [
                                       Expanded(
-                                        flex: 1,
+                                        flex: 2,
                                         child: Align(
                                           alignment: Alignment
                                               .topCenter, // Đặt text ở góc trên bên trái
-                                          child: Text('1x '),
+                                          child: Text('Combo:'),
                                         ),
                                       ),
                                       Expanded(
@@ -381,12 +381,14 @@ class DetailInvoice2State extends State<DetailInvoice2>
                                         child: Align(
                                           alignment: Alignment
                                               .topLeft, // Đặt text ở góc trên bên trái
-                                          child: Text(
-                                            'iCombo 1 Big STD',
-                                            style: TextStyle(
+                                          child: AutoSizeText(
+                                            '${widget.titleCombo.isEmpty ? 'Không có combo' : widget.titleCombo.map((combo) => combo['title']).join(', ')}', // Kiểm tra nếu không có combo
+                                            style: const TextStyle(
+                                                fontSize: 14,
                                                 fontWeight: FontWeight.bold),
-                                            textAlign: TextAlign
-                                                .left, // Căn văn bản sang trái
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            minFontSize: 11,
                                           ),
                                         ),
                                       ),
@@ -396,7 +398,7 @@ class DetailInvoice2State extends State<DetailInvoice2>
                                           alignment: Alignment
                                               .topRight, // Đặt text ở góc trên bên trái
                                           child: Text(
-                                            '69,000đ',
+                                            '${formatPrice(widget.totalComboPrice)}đ', // Giá combo = 0
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold),
                                             textAlign: TextAlign
@@ -415,13 +417,13 @@ class DetailInvoice2State extends State<DetailInvoice2>
                                 endIndent: 10, // Khoảng cách từ phải
                               ),
                               const SizedBox(height: 10),
-                              const Row(
+                              Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text('Mã vé: 279942'),
+                                  Text('Mã vé: ${widget.idTicket}'),
                                 ],
                               ),
-                              const Row(
+                              Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment
                                     .start, // Căn theo chiều dọc ở vị trí đầu (top)
@@ -441,7 +443,7 @@ class DetailInvoice2State extends State<DetailInvoice2>
                                       alignment: Alignment
                                           .topRight, // Đặt text ở góc trên bên trái
                                       child: Text(
-                                        '179,000đ',
+                                        '${formatPrice(widget.tongTienConLai)}đ',
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 22,
@@ -501,4 +503,9 @@ class DetailInvoice2State extends State<DetailInvoice2>
 
   @override
   bool get wantKeepAlive => true;
+}
+
+String formatPrice(double price) {
+  final formatter = NumberFormat('#,###', 'vi');
+  return formatter.format(price);
 }

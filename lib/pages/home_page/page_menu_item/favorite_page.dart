@@ -1,8 +1,13 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
+import 'package:flutter_app_chat/components/animation_page.dart';
+import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/film_information.dart';
+import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -102,41 +107,105 @@ class FavoritePageState extends State<FavoritePage> {
   Widget _buildContent() {
     // Kiểm tra trạng thái đăng nhập
     if (UserManager.instance.user == null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.favorite_border,
-              size: 70,
-              color: Colors.grey,
+      return Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10), // Bo góc card
+          side: BorderSide(color: Colors.grey[300]!, width: 1), // Viền xám
+        ),
+        elevation: 5, // Độ đổ bóng nhẹ
+        margin: const EdgeInsets.symmetric(
+            vertical: 100, horizontal: 40), // Khoảng cách xung quanh card
+        child: Padding(
+          padding: const EdgeInsets.all(20.0), // Padding trong card
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.favorite_outline,
+                  size: 70,
+                  color: Colors.deepOrangeAccent,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Bạn chưa đăng nhập',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Vui lòng đăng nhập để xem phim yêu thích',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: MyButton(
+                    fontsize: 16,
+                    paddingText: 16,
+                    text: 'ĐĂNG NHẬP',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        SlideFromRightPageRoute(
+                            page: LoginPage(
+                          isBack: true,
+                          onPopCallback: () {
+                            refreshFavorites();
+                          },
+                        )),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 16),
-            Text(
-              'Bạn chưa đăng nhập',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Vui lòng đăng nhập để xem phim yêu thích',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+          ),
         ),
       );
     }
-
     // Hiển thị loading khi đang tải dữ liệu
     if (listFilmFavourire.isEmpty) {
-      return Center(child: CircularProgressIndicator());
+      return Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10), // Bo góc card
+          side: BorderSide(color: Colors.grey[300]!, width: 1), // Viền xám
+        ),
+        elevation: 5, // Độ đổ bóng nhẹ
+        margin: const EdgeInsets.symmetric(
+            vertical: 100, horizontal: 40), // Khoảng cách xung quanh card
+        child: Padding(
+          padding: const EdgeInsets.all(20.0), // Padding trong card
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.favorite_outline,
+                  size: 70,
+                  color: Colors.deepOrangeAccent,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Bạn chưa thích phim nào',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
 
     // Hiển thị danh sách phim yêu thích
@@ -151,43 +220,68 @@ class FavoritePageState extends State<FavoritePage> {
       itemCount: listFilmFavourire.length,
       itemBuilder: (context, index) {
         final film = listFilmFavourire[index];
-        return Card(
-          elevation: 3,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.black.withOpacity(0.1),
-                      width: 2,
+        return GestureDetector(
+          onTap: () {
+            int movieID =
+                int.parse(film['MovieID'].toString()); // Chuyển đổi sang int
+            Navigator.push(
+              context,
+              SlideFromRightPageRoute(
+                page: FilmInformation(
+                  movieId: movieID,
+                  onPopCallback: () {
+                    print("Đã callback từ FilmInformation");
+                    refreshFavorites();
+                  },
+                ),
+              ),
+            );
+          },
+          child: Card(
+            elevation: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.black.withOpacity(0.1),
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: CachedNetworkImage(
-                      imageUrl: '${film['PosterUrl']}',
-                      fit: BoxFit.cover,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: CachedNetworkImage(
+                        imageUrl: film['PosterUrl'],
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) =>
+                            const CircularProgressIndicator(), // Hiển thị vòng tròn khi đang tải
+                        errorWidget: (context, url, error) => const Icon(Icons
+                            .error), // Hiển thị icon lỗi nếu tải ảnh không thành công
+                        fadeInDuration: const Duration(
+                            seconds: 1), // Thời gian hiệu ứng fade-in
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  film['Title'] ?? 'No Title',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: AutoSizeText(
+                    film['Title'] ?? 'No Title',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12, // Kích thước chữ tối đa
+                    ),
+                    maxLines: 1, // Tối đa 2 dòng
+                    minFontSize: 10, // Kích thước chữ nhỏ nhất
+                    overflow: TextOverflow.ellipsis, // Cắt bớt khi tràn
+                    textAlign: TextAlign.left,
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

@@ -171,6 +171,7 @@ class _BillTicketScreenState extends State<BillTicketScreen>
           idTicket,
           UserManager.instance.user!.userId,
           widget.movieID,
+          tongTienConLai,
           widget.showTimeID,
           seatsID,
           result);

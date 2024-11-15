@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -545,11 +546,19 @@ class _FilmCarouselState extends State<FilmCarousel> {
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(
                                             10), // Bỏ cong góc nếu cần
-                                        child: Image.network(
-                                          film['image'],
+                                        child: CachedNetworkImage(
+                                          imageUrl: film['image'],
                                           fit: BoxFit.cover,
                                           width: double.infinity,
                                           height: double.infinity,
+                                          placeholder: (context, url) =>
+                                              const CircularProgressIndicator(), // Hiển thị vòng tròn khi đang tải
+                                          errorWidget: (context, url, error) =>
+                                              const Icon(Icons
+                                                  .error), // Hiển thị icon lỗi nếu tải ảnh không thành công
+                                          fadeInDuration: const Duration(
+                                              seconds:
+                                                  1), // Thời gian hiệu ứng fade-in
                                         ),
                                       ),
                                     ),

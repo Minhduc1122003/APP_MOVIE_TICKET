@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_network.dart';
+import 'package:flutter_app_chat/models/BuyTicket_model.dart';
 import 'package:flutter_app_chat/models/Chair_modal.dart';
 import 'package:flutter_app_chat/models/Location_modal.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
@@ -33,7 +34,7 @@ class ApiService {
     // String? ip = await info.getWifiIP(); // 192.168.1.43
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.1.155:8081';
+    baseUrl = 'http://192.168.1.121:8081';
 
     // baseUrl = 'https://nodejs-sql-server-api.onrender.com';
   }
@@ -527,8 +528,14 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> insertBuyTicket(String buyTicketId, int userId,
-      int movieId, int showtimeId, String seatIDs, String comboIDs) async {
+  Future<Map<String, dynamic>> insertBuyTicket(
+      String buyTicketId,
+      int userId,
+      int movieId,
+      double totalPriceAll,
+      int showtimeId,
+      String seatIDs,
+      String comboIDs) async {
     await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
 
     final response = await http.post(
@@ -538,6 +545,7 @@ class ApiService {
         'BuyTicketId': buyTicketId,
         'UserId': userId,
         'MovieID': movieId,
+        'TotalPriceAll': totalPriceAll,
         'ShowtimeID': showtimeId,
         'SeatIDs': seatIDs, // Lỗi trước đây đã được sửa
         'ComboIDs': comboIDs,
@@ -1335,6 +1343,42 @@ class ApiService {
       // In lỗi ra console để debug
       print('Error: $e');
       throw Exception('Failed to update ticket status');
+    }
+  }
+
+  Future<List<BuyTicket>> findAllBuyTicketByUserId(int userId) async {
+    await _initBaseUrl();
+
+    try {
+      // Gửi yêu cầu GET đến API
+      final response = await http.get(
+        Uri.parse('$baseUrl/findAllBuyTicketByUserId?UserId=$userId'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+      print('=====================>>>>22');
+      print('${response.statusCode}');
+
+      // Kiểm tra mã trạng thái của phản hồi
+      if (response.statusCode == 200) {
+        // Phản hồi thành công, ánh xạ dữ liệu
+        final List<dynamic> responseBody = json.decode(response.body);
+        final List<BuyTicket> tickets = responseBody
+            .map((ticketJson) => BuyTicket.fromJson(ticketJson))
+            .toList();
+        print('=====================>>>>');
+        print('$tickets');
+        return tickets;
+      } else {
+        // Xử lý lỗi nếu API trả về mã trạng thái không thành công
+        throw Exception(
+            'Failed to retrieve tickets. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      // In lỗi ra console để debug
+      print('Error: $e');
+      throw Exception('Failed to retrieve tickets');
     }
   }
 }

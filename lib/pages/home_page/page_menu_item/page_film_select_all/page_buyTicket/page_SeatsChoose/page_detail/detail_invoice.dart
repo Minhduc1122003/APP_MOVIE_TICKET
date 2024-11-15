@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
@@ -59,6 +61,9 @@ class DetailInvoiceState extends State<DetailInvoice>
     with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
   late ApiService _apiService;
   String? _payUrl;
+  Timer? _timer;
+  String? status;
+
   @override
   void initState() {
     super.initState();
@@ -66,12 +71,20 @@ class DetailInvoiceState extends State<DetailInvoice>
     // _insertBuyTicket();
     _createMomoPayment();
     WidgetsBinding.instance.addObserver(this); // Thêm observer
+    _startPeriodicCheck();
   }
 
-  Future<void> _launchUrl(Uri url) async {
-    if (!await launchUrl(url)) {
+  Future<void> _launchInWebView(Uri url) async {
+    if (!await launchUrl(url, mode: LaunchMode.inAppWebView)) {
       throw Exception('Could not launch $url');
     }
+  }
+
+  void _startPeriodicCheck() {
+    // Gọi hàm _checkStatus mỗi 5 giây
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _checkStatusAuto();
+    });
   }
 
   Future<void> _createMomoPayment() async {
@@ -82,14 +95,14 @@ class DetailInvoiceState extends State<DetailInvoice>
       final payUrl = await _apiService.createMomoPayment(
         widget.tongTienConLai,
         widget.idTicket,
-        'Thanh toán vé xem phim ${UserManager.instance.user?.fullName}', // Thông tin đơn hàng
+        'Thanh toán hóa đơn ${UserManager.instance.user?.fullName}', // Thông tin đơn hàng
       );
 
       // Lưu URL thanh toán vào biến và cập nhật giao diện
       setState(() {
         _payUrl = payUrl;
       });
-      await _launchUrl(Uri.parse(payUrl));
+      await _launchInWebView(Uri.parse(payUrl));
     } catch (e) {
       print("Lỗi khi gọi API thanh toán MoMo: $e");
     }
@@ -109,6 +122,9 @@ class DetailInvoiceState extends State<DetailInvoice>
 
         EasyLoading.showInfo('Đang đợi thanh toán...',
             duration: const Duration(seconds: 2));
+        setState(() {
+          status = 'Đang thanh toán...';
+        });
       } else if (statusMessage == "Successful.") {
         String result =
             await _apiService.updateStatusBuyTicketInfo(widget.idTicket);
@@ -116,6 +132,9 @@ class DetailInvoiceState extends State<DetailInvoice>
         print('result: $result');
         EasyLoading.showSuccess('Thanh toán thành công!',
             duration: const Duration(seconds: 2));
+        setState(() {
+          status = 'Thành công!';
+        });
 
         Navigator.push(
           context,
@@ -144,10 +163,72 @@ class DetailInvoiceState extends State<DetailInvoice>
         EasyLoading.showError('Lỗi: $statusMessage',
             duration: const Duration(seconds: 2));
       }
+    } catch (e) {}
+  }
+
+  Future<void> _checkStatusAuto() async {
+    try {
+      if (status == 'Thành công!') {
+        // Nếu trạng thái đã thành công, dừng việc kiểm tra tiếp
+        _timer?.cancel(); // Hủy timer để không gọi lại mỗi 5 giây nữa
+
+        // Đóng WebView nếu đang mở
+        try {
+          closeInAppWebView();
+        } catch (e) {
+          print("Lỗi khi đóng WebView: $e");
+        }
+
+        return; // Dừng hàm
+      }
+
+      print(widget.idTicket);
+      final statusMessage =
+          await _apiService.checkTransactionStatus(widget.idTicket);
+
+      if (statusMessage ==
+          "Transaction is initiated, waiting for user confirmation.") {
+        setState(() {
+          status = 'Đang thanh toán...';
+        });
+      } else if (statusMessage == "Successful.") {
+        String result =
+            await _apiService.updateStatusBuyTicketInfo(widget.idTicket);
+        setState(() {
+          status = 'Thành công!';
+        });
+
+        // Đóng WebView sau khi cập nhật trạng thái thành công
+        try {
+          closeInAppWebView();
+        } catch (e) {
+          print("Lỗi khi đóng WebView: $e");
+        }
+
+        Navigator.push(
+          context,
+          SlideFromRightPageRoute(
+              page: DetailInvoice2(
+            quantity: widget.quantity,
+            sumPrice: widget.sumPrice,
+            showTimeID: widget.showTimeID,
+            seatCodes: widget.seatCodes,
+            idTicket: widget.idTicket,
+            tongTienConLai: widget.tongTienConLai,
+            quantityCombo: widget.quantityCombo,
+            ticketPrice: widget.ticketPrice,
+            titleCombo: widget.titleCombo,
+            totalComboPrice: widget.totalComboPrice,
+            showtimeDate: widget.showtimeDate,
+            cinemaRoomID: widget.cinemaRoomID,
+            startTime: widget.startTime,
+            endTime: widget.endTime,
+            movieDetails: widget.movieDetails,
+          )),
+        );
+      }
     } catch (e) {
       print("Lỗi khi kiểm tra trạng thái giao dịch: $e");
-      EasyLoading.showError('Lỗi khi kiểm tra trạng thái giao dịch',
-          duration: const Duration(seconds: 3));
     }
   }
 
@@ -155,6 +236,8 @@ class DetailInvoiceState extends State<DetailInvoice>
   void dispose() {
     WidgetsBinding.instance
         .removeObserver(this); // Gỡ observer khi widget bị huỷ
+    _timer?.cancel();
+
     super.dispose();
   }
 
@@ -304,6 +387,23 @@ class DetailInvoiceState extends State<DetailInvoice>
                                           size: 200.0,
                                         ),
                                 ),
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Text(
+                                    'Thạng thái: ',
+                                    style: TextStyle(fontSize: 15),
+                                  ),
+                                  Text(
+                                    '$status',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 20),
                               Column(
@@ -468,7 +568,7 @@ class DetailInvoiceState extends State<DetailInvoice>
                                         vertical: 12, horizontal: 20),
                                   ),
                                   onPressed: () async {
-                                    await _launchUrl(Uri.parse(_payUrl!));
+                                    await _launchInWebView(Uri.parse(_payUrl!));
                                   },
                                   child: const Row(
                                     mainAxisAlignment: MainAxisAlignment

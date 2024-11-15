@@ -16,8 +16,9 @@ import '../register_page/register_page.dart';
 
 class LoginPage extends StatefulWidget {
   final bool isBack;
+  final Function? onPopCallback; // Thêm callback
 
-  LoginPage({this.isBack = false});
+  LoginPage({this.isBack = false, this.onPopCallback});
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -83,7 +84,11 @@ class _LoginPageState extends State<LoginPage> {
             if (widget.isBack) {
               hideLoadingSpinner(context);
 
-              Navigator.of(context).pop();
+              // Kiểm tra nếu có callback, gọi callback rồi pop
+              if (widget.onPopCallback != null) {
+                widget.onPopCallback!(); // Gọi callback
+              }
+              Navigator.of(context).pop(); // Quay lại màn hình trước
             } else {
               if (UserManager.instance.user?.role == 0) {
                 ApiService apiService = ApiService();

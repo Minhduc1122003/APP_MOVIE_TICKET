@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
@@ -16,7 +17,9 @@ import 'package:lottie/lottie.dart'; // Import package
 
 class FilmInformation extends StatefulWidget {
   final int movieId;
-  const FilmInformation({super.key, required this.movieId});
+  final Function? onPopCallback; // Thêm callback
+
+  const FilmInformation({super.key, required this.movieId, this.onPopCallback});
 
   @override
   State<FilmInformation> createState() => _FilmInformationState();
@@ -66,7 +69,11 @@ class _FilmInformationState extends State<FilmInformation>
                       size: 16,
                     ),
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      // Kiểm tra nếu có callback, gọi callback rồi pop
+                      if (widget.onPopCallback != null) {
+                        widget.onPopCallback!(); // Gọi callback
+                      }
+                      Navigator.of(context).pop(); // Quay lại màn hình trước
                     },
                   ),
                   title: Text(
@@ -164,12 +171,18 @@ class _MovieHeaderState extends State<MovieHeader>
                         color: Colors.black, width: 10), // Viền cho hình ảnh
                     borderRadius: BorderRadius.circular(15), // Bo góc cho viền
                   ),
-                  child: Image.network(
-                    '${state.movieDetails?.posterUrl}',
+                  child: CachedNetworkImage(
+                    imageUrl: '${state.movieDetails?.posterUrl}',
                     // Thêm fallback cho URL poster
                     width: 130,
                     height: 200,
                     fit: BoxFit.cover, // Điều chỉnh ảnh cho phù hợp với khung
+                    placeholder: (context, url) =>
+                        const CircularProgressIndicator(), // Hiển thị vòng tròn khi đang tải
+                    errorWidget: (context, url, error) => const Icon(Icons
+                        .error), // Hiển thị icon lỗi nếu tải ảnh không thành công
+                    fadeInDuration: const Duration(
+                        seconds: 1), // Thời gian hiệu ứng fade-in
                   ),
                 ),
               ),

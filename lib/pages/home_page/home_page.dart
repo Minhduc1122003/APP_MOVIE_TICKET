@@ -126,7 +126,7 @@ class _HomePage extends State<HomePage> {
                       filmSapChieu: _filmSapChieu,
                       scrollNotifier: _scrollNotifier,
                     ),
-                    MyTicketsPage(),
+                    MyTicketsPage(key: myTicketsPage),
                     FavoritePage(
                         key: favoritePageKey), // Sử dụng favoritePageKey
                     CheckUserPage(),
@@ -176,6 +176,10 @@ class _HomePage extends State<HomePage> {
           if (index == 2) {
             // Gọi refresh cho FavoritePage
             favoritePageKey.currentState?.refreshFavorites();
+          }
+          if (index == 1) {
+            // Gọi refresh cho FavoritePage
+            myTicketsPage.currentState?.refreshBuyticket();
           }
         });
       },
