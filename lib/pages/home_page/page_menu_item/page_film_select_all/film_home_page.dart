@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_app_chat/components/my_listViewCardIteam.dart';
@@ -42,10 +43,15 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
   final ScrollController _scrollController = ScrollController();
   double _lastScrollPosition = 0.0;
   final double _maxBottomNavHeight = 50.0;
+  late ApiService _APIService;
+  late Future<List<Map<String, dynamic>>> _top5Movies;
 
   @override
   void initState() {
     super.initState();
+    _APIService = ApiService();
+    _top5Movies = _APIService.getTop5RateMovie();
+
     _startSlideshow();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -179,8 +185,23 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
           ],
         ),
         _buildSectionTitle('PHIM NỔI BẬT'),
-        FilmCarousel(
-          filmList: _mapMoviesToFilmList(widget.filmDangChieu),
+        FutureBuilder<List<Map<String, dynamic>>>(
+          future: _top5Movies, // Pass your future here
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator(); // Show a loading indicator while waiting for the data
+            } else if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}'); // Handle error cases
+            } else if (snapshot.hasData) {
+              return FilmCarousel(
+                filmList: _mapMoviesToFilmList2(
+                    snapshot.data!), // Use the loaded data
+              );
+            } else {
+              return Text(
+                  'No data available'); // Handle the case when no data is returned
+            }
+          },
         ),
         SizedBox(
           height: 20,
@@ -210,6 +231,20 @@ class _FilmSelectionPageState extends State<FilmSelectionPage>
         ),
       ],
     );
+  }
+
+  List<Map<String, dynamic>> _mapMoviesToFilmList2(
+      List<Map<String, dynamic>> movies) {
+    return movies.map((movie) {
+      return {
+        'image': movie['PosterUrl'],
+        'title': movie['Title'],
+        'rating': movie['AverageRating'],
+        'genre': movie['Genres'],
+        'movieID': movie['MovieID'],
+        'ReviewCount': movie['ReviewCount'],
+      };
+    }).toList();
   }
 
   List<Map<String, dynamic>> _mapMoviesToFilmList(List<MovieDetails> movies) {
@@ -625,7 +660,7 @@ class _FilmCarouselState extends State<FilmCarousel> {
                                         ),
                                         SizedBox(width: 5),
                                         AutoSizeText(
-                                          '(${film['rating']} lượt đánh giá)',
+                                          '(${film['ReviewCount']} lượt đánh giá)',
                                           style: TextStyle(
                                               fontSize: 12,
                                               color: Color(0xFFA69E9E)),

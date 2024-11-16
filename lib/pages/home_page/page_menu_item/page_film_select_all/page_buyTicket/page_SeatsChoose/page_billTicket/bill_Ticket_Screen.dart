@@ -246,7 +246,7 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                           MainAxisAlignment.center,
                                       children: [
                                         const Text(
-                                          'Thời gian còn lại: ',
+                                          'Thời gian còn lại:',
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 16,
@@ -258,9 +258,9 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                           child: Text(
                                             _formatRemainingTime(),
                                             style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 18,
-                                            ),
+                                                color: Colors.white,
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold),
                                           ),
                                         ),
                                       ],

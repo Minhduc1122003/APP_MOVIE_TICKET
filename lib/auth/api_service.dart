@@ -34,8 +34,8 @@ class ApiService {
     // String? ip = await info.getWifiIP(); // 192.168.1.43
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.1.121:8081';
-
+    baseUrl = 'http://192.168.1.171:8081';
+// server public
     // baseUrl = 'https://nodejs-sql-server-api.onrender.com';
   }
 
@@ -1379,6 +1379,73 @@ class ApiService {
       // In lỗi ra console để debug
       print('Error: $e');
       throw Exception('Failed to retrieve tickets');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getTop5RateMovie() async {
+    await _initBaseUrl();
+
+    try {
+      // Gửi yêu cầu GET đến API
+      final response = await http.get(
+        Uri.parse('$baseUrl/getTop5RateMovie'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        print('Parsed Data: $data');
+
+        return data.map((item) => item as Map<String, dynamic>).toList();
+      } else {
+        throw Exception('Failed to get movies: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to get movies');
+    }
+  }
+
+  Future<BuyTicket> FindOneBuyTicketById(String BuyTicketId) async {
+    await _initBaseUrl();
+
+    try {
+      // Gửi yêu cầu GET đến API
+      final response = await http.get(
+        Uri.parse('$baseUrl/FindOneBuyTicketById?BuyTicketId=$BuyTicketId'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+      print('=====================>>>>22');
+      print('${response.statusCode}');
+
+      // Kiểm tra mã trạng thái của phản hồi
+      if (response.statusCode == 200) {
+        // Phản hồi thành công, ánh xạ dữ liệu
+        final Map<String, dynamic> responseBody = json.decode(response.body);
+
+        // Lấy dữ liệu từ "data" trong JSON (giả sử phản hồi API chứa dữ liệu trong trường 'data')
+        final BuyTicket ticket = BuyTicket.fromJson(responseBody['data'][0]);
+
+        print('=====================>>>>2222');
+        print('$ticket');
+
+        return ticket;
+      } else {
+        // Xử lý lỗi nếu API trả về mã trạng thái không thành công
+        throw Exception(
+            'Failed to retrieve ticket. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      // In lỗi ra console để debug
+      print('Error: $e');
+      throw Exception('Failed to retrieve ticket');
     }
   }
 }

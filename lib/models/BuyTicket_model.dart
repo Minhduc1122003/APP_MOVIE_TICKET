@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 
 class BuyTicket {
   final String buyTicketId;
-  final DateTime createDate;
+  final String createDate;
   final double totalPrice;
   final String status;
   final bool isCheckIn;
@@ -15,8 +15,8 @@ class BuyTicket {
   final String cinemaName;
   final int cinemaRoomId;
   final String seatNumbers;
-  final int totalTicketPrice;
-  final int totalComboPrice;
+  final double totalTicketPrice;
+  final double totalComboPrice;
   final String comboDetails;
 
   BuyTicket({
@@ -40,9 +40,8 @@ class BuyTicket {
   factory BuyTicket.fromJson(Map<String, dynamic> json) {
     return BuyTicket(
       buyTicketId: json['BuyTicketId'] ?? '', // Giá trị mặc định là chuỗi rỗng
-      createDate: json['CreateDate'] != null
-          ? DateTime.parse(json['CreateDate'])
-          : DateTime.now(), // Giá trị mặc định là thời gian hiện tại
+      createDate:
+          json['CreateDate'] ?? '', // Giá trị mặc định là thời gian hiện tại
       totalPrice: json['TotalPrice'] ?? 0, // Giá trị mặc định là 0
       status: json['Status'] ?? '',
       isCheckIn: json['IsCheckIn'] ?? false, // Giá trị mặc định là false

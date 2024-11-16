@@ -7,6 +7,7 @@ import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/models/BuyTicket_model.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/film_hayDangChieu_screen.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/ticket_screen/infoTicket_page.dart';
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:intl/intl.dart';
 
@@ -367,152 +368,165 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                 itemCount: tickets.length,
                 itemBuilder: (context, index) {
                   final ticket = tickets[index];
-                  return Card(
-                    color: Colors.white,
-                    margin:
-                        const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    elevation: 3,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: CachedNetworkImage(
-                              imageUrl: ticket.posterUrl,
-                              height: 80,
-                              width: 60,
-                              fit: BoxFit.cover,
-                              errorWidget: (context, url, error) =>
-                                  const Icon(Icons.error),
-                              fadeInDuration: const Duration(seconds: 1),
+                  return GestureDetector(
+                    onTap: () {
+                      // In ra posterUrl khi nhấn vào Card
+                      print(ticket.buyTicketId);
+                      Navigator.push(
+                        context,
+                        SlideFromRightPageRoute(
+                          page: InfoticketPage(buyTicketID: ticket.buyTicketId),
+                        ),
+                      );
+                    },
+                    child: Card(
+                      color: Colors.white,
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 5, horizontal: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 3,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: CachedNetworkImage(
+                                imageUrl: ticket.posterUrl,
+                                height: 80,
+                                width: 60,
+                                fit: BoxFit.cover,
+                                errorWidget: (context, url, error) =>
+                                    const Icon(Icons.error),
+                                fadeInDuration: const Duration(seconds: 1),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                AutoSizeText(
-                                  ticket.movieName,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  AutoSizeText(
+                                    ticket.movieName,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    minFontSize: 14,
+                                    maxFontSize: 16,
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  minFontSize: 14,
-                                  maxFontSize: 16,
-                                ),
-                                const SizedBox(height: 5),
-                                Row(
-                                  children: [
-                                    Text(
-                                      'Suất chiếu:',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 3),
-                                    Icon(Icons.access_time, size: 14),
-                                    const SizedBox(width: 5),
-                                    AutoSizeText(
-                                      '${ticket.startTime} - ${getDayOfWeek(ticket.showtimeDate)}, ${ticket.showtimeDate}',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      minFontSize: 8,
-                                      maxFontSize: 12,
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 5),
-                                Row(
-                                  children: [
-                                    Text(
-                                      'Trạng thái: ',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 3),
-                                    Icon(Icons.info_outline_rounded, size: 14),
-                                    const SizedBox(width: 5),
-                                    AutoSizeText(
-                                      '${ticket.status}',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: ticket.status ==
-                                                'Chưa thanh toán'
-                                            ? Colors.orange
-                                            : ticket.status == 'Ðã thanh toán'
-                                                ? Colors.green
-                                                : ticket.status == 'Đã hủy'
-                                                    ? Colors.redAccent
-                                                    : Colors.grey,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      minFontSize: 8,
-                                      maxFontSize: 12,
-                                    ),
-                                    Text(
-                                      ' - ',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                    AutoSizeText(
-                                      '${ticket.isCheckIn == false ? 'Chưa sử dụng' : 'Đã sử dụng'}',
-                                      style: TextStyle(
+                                  const SizedBox(height: 5),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Suất chiếu:',
+                                        style: const TextStyle(
                                           fontSize: 12,
-                                          color: ticket.isCheckIn == false
-                                              ? Colors.green
-                                              : Colors.redAccent),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      minFontSize: 8,
-                                      maxFontSize: 12,
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 5),
-                                Row(
-                                  children: [
-                                    Text(
-                                      'Tổng thanh toán: ',
-                                      style: const TextStyle(
-                                        fontSize: 12,
+                                          color: Colors.black,
+                                        ),
                                       ),
-                                    ),
-                                    AutoSizeText(
-                                      '${formatPrice(ticket.totalPrice)}đ',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.deepOrangeAccent,
+                                      const SizedBox(width: 3),
+                                      Icon(Icons.access_time, size: 14),
+                                      const SizedBox(width: 5),
+                                      AutoSizeText(
+                                        '${ticket.startTime} - ${getDayOfWeek(ticket.showtimeDate)}, ${ticket.showtimeDate}',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        minFontSize: 8,
+                                        maxFontSize: 12,
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      minFontSize: 8,
-                                      maxFontSize: 12,
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Trạng thái: ',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 3),
+                                      Icon(Icons.info_outline_rounded,
+                                          size: 14),
+                                      const SizedBox(width: 5),
+                                      AutoSizeText(
+                                        '${ticket.status}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ticket.status ==
+                                                  'Chưa thanh toán'
+                                              ? Colors.orange
+                                              : ticket.status == 'Ðã thanh toán'
+                                                  ? Colors.green
+                                                  : ticket.status == 'Đã hủy'
+                                                      ? Colors.redAccent
+                                                      : Colors.grey,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        minFontSize: 8,
+                                        maxFontSize: 12,
+                                      ),
+                                      Text(
+                                        ' - ',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      AutoSizeText(
+                                        '${ticket.isCheckIn == false ? 'Chưa sử dụng' : 'Đã sử dụng'}',
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            color: ticket.isCheckIn == false
+                                                ? Colors.green
+                                                : Colors.redAccent),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        minFontSize: 8,
+                                        maxFontSize: 12,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Tổng thanh toán: ',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      AutoSizeText(
+                                        '${formatPrice(ticket.totalPrice)}đ',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.deepOrangeAccent,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        minFontSize: 8,
+                                        maxFontSize: 12,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   );
