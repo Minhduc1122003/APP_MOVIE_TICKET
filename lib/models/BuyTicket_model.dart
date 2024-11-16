@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:intl/intl.dart';
 
 class BuyTicket {
@@ -39,12 +37,12 @@ class BuyTicket {
 
   factory BuyTicket.fromJson(Map<String, dynamic> json) {
     return BuyTicket(
-      buyTicketId: json['BuyTicketId'] ?? '', // Giá trị mặc định là chuỗi rỗng
-      createDate:
-          json['CreateDate'] ?? '', // Giá trị mặc định là thời gian hiện tại
-      totalPrice: json['TotalPrice'] ?? 0, // Giá trị mặc định là 0
+      buyTicketId: json['BuyTicketId'] ?? '', // Default to empty string
+      createDate: json['CreateDate'] ?? '', // Default to empty string
+      totalPrice: (json['TotalPrice'] as num?)?.toDouble() ??
+          0.0, // Handle int and double
       status: json['Status'] ?? '',
-      isCheckIn: json['IsCheckIn'] ?? false, // Giá trị mặc định là false
+      isCheckIn: json['IsCheckIn'] ?? false, // Default to false
       movieName: json['MovieName'] ?? '',
       posterUrl: json['PosterUrl'] ?? '',
       showtimeDate: json['ShowtimeDate'] != null
@@ -54,12 +52,13 @@ class BuyTicket {
       startTime: json['StartTime'] != null
           ? DateFormat('HH:mm').format(DateTime.parse(json['StartTime']))
           : '',
-
       cinemaName: json['CinemaName'] ?? '',
-      cinemaRoomId: json['CinemaRoomID'] ?? 0, // Giá trị mặc định là 0
+      cinemaRoomId: json['CinemaRoomID'] ?? 0, // Default to 0
       seatNumbers: json['SeatNumbers'] ?? '',
-      totalTicketPrice: json['TotalTicketPrice'] ?? 0,
-      totalComboPrice: json['TotalComboPrice'] ?? 0,
+      totalTicketPrice: (json['TotalTicketPrice'] as num?)?.toDouble() ??
+          0.0, // Handle int and double
+      totalComboPrice: (json['TotalComboPrice'] as num?)?.toDouble() ??
+          0.0, // Handle int and double
       comboDetails: json['ComboDetails'] ?? '',
     );
   }

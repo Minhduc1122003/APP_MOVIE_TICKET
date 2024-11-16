@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_app_chat/auth/api_network.dart';
 import 'package:flutter_app_chat/models/BuyTicket_model.dart';
 import 'package:flutter_app_chat/models/Chair_modal.dart';
 import 'package:flutter_app_chat/models/Location_modal.dart';
@@ -34,7 +33,7 @@ class ApiService {
     // String? ip = await info.getWifiIP(); // 192.168.1.43
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.1.171:8081';
+    baseUrl = 'http://192.168.1.40:8081';
 // server public
     // baseUrl = 'https://nodejs-sql-server-api.onrender.com';
   }

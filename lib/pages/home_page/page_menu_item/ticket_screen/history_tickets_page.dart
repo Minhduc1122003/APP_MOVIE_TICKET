@@ -61,6 +61,7 @@ class _HistoryTicketsPageState extends State<HistoryTicketsPage> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
+      top: false,
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: mainColor,
@@ -315,17 +316,6 @@ class _HistoryTicketsPageState extends State<HistoryTicketsPage> {
                                                       const SizedBox(height: 5),
                                                       Row(
                                                         children: [
-                                                          Text(
-                                                            'Suất chiếu:',
-                                                            style:
-                                                                const TextStyle(
-                                                              fontSize: 12,
-                                                              color:
-                                                                  Colors.black,
-                                                            ),
-                                                          ),
-                                                          const SizedBox(
-                                                              width: 3),
                                                           Icon(
                                                               Icons.access_time,
                                                               size: 14),
@@ -351,17 +341,6 @@ class _HistoryTicketsPageState extends State<HistoryTicketsPage> {
                                                       const SizedBox(height: 5),
                                                       Row(
                                                         children: [
-                                                          Text(
-                                                            'Trạng thái: ',
-                                                            style:
-                                                                const TextStyle(
-                                                              fontSize: 12,
-                                                              color:
-                                                                  Colors.black,
-                                                            ),
-                                                          ),
-                                                          const SizedBox(
-                                                              width: 3),
                                                           Icon(
                                                               Icons
                                                                   .info_outline_rounded,

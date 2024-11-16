@@ -9,6 +9,7 @@ import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/film_hayDangChieu_screen.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/ticket_screen/infoTicket_page.dart';
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
+import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:intl/intl.dart';
 
 import 'history_tickets_page.dart';
@@ -66,9 +67,10 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
+      top: false,
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.blue,
+          backgroundColor: mainColor,
           automaticallyImplyLeading: false,
           title: Text(
             'Quản lý vé',
@@ -423,14 +425,6 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                                   const SizedBox(height: 5),
                                   Row(
                                     children: [
-                                      Text(
-                                        'Suất chiếu:',
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 3),
                                       Icon(Icons.access_time, size: 14),
                                       const SizedBox(width: 5),
                                       AutoSizeText(
@@ -449,14 +443,6 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                                   const SizedBox(height: 5),
                                   Row(
                                     children: [
-                                      Text(
-                                        'Trạng thái: ',
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 3),
                                       Icon(Icons.info_outline_rounded,
                                           size: 14),
                                       const SizedBox(width: 5),

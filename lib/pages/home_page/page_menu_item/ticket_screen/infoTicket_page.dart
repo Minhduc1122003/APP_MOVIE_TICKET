@@ -1,9 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/models/BuyTicket_model.dart';
-import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/pages/home_page/home_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:intl/intl.dart';
@@ -343,7 +341,7 @@ class InfoticketPageState extends State<InfoticketPage>
                                                         fontSize: 14,
                                                         fontWeight:
                                                             FontWeight.bold),
-                                                    maxLines: 1,
+                                                    maxLines: 3,
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                     minFontSize: 11,

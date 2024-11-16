@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
@@ -600,11 +601,14 @@ class _ShowtimeEditManagerPageState extends State<ShowtimeEditManagerPage> {
                           itemBuilder: (context, index) {
                             final movie = movies[index];
                             return ListTile(
-                              leading: Image.asset(
-                                'assets/images/${movie.posterUrl}',
+                              leading: CachedNetworkImage(
+                                imageUrl: movie.posterUrl,
                                 width: 30,
                                 height: 40,
                                 fit: BoxFit.cover,
+                                errorWidget: (context, url, error) =>
+                                    const Icon(Icons.error),
+                                fadeInDuration: const Duration(seconds: 1),
                               ),
                               title: Text(movie.title),
                               subtitle: Text('Thể loại: ${movie.genres}'),
@@ -858,8 +862,8 @@ class _ShowtimeEditManagerPageState extends State<ShowtimeEditManagerPage> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 if (posterUrl.isNotEmpty)
-                                  Image.asset(
-                                    'assets/images/$posterUrl',
+                                  CachedNetworkImage(
+                                    imageUrl: posterUrl,
                                     width: 50,
                                     height: 50,
                                     fit: BoxFit.cover,
