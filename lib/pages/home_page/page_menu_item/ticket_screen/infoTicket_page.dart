@@ -58,518 +58,470 @@ class InfoticketPageState extends State<InfoticketPage>
       ),
       body: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-          return Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Padding(
+          return FutureBuilder<BuyTicket>(
+            future: _futureBuyTickets,
+            builder: (BuildContext context, AsyncSnapshot<BuyTicket> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (snapshot.hasData) {
+                BuyTicket ticket = snapshot.data!;
+                return Stack(
+                  children: [
+                    SingleChildScrollView(
+                      child: Padding(
                         padding: const EdgeInsets.all(15),
                         child: Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: Colors.white, // Màu nền của thẻ ticket
-                            borderRadius: BorderRadius.circular(
-                                15), // Làm tròn góc với bán kính 15
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(15),
                           ),
-                          child: FutureBuilder<BuyTicket>(
-                              future: _futureBuyTickets,
-                              builder: (BuildContext context,
-                                  AsyncSnapshot<BuyTicket> snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Center(
-                                      child: CircularProgressIndicator());
-                                } else if (snapshot.hasError) {
-                                  return Center(
-                                      child: Text('Error: ${snapshot.error}'));
-                                } else if (snapshot.hasData) {
-                                  // Đã có dữ liệu
-                                  BuyTicket ticket = snapshot.data!;
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.3,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Image.network(
+                                        ticket.posterUrl,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 20),
+                                  Expanded(
+                                    child: Container(
+                                      constraints:
+                                          const BoxConstraints(maxHeight: 130),
+                                      alignment: Alignment.topLeft,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          AutoSizeText(
+                                            '${ticket.movieName}',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                            maxLines: 2,
+                                            minFontSize: 16,
+                                            maxFontSize: 18,
+                                            overflow: TextOverflow.clip,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        '${ticket.cinemaName}',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20,
+                                            color: Colors.deepOrange),
+                                      ),
+                                      Text(
+                                        ' - ',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(
+                                        'Rạp ${ticket.cinemaRoomId}',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      )
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 5),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Column(
                                     children: [
                                       Row(
-                                        children: [
-                                          SizedBox(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.3, // Chiều rộng bằng 50% màn hình
-                                            // Chiều cao bằng 30% màn hình
-                                            child: ClipRRect(
-                                              borderRadius: BorderRadius.circular(
-                                                  10), // Làm tròn góc cho ảnh
-                                              child: Image.network(
-                                                ticket.posterUrl,
-                                                fit: BoxFit.cover,
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 20),
-                                          // Sử dụng Container để điều chỉnh chiều cao
-                                          Expanded(
-                                            child: Container(
-                                              // Giới hạn chiều cao để căn chỉnh phần tử lên trên
-                                              constraints: const BoxConstraints(
-                                                  maxHeight:
-                                                      130), // Giới hạn chiều cao
-                                              alignment: Alignment
-                                                  .topLeft, // Căn chỉnh ở trên cùng bên trái
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  AutoSizeText(
-                                                    '${ticket.movieName}', // Đảm bảo xử lý null safety
-                                                    style: TextStyle(
-                                                      fontWeight: FontWeight
-                                                          .bold, // Font đậm
-                                                    ),
-                                                    maxLines:
-                                                        2, // Giới hạn tối đa 2 dòng
-                                                    minFontSize:
-                                                        16, // Kích thước font nhỏ nhất
-                                                    maxFontSize:
-                                                        18, // Kích thước font lớn nhất
-                                                    overflow: TextOverflow
-                                                        .clip, // Văn bản bị cắt nếu vượt quá không gian
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Text(
-                                                '${ticket.cinemaName}',
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 20,
-                                                    color: Colors.deepOrange),
-                                              ),
-                                              Text(
-                                                ' - ',
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              Text(
-                                                'Rạp ${ticket.cinemaRoomId}',
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              )
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          Column(
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Text('Ngày: '),
-                                                  Text(
-                                                    '${getDayOfWeek(ticket.showtimeDate)}, ${ticket.showtimeDate}',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  )
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                          Column(
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Text('Suất chiếu: '),
-                                                  Text(
-                                                    '${ticket.startTime}',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  )
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Center(
-                                        child: Container(
-                                          width: 150,
-                                          height: 150,
-                                          decoration: BoxDecoration(
-                                            color: basicColor,
-                                            borderRadius: BorderRadius.circular(
-                                                10), // Bo góc cho QR code
-                                          ),
-                                          child: QrImageView(
-                                            data: ticket.buyTicketId,
-                                            version: QrVersions.auto,
-                                            size: 200.0,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          Column(
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    'Đưa mã này cho nhân viên soát vé để vào rạp',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors
-                                                            .deepOrangeAccent),
-                                                  )
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(
-                                        height: 20,
-                                      ),
-                                      Column(
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
                                         children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            crossAxisAlignment: CrossAxisAlignment
-                                                .start, // Căn theo chiều dọc ở vị trí đầu (top)
-                                            children: [
-                                              Expanded(
-                                                flex: 2,
-                                                child: Align(
-                                                  alignment: Alignment
-                                                      .topCenter, // Đặt text ở góc trên bên trái
-                                                  child: Text('Ghế: '),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                flex: 4,
-                                                child: Align(
-                                                  alignment: Alignment
-                                                      .topLeft, // Đặt text ở góc trên bên trái
-                                                  child: Text(
-                                                    ' ${ticket.seatNumbers}',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                    textAlign: TextAlign
-                                                        .left, // Căn văn bản sang trái
-                                                  ),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                flex: 2,
-                                                child: Align(
-                                                  alignment: Alignment
-                                                      .topRight, // Đặt text ở góc trên bên trái
-                                                  child: Text(
-                                                    '${formatPrice(ticket.totalTicketPrice)}đ',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                    textAlign: TextAlign
-                                                        .left, // Căn văn bản sang trái
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          Divider(
-                                            color:
-                                                Colors.grey, // Màu của đường kẻ
-                                            thickness: 1, // Độ dày của đường kẻ
-                                            indent: 10, // Khoảng cách từ trái
-                                            endIndent:
-                                                10, // Khoảng cách từ phải
-                                          ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            crossAxisAlignment: CrossAxisAlignment
-                                                .start, // Căn theo chiều dọc ở vị trí đầu (top)
-                                            children: [
-                                              Expanded(
-                                                flex: 2,
-                                                child: Align(
-                                                  alignment: Alignment
-                                                      .topCenter, // Đặt text ở góc trên bên trái
-                                                  child: Text('Combo:'),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                flex: 5,
-                                                child: Align(
-                                                  alignment: Alignment
-                                                      .topLeft, // Đặt text ở góc trên bên trái
-                                                  child: AutoSizeText(
-                                                    '${ticket.comboDetails}', // Kiểm tra nếu không có combo
-                                                    style: const TextStyle(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                    maxLines: 3,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    minFontSize: 11,
-                                                  ),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                flex: 2,
-                                                child: Align(
-                                                  alignment: Alignment
-                                                      .topRight, // Đặt text ở góc trên bên trái
-                                                  child: Text(
-                                                    '${formatPrice(ticket.totalComboPrice)}đ', // Giá combo = 0
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                    textAlign: TextAlign
-                                                        .left, // Căn văn bản sang trái
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
+                                          Text('Ngày: '),
+                                          Text(
+                                            '${getDayOfWeek(ticket.showtimeDate)}, ${ticket.showtimeDate}',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold),
                                           )
                                         ],
                                       ),
-                                      const Divider(
-                                        color: Colors.grey, // Màu của đường kẻ
-                                        thickness: 1, // Độ dày của đường kẻ
-                                        indent: 10, // Khoảng cách từ trái
-                                        endIndent: 10, // Khoảng cách từ phải
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.fromLTRB(
-                                            20, 5, 20, 5),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text('Mã vé:'),
-                                            Text(
-                                              '${ticket.buyTicketId}',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.fromLTRB(
-                                            20, 5, 20, 5),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text('Ngày tạo:'),
-                                            Text(
-                                              '${formatDateTime(ticket.createDate)}',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.fromLTRB(
-                                            20, 5, 20, 5),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text('Trạng thái:'),
-                                            Row(
-                                              children: [
-                                                AutoSizeText(
-                                                  '${ticket.status}',
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: ticket.status ==
-                                                            'Chưa thanh toán'
-                                                        ? Colors.orange
-                                                        : ticket.status ==
-                                                                'Ðã thanh toán'
-                                                            ? Colors.green
-                                                            : ticket.status ==
-                                                                    'Đã hủy'
-                                                                ? Colors
-                                                                    .redAccent
-                                                                : Colors.grey,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  minFontSize: 8,
-                                                  maxFontSize: 14,
-                                                ),
-                                                Text(
-                                                  ' - ',
-                                                  style: const TextStyle(
-                                                    fontSize: 14,
-                                                    color: Colors.grey,
-                                                  ),
-                                                ),
-                                                AutoSizeText(
-                                                  '${ticket.isCheckIn == false ? 'Chưa sử dụng' : 'Đã sử dụng'}',
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: ticket.isCheckIn ==
-                                                            false
-                                                        ? Colors.green
-                                                        : Colors.redAccent,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  minFontSize: 8,
-                                                  maxFontSize: 14,
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment: CrossAxisAlignment
-                                              .start, // Căn theo chiều dọc ở vị trí đầu (top)
-                                          children: [
-                                            Expanded(
-                                              child: Align(
-                                                alignment: Alignment
-                                                    .topLeft, // Đặt text ở góc trên bên trái
-                                                child: Text('Thanh toán: ',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 18)),
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: Align(
-                                                alignment: Alignment
-                                                    .topRight, // Đặt text ở góc trên bên trái
-                                                child: Text(
-                                                  '${formatPrice(ticket.totalPrice)}đ',
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 20,
-                                                      color: Colors
-                                                          .red), // Căn văn bản sang trái
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      if (ticket.isCheckIn)
-                                        ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors
-                                                  .deepOrangeAccent, // Màu của nút
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        8), // Bo tròn góc
-                                              ),
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 20,
-                                                      horizontal: 20),
-                                            ),
-                                            onPressed: () async {
-                                              Navigator.push(
-                                                context,
-                                                SlideFromRightPageRoute(
-                                                  page: RateScreen(
-                                                    buyTicket: ticket,
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                            child: const Row(
-                                              mainAxisAlignment: MainAxisAlignment
-                                                  .center, // Căn giữa theo chiều ngang
-                                              children: [
-                                                Expanded(
-                                                  child: Align(
-                                                    alignment: Alignment
-                                                        .center, // Căn giữa văn bản
-                                                    child: Text(
-                                                      'Đánh giá phim',
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 18,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                Icon(
-                                                  Icons.arrow_forward_ios,
-                                                  color: Colors.white,
-                                                  size: 15,
-                                                ), // Mũi tên bên phải
-                                              ],
-                                            )),
                                     ],
-                                  );
-                                } else {
-                                  return Center(
-                                      child: Text('No data available.'));
-                                }
-                              }),
+                                  ),
+                                  Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Text('Suất chiếu: '),
+                                          Text(
+                                            '${ticket.startTime}',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          )
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Center(
+                                child: Container(
+                                  width: 150,
+                                  height: 150,
+                                  decoration: BoxDecoration(
+                                    color: basicColor,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: QrImageView(
+                                    data: ticket.buyTicketId,
+                                    version: QrVersions.auto,
+                                    size: 200.0,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              const Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Đưa mã này cho nhân viên soát vé để vào rạp',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.deepOrangeAccent),
+                                          )
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 20),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        flex: 2,
+                                        child: Align(
+                                          alignment: Alignment.topCenter,
+                                          child: Text('Ghế: '),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 4,
+                                        child: Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            ' ${ticket.seatNumbers}',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                            textAlign: TextAlign.left,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Align(
+                                          alignment: Alignment.topRight,
+                                          child: Text(
+                                            '${formatPrice(ticket.totalTicketPrice)}đ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                            textAlign: TextAlign.left,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Divider(
+                                    color: Colors.grey,
+                                    thickness: 1,
+                                    indent: 10,
+                                    endIndent: 10,
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        flex: 2,
+                                        child: Align(
+                                          alignment: Alignment.topCenter,
+                                          child: Text('Combo:'),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 5,
+                                        child: Align(
+                                          alignment: Alignment.topLeft,
+                                          child: AutoSizeText(
+                                            '${ticket.comboDetails}',
+                                            style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold),
+                                            maxLines: 3,
+                                            overflow: TextOverflow.ellipsis,
+                                            minFontSize: 11,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Align(
+                                          alignment: Alignment.topRight,
+                                          child: Text(
+                                            '${formatPrice(ticket.totalComboPrice)}đ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                            textAlign: TextAlign.left,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
+                              const Divider(
+                                color: Colors.grey,
+                                thickness: 1,
+                                indent: 10,
+                                endIndent: 10,
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 5, 20, 5),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('Mã vé:'),
+                                    Text(
+                                      '${ticket.buyTicketId}',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 5, 20, 5),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('Ngày tạo:'),
+                                    Text(
+                                      '${formatDateTime(ticket.createDate)}',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 5, 20, 5),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('Trạng thái:'),
+                                    Row(
+                                      children: [
+                                        AutoSizeText(
+                                          '${ticket.status}',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: ticket.status ==
+                                                    'Chưa thanh toán'
+                                                ? Colors.orange
+                                                : ticket.status ==
+                                                        'Ðã thanh toán'
+                                                    ? Colors.green
+                                                    : ticket.status == 'Đã hủy'
+                                                        ? Colors.redAccent
+                                                        : Colors.grey,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          minFontSize: 8,
+                                          maxFontSize: 14,
+                                        ),
+                                        Text(
+                                          ' - ',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                        AutoSizeText(
+                                          '${ticket.isCheckIn == false ? 'Chưa sử dụng' : 'Đã sử dụng'}',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: ticket.isCheckIn == false
+                                                ? Colors.green
+                                                : Colors.redAccent,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          minFontSize: 8,
+                                          maxFontSize: 14,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Align(
+                                        alignment: Alignment.topLeft,
+                                        child: Text('Thanh toán: ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18)),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Align(
+                                        alignment: Alignment.topRight,
+                                        child: Text(
+                                          '${formatPrice(ticket.totalPrice)}đ',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 20,
+                                              color: Colors.red),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (ticket.isCheckIn)
+                                ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.deepOrangeAccent,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 20, horizontal: 20),
+                                    ),
+                                    onPressed: () async {
+                                      Navigator.push(
+                                        context,
+                                        SlideFromRightPageRoute(
+                                          page: RateScreen(
+                                            buyTicket: ticket,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Expanded(
+                                          child: Align(
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              'Đánh giá phim',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Icon(
+                                          Icons.arrow_forward_ios,
+                                          color: Colors.white,
+                                          size: 15,
+                                        ),
+                                      ],
+                                    )),
+                            ],
+                          ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              // Nút Đóng nằm cố định ở dưới cùng của màn hình hoặc cuộn
-            ],
+                    ),
+                    if (ticket.isCheckIn)
+                      Center(
+                        child: Transform.rotate(
+                          angle: -0.3, // Góc xoay -45 độ (bằng radian)
+                          child: Opacity(
+                            opacity: 0.5, // Đặt mức độ trong suốt (20%)
+                            child: Container(
+                              padding: EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: Colors.red, // Màu viền đỏ
+                                  width: 3, // Độ dày viền
+                                ),
+                              ),
+                              child: Text(
+                                'VÉ ĐÃ SỬ DỤNG',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              } else {
+                return Center(child: Text('No data available.'));
+              }
+            },
           );
         },
       ),
@@ -586,9 +538,7 @@ String formatPrice(double price) {
 }
 
 String formatDateTime(String inputDate) {
-  // Chuyển chuỗi đầu vào thành đối tượng DateTime
   DateTime dateTime = DateTime.parse(inputDate);
-  // Định dạng ngày giờ thành 'HH:mm - dd/MM/yyyy'
   String formattedDate =
       "${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')} - "
       "${dateTime.day.toString().padLeft(2, '0')}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.year}";
