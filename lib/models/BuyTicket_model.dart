@@ -6,6 +6,7 @@ class BuyTicket {
   final double totalPrice;
   final String status;
   final bool isCheckIn;
+  final int movieID;
   final String movieName;
   final String posterUrl;
   final String showtimeDate;
@@ -23,6 +24,7 @@ class BuyTicket {
     required this.totalPrice,
     required this.status,
     required this.isCheckIn,
+    required this.movieID,
     required this.movieName,
     required this.posterUrl,
     required this.showtimeDate,
@@ -43,6 +45,7 @@ class BuyTicket {
           0.0, // Handle int and double
       status: json['Status'] ?? '',
       isCheckIn: json['IsCheckIn'] ?? false, // Default to false
+      movieID: json['MovieID'] ?? 0,
       movieName: json['MovieName'] ?? '',
       posterUrl: json['PosterUrl'] ?? '',
       showtimeDate: json['ShowtimeDate'] != null

@@ -6,6 +6,7 @@ import 'package:flutter_app_chat/auth/content_film_infomation.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/actor_model.dart';
+import 'package:flutter_app_chat/models/rating_info_model.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/bloc/film_info_Bloc.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/buyTicket_page.dart';
@@ -13,6 +14,7 @@ import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart'; // Import package
 
 class FilmInformation extends StatefulWidget {
@@ -97,6 +99,15 @@ class _FilmInformationState extends State<FilmInformation>
                               RatingSection(),
                               PlotSummary(),
                               CastAndCrew(movieId: widget.movieId),
+                              Divider(
+                                height: 1,
+                                color: basicColor,
+                                thickness: 1,
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              UserRating(movieId: widget.movieId),
                               SizedBox(height: 80),
                             ],
                           ),
@@ -739,6 +750,200 @@ class CastAndCrew extends StatelessWidget {
       ],
     );
   }
+}
+
+class UserRating extends StatelessWidget {
+  final ApiService _apiService = ApiService();
+  final int movieId;
+
+  UserRating({required this.movieId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Đánh giá từ cộng đồng',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 8),
+          FutureBuilder<List<RatingInfoModel>>(
+            future: _apiService.getAllRateInfoByMovieID(movieId),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+
+              if (snapshot.hasError) {
+                return Text('Không có bài đánh giá nào!');
+              }
+
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Text('Không có bài đánh giá nào!');
+              }
+
+              // Dùng ListView.separated để thêm Divider
+              return ListView.separated(
+                shrinkWrap: true,
+                itemCount: snapshot.data!.length,
+                itemBuilder: (context, index) {
+                  final rating = snapshot.data![index];
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 8),
+                    child: _buildRatingItem(rating),
+                  );
+                },
+                separatorBuilder: (context, index) {
+                  // Divider giữa các item
+                  return Divider(
+                    color: Colors.grey.shade300,
+                    thickness: 2,
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Hàm để xây dựng mỗi item đánh giá
+  Widget _buildRatingItem(RatingInfoModel rating) {
+    if (rating.reviewContent.isEmpty) {
+      return SizedBox.shrink(); // Trả về một widget rỗng
+    }
+    return Container(
+      padding: EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.grey.shade200, blurRadius: 6, offset: Offset(0, 2))
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Avatar người dùng (ảnh tròn)
+          Container(
+            height: 40,
+            width: 40,
+            child: CircleAvatar(
+              radius: 10,
+              backgroundImage: rating.avatar != null
+                  ? NetworkImage(rating.avatar!)
+                  : AssetImage('assets/images/profile.png'),
+            ),
+          ),
+          SizedBox(width: 12), // Khoảng cách giữa avatar và nội dung
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Tên người dùng
+                Row(
+                  children: [
+                    Text(
+                      rating.name,
+                      style:
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '    ${formatRatingDate(rating.ratingDate)}',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 4),
+                // Nội dung đánh giá
+                ExpandableText(reviewContent: rating.reviewContent),
+
+                SizedBox(height: 4),
+                // Xếp hạng của người dùng
+                Row(
+                  children: [
+                    Text(
+                      'Đánh giá: ',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    Text(
+                      '${rating.rating}',
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.amber,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '/10',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    Icon(
+                      Icons.star,
+                      color: Colors.amber,
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ExpandableText extends StatefulWidget {
+  final String reviewContent;
+  ExpandableText({required this.reviewContent});
+
+  @override
+  _ExpandableTextState createState() => _ExpandableTextState();
+}
+
+class _ExpandableTextState extends State<ExpandableText> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    // Kiểm tra độ dài của reviewContent và cắt bớt sau 4 dòng
+    String text = widget.reviewContent;
+    if (!_isExpanded && text.length > 200) {
+      // Số ký tự có thể thay đổi tùy vào font size và độ dài dòng
+      text = text.substring(0, 200) + '...';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          text,
+          style: TextStyle(fontSize: 12),
+        ),
+        if (widget.reviewContent.length >
+            200) // Nếu văn bản dài hơn 200 ký tự, hiển thị 'Xem thêm'
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+            },
+            child: Text(
+              _isExpanded ? 'Thu gọn' : 'Xem thêm',
+              style: TextStyle(fontSize: 12, color: Colors.blue),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+String formatRatingDate(DateTime ratingDate) {
+  // Định dạng lại thành "HH:mm - dd.MM.yyyy"
+  return DateFormat('HH:mm • dd/MM').format(ratingDate);
 }
 
 class BuyTicketButton extends StatelessWidget {

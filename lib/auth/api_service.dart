@@ -10,6 +10,7 @@ import 'package:flutter_app_chat/models/Shift_modal.dart';
 import 'package:flutter_app_chat/models/ShowTime_modal.dart';
 import 'package:flutter_app_chat/models/actor_model.dart';
 import 'package:flutter_app_chat/models/chat_item_model.dart';
+import 'package:flutter_app_chat/models/rating_info_model.dart';
 import 'package:flutter_app_chat/models/showTimeForAdmin_model.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
@@ -33,7 +34,7 @@ class ApiService {
     // String? ip = await info.getWifiIP(); // 192.168.1.43
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.1.40:8081';
+    baseUrl = 'http://192.168.1.44:8081';
 // server public
     // baseUrl = 'https://nodejs-sql-server-api.onrender.com';
   }
@@ -1345,6 +1346,36 @@ class ApiService {
     }
   }
 
+  Future<String> checkInBuyTicket(String buyTicketId) async {
+    await _initBaseUrl();
+
+    try {
+      // Gửi yêu cầu GET đến API
+      final response = await http.get(
+        Uri.parse('$baseUrl/checkInBuyTicket?BuyTicketId=$buyTicketId'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      // Kiểm tra mã trạng thái của phản hồi
+      if (response.statusCode == 200) {
+        // Phản hồi thành công, trả về nội dung phản hồi
+        final responseBody = response.body;
+        print('API Response: $responseBody');
+        return responseBody;
+      } else {
+        // Xử lý lỗi nếu API trả về mã trạng thái không thành công
+        throw Exception(
+            'Failed to update ticket status. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      // In lỗi ra console để debug
+      print('Error: $e');
+      throw Exception('Failed to update ticket status');
+    }
+  }
+
   Future<List<BuyTicket>> findAllBuyTicketByUserId(int userId) async {
     await _initBaseUrl();
 
@@ -1445,6 +1476,77 @@ class ApiService {
       // In lỗi ra console để debug
       print('Error: $e');
       throw Exception('Failed to retrieve ticket');
+    }
+  }
+
+  Future<String> insertRate(
+      int userId, int movieId, String content, int rating) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    final response = await http.post(
+      Uri.parse('$baseUrl/insertRate'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        "UserId": userId,
+        "MovieId": movieId,
+        "Content": content,
+        "Rating": rating,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Giải mã response body và trích xuất message
+      final responseData = jsonDecode(response.body);
+      return responseData['message'];
+    } else {
+      // Nếu server trả về lỗi
+      final errorResponse = jsonDecode(response.body);
+      throw Exception(errorResponse['message'] ?? 'Failed to insert rate');
+    }
+  }
+
+  Future<Map<String, dynamic>> getRate(int userId, int movieId) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    final response = await http.post(
+      Uri.parse('$baseUrl/getRate'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        "UserId": userId,
+        "MovieId": movieId,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Giải mã response body và trả về Map kết quả
+      return jsonDecode(response.body);
+    } else {
+      // Nếu server trả về lỗi
+      final errorResponse = jsonDecode(response.body);
+      throw Exception(errorResponse['message'] ?? 'Failed to get rate');
+    }
+  }
+
+  Future<List<RatingInfoModel>> getAllRateInfoByMovieID(int movieId) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    final response = await http.post(
+      Uri.parse('$baseUrl/getAllRateInfoByMovieID'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        "MovieId": movieId,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> data = jsonDecode(response.body);
+      return data.map((item) => RatingInfoModel.fromJson(item)).toList();
+    } else {
+      final errorResponse = jsonDecode(response.body);
+      throw Exception(errorResponse['message'] ?? 'Failed to get rate');
     }
   }
 }

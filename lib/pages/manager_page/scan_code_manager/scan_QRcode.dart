@@ -1,6 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app_chat/components/animation_page.dart';
+import 'package:flutter_app_chat/components/my_button.dart';
+import 'package:flutter_app_chat/pages/manager_page/scan_code_manager/QRinfoTicket_page.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 class ScanQrcode extends StatefulWidget {
@@ -15,6 +19,7 @@ class _ScanQrcodeState extends State<ScanQrcode>
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? controller;
   String result = "Chưa quét được mã";
+  TextEditingController _idTicket = TextEditingController();
 
   @override
   void reassemble() {
@@ -174,6 +179,8 @@ class _ScanQrcodeState extends State<ScanQrcode>
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               GestureDetector(
+                onTap: () => _showQRModal(context), // Hàm mở modal
+
                 child: const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
@@ -198,6 +205,63 @@ class _ScanQrcodeState extends State<ScanQrcode>
           ),
         ],
       ),
+    );
+  }
+
+  void _showQRModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Để modal không bị giới hạn kích thước
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: MediaQuery.of(context)
+              .viewInsets, // Đẩy modal lên khi mở bàn phím
+          child: Container(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // Để modal vừa khít nội dung
+              children: [
+                const Text(
+                  'Nhập mã hóa đơn',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _idTicket,
+                  decoration: InputDecoration(
+                    labelText: 'Mã hóa đơn',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                MyButton(
+                  text: "Kiểm tra",
+                  onTap: () async {
+                    final result = await Navigator.push(
+                      context,
+                      SlideFromRightPageRoute(
+                        page: QrinfoticketPage(
+                          buyTicketID: _idTicket.text,
+                        ),
+                      ),
+                    );
+                    if (result == 'Không tồn tại') {
+                      EasyLoading.showError('Lỗi không tìm thấy vé');
+                    }
+                  },
+                  fontsize: 16,
+                  paddingText: 10,
+                )
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

@@ -5,21 +5,23 @@ import 'package:flutter_app_chat/models/BuyTicket_model.dart';
 import 'package:flutter_app_chat/pages/home_page/home_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/ticket_screen/rate_page/rate_screen.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../../../../../auth/api_service.dart';
 
-class InfoticketPage extends StatefulWidget {
+class QrinfoticketPage extends StatefulWidget {
   final String buyTicketID;
 
-  const InfoticketPage({Key? key, required this.buyTicketID}) : super(key: key);
+  const QrinfoticketPage({Key? key, required this.buyTicketID})
+      : super(key: key);
 
   @override
-  InfoticketPageState createState() => InfoticketPageState();
+  QrinfoticketPageState createState() => QrinfoticketPageState();
 }
 
-class InfoticketPageState extends State<InfoticketPage>
+class QrinfoticketPageState extends State<QrinfoticketPage>
     with AutomaticKeepAliveClientMixin {
   late ApiService _apiService;
   late String qrText = '';
@@ -30,6 +32,7 @@ class InfoticketPageState extends State<InfoticketPage>
     super.initState();
     _apiService = ApiService();
     _futureBuyTickets = _apiService.FindOneBuyTicketById(widget.buyTicketID);
+
     qrText = '';
   }
 
@@ -81,9 +84,13 @@ class InfoticketPageState extends State<InfoticketPage>
                                     ConnectionState.waiting) {
                                   return Center(
                                       child: CircularProgressIndicator());
-                                } else if (snapshot.hasError) {
-                                  return Center(
-                                      child: Text('Error: ${snapshot.error}'));
+                                } else if (snapshot.hasError ||
+                                    snapshot.data == null) {
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    Navigator.pop(context,
+                                        'Không tồn tại'); // Truyền callback
+                                  });
                                 } else if (snapshot.hasData) {
                                   // Đã có dữ liệu
                                   BuyTicket ticket = snapshot.data!;
@@ -91,59 +98,25 @@ class InfoticketPageState extends State<InfoticketPage>
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
+                                      const SizedBox(height: 10),
                                       Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
                                         children: [
-                                          SizedBox(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width *
-                                                0.3, // Chiều rộng bằng 50% màn hình
-                                            // Chiều cao bằng 30% màn hình
-                                            child: ClipRRect(
-                                              borderRadius: BorderRadius.circular(
-                                                  10), // Làm tròn góc cho ảnh
-                                              child: Image.network(
-                                                ticket.posterUrl,
-                                                fit: BoxFit.cover,
+                                          Row(
+                                            children: [
+                                              Text(
+                                                '${ticket.movieName}',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 23,
+                                                    color: Colors.deepOrange),
                                               ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 20),
-                                          // Sử dụng Container để điều chỉnh chiều cao
-                                          Expanded(
-                                            child: Container(
-                                              // Giới hạn chiều cao để căn chỉnh phần tử lên trên
-                                              constraints: const BoxConstraints(
-                                                  maxHeight:
-                                                      130), // Giới hạn chiều cao
-                                              alignment: Alignment
-                                                  .topLeft, // Căn chỉnh ở trên cùng bên trái
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  AutoSizeText(
-                                                    '${ticket.movieName}', // Đảm bảo xử lý null safety
-                                                    style: TextStyle(
-                                                      fontWeight: FontWeight
-                                                          .bold, // Font đậm
-                                                    ),
-                                                    maxLines:
-                                                        2, // Giới hạn tối đa 2 dòng
-                                                    minFontSize:
-                                                        16, // Kích thước font nhỏ nhất
-                                                    maxFontSize:
-                                                        18, // Kích thước font lớn nhất
-                                                    overflow: TextOverflow
-                                                        .clip, // Văn bản bị cắt nếu vượt quá không gian
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
+                                            ],
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 10),
+                                      const SizedBox(height: 20),
                                       Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceEvenly,
@@ -292,80 +265,8 @@ class InfoticketPageState extends State<InfoticketPage>
                                                   ),
                                                 ),
                                               ),
-                                              Expanded(
-                                                flex: 2,
-                                                child: Align(
-                                                  alignment: Alignment
-                                                      .topRight, // Đặt text ở góc trên bên trái
-                                                  child: Text(
-                                                    '${formatPrice(ticket.totalTicketPrice)}đ',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                    textAlign: TextAlign
-                                                        .left, // Căn văn bản sang trái
-                                                  ),
-                                                ),
-                                              ),
                                             ],
                                           ),
-                                          Divider(
-                                            color:
-                                                Colors.grey, // Màu của đường kẻ
-                                            thickness: 1, // Độ dày của đường kẻ
-                                            indent: 10, // Khoảng cách từ trái
-                                            endIndent:
-                                                10, // Khoảng cách từ phải
-                                          ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            crossAxisAlignment: CrossAxisAlignment
-                                                .start, // Căn theo chiều dọc ở vị trí đầu (top)
-                                            children: [
-                                              Expanded(
-                                                flex: 2,
-                                                child: Align(
-                                                  alignment: Alignment
-                                                      .topCenter, // Đặt text ở góc trên bên trái
-                                                  child: Text('Combo:'),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                flex: 5,
-                                                child: Align(
-                                                  alignment: Alignment
-                                                      .topLeft, // Đặt text ở góc trên bên trái
-                                                  child: AutoSizeText(
-                                                    '${ticket.comboDetails}', // Kiểm tra nếu không có combo
-                                                    style: const TextStyle(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                    maxLines: 3,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    minFontSize: 11,
-                                                  ),
-                                                ),
-                                              ),
-                                              Expanded(
-                                                flex: 2,
-                                                child: Align(
-                                                  alignment: Alignment
-                                                      .topRight, // Đặt text ở góc trên bên trái
-                                                  child: Text(
-                                                    '${formatPrice(ticket.totalComboPrice)}đ', // Giá combo = 0
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                    textAlign: TextAlign
-                                                        .left, // Căn văn bản sang trái
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          )
                                         ],
                                       ),
                                       const Divider(
@@ -467,100 +368,122 @@ class InfoticketPageState extends State<InfoticketPage>
                                           ],
                                         ),
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment: CrossAxisAlignment
-                                              .start, // Căn theo chiều dọc ở vị trí đầu (top)
-                                          children: [
-                                            Expanded(
-                                              child: Align(
-                                                alignment: Alignment
-                                                    .topLeft, // Đặt text ở góc trên bên trái
-                                                child: Text('Thanh toán: ',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 18)),
-                                              ),
+                                      SizedBox(
+                                        height: 10,
+                                      ),
+                                      ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors
+                                                .deepOrangeAccent, // Màu của nút
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      8), // Bo tròn góc
                                             ),
-                                            Expanded(
-                                              child: Align(
-                                                alignment: Alignment
-                                                    .topRight, // Đặt text ở góc trên bên trái
-                                                child: Text(
-                                                  '${formatPrice(ticket.totalPrice)}đ',
-                                                  style: TextStyle(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 20, horizontal: 20),
+                                          ),
+                                          onPressed: () async {
+                                            if (ticket.isCheckIn) {
+                                              EasyLoading.showError(
+                                                  'Vé đã dược sử dụng');
+                                              WidgetsBinding.instance
+                                                  .addPostFrameCallback((_) {
+                                                Navigator.pop(context,
+                                                    'Vé đã dược sử dụng'); // Truyền callback
+                                              });
+                                              return; // Thêm return để dừng xử lý
+                                            }
+
+                                            if (ticket.status !=
+                                                'Ðã thanh toán') {
+                                              EasyLoading.showError(
+                                                  'Vé chưa thanh toán hoặc đã hủy!');
+                                              WidgetsBinding.instance
+                                                  .addPostFrameCallback((_) {
+                                                Navigator.pop(context,
+                                                    'Vé chưa thanh toán hoặc đã hủy!'); // Truyền callback
+                                              });
+                                              return; // Thêm return để dừng xử lý
+                                            }
+
+                                            // Xử lý tiếp khi vé hợp lệ
+                                            String buyTicketId =
+                                                widget.buyTicketID;
+                                            try {
+                                              EasyLoading
+                                                  .show(); // Hiển thị loading
+
+                                              // Gọi API
+                                              String result = await _apiService
+                                                  .checkInBuyTicket(
+                                                      buyTicketId);
+
+                                              // Kiểm tra nếu server trả về "successfully"
+                                              if (result
+                                                  .toLowerCase()
+                                                  .contains('successfully')) {
+                                                EasyLoading
+                                                    .dismiss(); // Ẩn loading
+                                                EasyLoading.showSuccess(
+                                                    'Check-in thành công!');
+                                                WidgetsBinding.instance
+                                                    .addPostFrameCallback((_) {
+                                                  Navigator.pop(context,
+                                                      'Check-in thành công!'); // Truyền callback
+                                                });
+                                              } else {
+                                                EasyLoading
+                                                    .dismiss(); // Ẩn loading
+                                                EasyLoading.showError(
+                                                    'Vé chưa thanh toán hoặc đã hủy!');
+                                                WidgetsBinding.instance
+                                                    .addPostFrameCallback((_) {
+                                                  Navigator.pop(context,
+                                                      'Vé chưa thanh toán hoặc đã hủy!'); // Truyền callback
+                                                });
+                                              }
+                                            } catch (error) {
+                                              EasyLoading
+                                                  .dismiss(); // Ẩn loading
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                    content: Text(
+                                                        'Lỗi khi check-in: $error')),
+                                              );
+                                            }
+                                          },
+                                          child: const Row(
+                                            mainAxisAlignment: MainAxisAlignment
+                                                .center, // Căn giữa theo chiều ngang
+                                            children: [
+                                              Expanded(
+                                                child: Align(
+                                                  alignment: Alignment
+                                                      .center, // Căn giữa văn bản
+                                                  child: Text(
+                                                    'Check in',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 18,
                                                       fontWeight:
                                                           FontWeight.bold,
-                                                      fontSize: 20,
-                                                      color: Colors
-                                                          .red), // Căn văn bản sang trái
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      if (ticket.isCheckIn)
-                                        ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors
-                                                  .deepOrangeAccent, // Màu của nút
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        8), // Bo tròn góc
-                                              ),
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 20,
-                                                      horizontal: 20),
-                                            ),
-                                            onPressed: () async {
-                                              Navigator.push(
-                                                context,
-                                                SlideFromRightPageRoute(
-                                                  page: RateScreen(
-                                                    buyTicket: ticket,
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                            child: const Row(
-                                              mainAxisAlignment: MainAxisAlignment
-                                                  .center, // Căn giữa theo chiều ngang
-                                              children: [
-                                                Expanded(
-                                                  child: Align(
-                                                    alignment: Alignment
-                                                        .center, // Căn giữa văn bản
-                                                    child: Text(
-                                                      'Đánh giá phim',
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 18,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
                                                     ),
                                                   ),
                                                 ),
-                                                Icon(
-                                                  Icons.arrow_forward_ios,
-                                                  color: Colors.white,
-                                                  size: 15,
-                                                ), // Mũi tên bên phải
-                                              ],
-                                            )),
+                                              ),
+                                              Icon(
+                                                Icons.arrow_forward_ios,
+                                                color: Colors.white,
+                                                size: 15,
+                                              ), // Mũi tên bên phải
+                                            ],
+                                          )),
                                     ],
                                   );
-                                } else {
-                                  return Center(
-                                      child: Text('No data available.'));
                                 }
+                                return const SizedBox.shrink();
                               }),
                         ),
                       ),
