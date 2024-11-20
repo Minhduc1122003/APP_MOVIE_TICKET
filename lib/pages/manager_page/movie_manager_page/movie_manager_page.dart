@@ -73,6 +73,9 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
   final picker = ImagePicker();
   final ApiService _apiService = ApiService();
 
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _noidungPhim = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -91,6 +94,8 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
                 File(pickedFile.path); // Store the image file
             _image = File(pickedFile
                 .path); // Optionally store it in a separate variable if needed
+            print('load image');
+            print('$_image');
           } else {
             print('Index out of bounds');
           }
@@ -395,11 +400,68 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
                 ),
                 const SizedBox(height: 10),
                 MyButton(
-                    fontsize: 20,
-                    paddingText: 10,
-                    text: 'Hoàn tất',
-                    isBold: true,
-                    onTap: () {})
+                  fontsize: 20,
+                  paddingText: 10,
+                  text: 'Hoàn tất',
+                  isBold: true,
+                  onTap: () async {
+                    final ApiService _apiService = ApiService();
+
+                    print('Click hoan tat');
+                    print('$_image');
+                    print('${_titleController.text}');
+                    print('${_selectedRating}');
+                    print('${selectedGenres}');
+                    print('${_selectedDate}');
+                    print('${_durationController.text}');
+                    print('${_isSubtitled}');
+                    print('${_isDubbed}');
+                    print('${_urlController.text}');
+                    print('${_noidungPhim.text}');
+
+                    List<Map<String, String>> actors = [];
+
+                    // Lặp qua tất cả các dòng dữ liệu diễn viên
+                    await Future.forEach(_rows, (row) async {
+                      String actorName =
+                          row['name'].text; // Lấy tên diễn viên từ controller
+                      String actorImage = row['image'] != null
+                          ? row['image'].path
+                          : 'Chưa chọn ảnh'; // Lấy đường dẫn ảnh nếu có
+
+                      // Lưu thông tin diễn viên vào mảng actors (chưa có link ảnh)
+                      actors.add({
+                        'name': actorName,
+                        'image': actorImage,
+                      });
+
+                      // Nếu có hình ảnh, thực hiện upload
+                      if (actorImage != 'Chưa chọn ảnh') {
+                        try {
+                          // Chuyển đường dẫn thành đối tượng File
+                          File imageFile = File(actorImage);
+
+                          // Gửi ảnh đi upload
+                          final imageUploadResponsePhoto =
+                              await _apiService.uploadImage(imageFile);
+
+                          // Cập nhật lại actors với URL của ảnh sau khi upload thành công
+                          actors[actors.length - 1]['image'] =
+                              imageUploadResponsePhoto;
+                          print(
+                              'Image upload response: $imageUploadResponsePhoto');
+                        } catch (e) {
+                          print('Error uploading image for $actorName: $e');
+                        }
+                      }
+                    });
+
+                    // Sau khi tất cả các ảnh đã được upload, in ra mảng actors với link hình ảnh cập nhật
+                    print('Updated actors: $actors');
+
+                    // Nếu bạn cần làm gì đó với actors, tiếp tục ở đây, ví dụ:
+                  },
+                )
               ],
             ),
           ),
@@ -473,6 +535,7 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
                 children: [
                   Expanded(
                     child: TextField(
+                      controller: _titleController,
                       decoration: InputDecoration(
                         labelText: 'Tên phim',
                         border: OutlineInputBorder(
@@ -660,6 +723,7 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
 
   Widget _buildDescriptionInput() {
     return TextField(
+      controller: _noidungPhim,
       decoration: InputDecoration(
         labelText: 'Nội dung phim',
         border: OutlineInputBorder(
