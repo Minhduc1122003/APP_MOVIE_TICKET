@@ -1549,4 +1549,78 @@ class ApiService {
       throw Exception(errorResponse['message'] ?? 'Failed to get rate');
     }
   }
+
+  Future<String> updateInfoUser(int userId, String userName, String fullName,
+      int phoneNumber, String? photo) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    print('Base URL: $baseUrl');
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/updateInfoUser'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'UserId': userId,
+          'UserName': userName,
+          'FullName': fullName,
+          'PhoneNumber':
+              phoneNumber.toString(), // Chuyển phoneNumber thành String
+          'Photo': photo,
+        }),
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        print('Parsed Data: $data');
+
+        // Giả sử phản hồi trả về thông tin người dùng, tạo đối tượng User từ dữ liệu
+        if (data['User'] != null) {
+          final updatedUser = User.fromJson(data['User']);
+          print('Updated User: ${updatedUser.userName}');
+        }
+
+        // Trả về message từ phản hồi của server
+        return data['message'] ?? 'Update successful';
+      } else {
+        // Nếu response không phải 200, ném exception với mã lỗi cụ thể
+        throw Exception(
+            'Failed to update user. Status Code: ${response.statusCode}, Message: ${response.body}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      // Trả về một thông báo lỗi chi tiết hơn nếu có lỗi
+      throw Exception('Failed to update user. Error: $e');
+    }
+  }
+
+  Future<String> changePassword(int userId, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/changePassword'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'UserId': userId,
+          'Password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        return data['message'] ?? 'Update successful';
+      } else {
+        throw Exception(
+            'Failed to update user. Status Code: ${response.statusCode}, Message: ${response.body}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      rethrow;
+    }
+  }
 }

@@ -26,7 +26,6 @@ class _ForgotPageState extends State<ForgotPage> {
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _passwordConfirmFocusNode = FocusNode();
 
-  // Tạo một Map để lưu trữ các lỗi
   Map<String, String?> errorMessages = {
     'email': null,
     'code': null,
@@ -38,7 +37,6 @@ class _ForgotPageState extends State<ForgotPage> {
   ValueNotifier<bool> isCodeNotifier =
       ValueNotifier(false); // Notifier for code matching
 
-  // Hàm kiểm tra mã xác nhận
   void _checkCode() {
     final String email = _emailController.text;
     final String password = _passwordController.text;
@@ -230,7 +228,7 @@ class _ForgotPageState extends State<ForgotPage> {
                             builder: (context, isCode, child) {
                               return MyTextfield(
                                 isPassword: false,
-                                placeHolder: "Mã xác nhận",
+                                placeHolder: "Mã code",
                                 controller: _codeController,
                                 sendCode: false,
                                 isCode: isCode,

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
+import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/components/my_textfield.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_profile/page_user/forgot_user/forgot_pass_user.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:intl/intl.dart';
 
 class InfoUser extends StatefulWidget {
   const InfoUser({
@@ -24,18 +28,45 @@ class _InfoUser extends State<InfoUser> {
   final TextEditingController phoneController = TextEditingController();
   late TextEditingController createDateController = TextEditingController();
   final TextEditingController idController = TextEditingController();
+  final DateFormat dateFormatter = DateFormat('dd/MM/yyyy');
 
   @override
   void initState() {
+    super.initState();
     _APIService = ApiService();
     _userFuture =
         _APIService.findByViewIDUser(UserManager.instance.user!.userId);
-    super.initState();
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  // Cập nhật thông tin người dùng
+  Future<void> _saveChanges() async {
+    try {
+      EasyLoading.show(status: 'Đang lưu...'); // Hiển thị thông báo đang lưu
+
+      final userId = UserManager.instance.user!.userId;
+      final userName = usernameController.text;
+      final fullName = fullnameController.text;
+      final phoneNumber = int.tryParse(phoneController.text) ?? 0;
+      final photo = ''; // You can add logic to update the photo if needed
+
+      // Call the API to update user info
+      final response = await _APIService.updateInfoUser(
+          userId, userName, fullName, phoneNumber, photo);
+
+      EasyLoading.showSuccess(response); // Hiển thị thông báo thành công
+    } catch (e) {
+      EasyLoading.showError('Lỗi: $e'); // Hiển thị thông báo lỗi
+    } finally {
+      // Đảm bảo luôn ẩn EasyLoading sau khi xử lý xong
+      Future.delayed(Duration(seconds: 2), () {
+        EasyLoading.dismiss();
+      });
+    }
   }
 
   @override
@@ -69,10 +100,11 @@ class _InfoUser extends State<InfoUser> {
           } else if (!snapshot.hasData) {
             return Center(child: Text('No user data available.'));
           } else {
-            final user = snapshot.data!; // Access the user object
+            final user = snapshot.data!;
             usernameController.text = user.userName;
             fullnameController.text = user.fullName;
             phoneController.text = user.phoneNumber.toString();
+            createDateController.text = dateFormatter.format(user.createDate);
 
             return SingleChildScrollView(
               child: Padding(
@@ -80,63 +112,63 @@ class _InfoUser extends State<InfoUser> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(children: [
-                      Stack(
-                        children: [
-                          CircleAvatar(
-                            radius: 40,
-                            backgroundColor: Colors.blue,
-                            child: ClipOval(
-                              child: Image.asset(
-                                'assets/images/${user.photo}',
-                                fit: BoxFit
-                                    .cover, // Ensures the image covers the entire circle
-                                width: 80, // Should match 2 * radius
-                                height: 80,
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 0, // Adjust distance from the bottom edge
-                            right: 0, // Adjust distance from the right edge
-                            child: CircleAvatar(
-                              radius: 13, // Adjust size as needed
-                              backgroundColor: Colors
-                                  .grey, // Grey background color for the button
-                              child: IconButton(
-                                icon: const Icon(
-                                  Icons.edit_square,
-                                  color: Colors.white,
-                                  size: 15,
+                    Row(
+                      children: [
+                        Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 40,
+                              backgroundColor: Colors.blue,
+                              child: ClipOval(
+                                child: Image.asset(
+                                  'assets/images/${user.photo}',
+                                  fit: BoxFit.cover,
+                                  width: 80,
+                                  height: 80,
                                 ),
-                                onPressed: () {
-                                  // Handle edit profile picture
-                                },
-                                padding: EdgeInsets.zero,
-                                constraints: BoxConstraints(),
-                                iconSize: 16, // Adjust icon size as needed
-                                tooltip: "Edit",
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 15),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user.userName, // Display the user's name
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: CircleAvatar(
+                                radius: 13,
+                                backgroundColor: Colors.grey,
+                                child: IconButton(
+                                  icon: const Icon(
+                                    Icons.edit_square,
+                                    color: Colors.white,
+                                    size: 15,
+                                  ),
+                                  onPressed: () {
+                                    // Handle edit profile picture
+                                  },
+                                  padding: EdgeInsets.zero,
+                                  constraints: BoxConstraints(),
+                                  iconSize: 16,
+                                  tooltip: "Edit",
+                                ),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(user.email), // Display the user's email
-                        ],
-                      ),
-                    ]),
+                          ],
+                        ),
+                        const SizedBox(width: 15),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user.userName,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(user.email),
+                          ],
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 15),
                     const Divider(),
                     const SizedBox(height: 15),
@@ -168,94 +200,18 @@ class _InfoUser extends State<InfoUser> {
                           width: double.infinity,
                           child: OutlinedButton(
                             onPressed: () {
-                              // showDialog(
-                              //   context: context,
-                              //   builder: (BuildContext context) {
-                              //     bool isOldPasswordVisible = false;
-                              //     bool isNewPasswordVisible = false;
-                              //
-                              //     return StatefulBuilder(
-                              //       builder:
-                              //           (BuildContext context, StateSetter setState) {
-                              //         return AlertDialog(
-                              //           title: Center(
-                              //             child: Text(
-                              //               "Thay đổi mật khẩu",
-                              //               style: TextStyle(fontSize: 20),
-                              //             ),
-                              //           ),
-                              //           content: Column(
-                              //             mainAxisSize: MainAxisSize.min,
-                              //             children: [
-                              //               TextField(
-                              //                 obscureText: !isOldPasswordVisible,
-                              //                 decoration: InputDecoration(
-                              //                   labelText: 'Mật khẩu cũ',
-                              //                   suffixIcon: IconButton(
-                              //                     icon: Icon(
-                              //                       isOldPasswordVisible
-                              //                           ? Icons.visibility
-                              //                           : Icons.visibility_off,
-                              //                     ),
-                              //                     onPressed: () {
-                              //                       setState(() {
-                              //                         isOldPasswordVisible =
-                              //                             !isOldPasswordVisible;
-                              //                       });
-                              //                     },
-                              //                   ),
-                              //                 ),
-                              //               ),
-                              //               const SizedBox(height: 10),
-                              //               TextField(
-                              //                 obscureText: !isNewPasswordVisible,
-                              //                 decoration: InputDecoration(
-                              //                   labelText: 'Mật khẩu mới',
-                              //                   suffixIcon: IconButton(
-                              //                     icon: Icon(
-                              //                       isNewPasswordVisible
-                              //                           ? Icons.visibility
-                              //                           : Icons.visibility_off,
-                              //                     ),
-                              //                     onPressed: () {
-                              //                       setState(() {
-                              //                         isNewPasswordVisible =
-                              //                             !isNewPasswordVisible;
-                              //                       });
-                              //                     },
-                              //                   ),
-                              //                 ),
-                              //               ),
-                              //               ElevatedButton(
-                              //                 onPressed: () {
-                              //                   Navigator.of(context).pop();
-                              //                 },
-                              //                 child: const SizedBox(
-                              //                   width: double.infinity,
-                              //                   child: Center(
-                              //                     child: Text(
-                              //                       'Lưu thay đổi',
-                              //                       style: TextStyle(
-                              //                         color: Colors.white,
-                              //                         fontSize: 18,
-                              //                       ),
-                              //                     ),
-                              //                   ),
-                              //                 ),
-                              //               ),
-                              //             ],
-                              //           ),
-                              //         );
-                              //       },
-                              //     );
-                              //   },
-                              // );
+                              Navigator.push(
+                                context,
+                                SlideFromRightPageRoute(
+                                  page: ForgotPassUser(),
+                                ),
+                              );
                             },
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 15),
                               side: const BorderSide(
-                                color: mainColor, // Define your mainColor
-                                width: 1, // Set border width to 5
+                                color: mainColor,
+                                width: 1,
                               ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5),
@@ -266,22 +222,21 @@ class _InfoUser extends State<InfoUser> {
                                 'Đổi mật khẩu',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: mainColor, // Define your mainColor
+                                  color: mainColor,
                                 ),
                               ),
                             ),
                           ),
-                        ), // Space between the buttons
-                        const SizedBox(height: 10), // Space between the buttons
+                        ),
+                        const SizedBox(height: 10),
                         SizedBox(
                           width: double.infinity,
                           child: MyButton(
                             text: 'Lưu thay đổi',
                             fontsize: 16,
                             paddingText: 16,
-                            onTap: () {
-                              print('Save changes');
-                            },
+                            onTap:
+                                _saveChanges, // Call the _saveChanges method here
                           ),
                         ),
                       ],

@@ -10,6 +10,8 @@ class User {
   final String status;
   final bool isDelete;
   final String? token;
+  final String? password;
+
   User({
     required this.userId,
     required this.userName,
@@ -22,6 +24,7 @@ class User {
     required this.status,
     required this.isDelete,
     this.token,
+    this.password,
   });
 
   // Factory constructor to create a User instance from JSON
@@ -57,6 +60,7 @@ class User {
       createDate: DateTime.parse(json['CreateDate'] as String),
       status: json['Status'] as String,
       isDelete: json['IsDelete'] as bool,
+      password: json['Password'] as String,
     );
   }
 }
