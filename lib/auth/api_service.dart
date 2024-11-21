@@ -18,6 +18,7 @@ import 'package:flutter_app_chat/models/work_schedule_checkIn.dart';
 import 'package:flutter_app_chat/models/work_schedule_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:path/path.dart' as path;
 import 'package:url_launcher/url_launcher.dart';
@@ -36,7 +37,7 @@ class ApiService {
     // wifi cf24/24
     baseUrl = 'http://192.168.10.92:8081';
 // server public
-    // baseUrl = 'https://nodejs-sql-server-api.onrender.com';
+//     baseUrl = 'https://nodejs-sql-server-api.onrender.com';
   }
 
   late Response response;
@@ -399,7 +400,7 @@ class ApiService {
     }
   }
 
-  Future<void> uploadImage(File image) async {
+  Future<String> uploadImage(File image) async {
     await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
 
     final request = http.MultipartRequest(
@@ -407,22 +408,40 @@ class ApiService {
       Uri.parse('$baseUrl/uploadImage'),
     );
 
+    // Xác định extension của file
+    final extension =
+        path.extension(image.path).toLowerCase().replaceAll('.', '');
+
     request.files.add(await http.MultipartFile.fromPath(
       'image',
       image.path,
       filename: path.basename(image.path),
+      contentType: MediaType('image', extension), // Thêm contentType
     ));
 
     try {
-      final response = await request.send();
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
         print('Image uploaded successfully');
+        final responseData = json.decode(response.body);
+
+        // Kiểm tra và trả về URL từ response
+        if (responseData != null && responseData['url'] != null) {
+          return responseData['url'];
+        } else {
+          print('Invalid response format');
+          return 'Invalid response format';
+        }
       } else {
-        print('Failed to upload image');
+        print('Failed to upload image. Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        return 'Failed to upload image';
       }
     } catch (e) {
       print('Error uploading image: $e');
+      return 'Error uploading image: ${e.toString()}';
     }
   }
 
@@ -1647,6 +1666,67 @@ class ApiService {
     } catch (e) {
       print('Error: $e');
       rethrow;
+    }
+  }
+
+  Future<String> insertMovie({
+    required int cinemaID,
+    required String title,
+    required String description,
+    required int duration,
+    required String releaseDate,
+    required String posterUrl,
+    required String trailerUrl,
+    required String age,
+    required int subtitle,
+    required int voiceover,
+    required String statusMovie,
+    required double price,
+    required List<Map<String, String>> actorsData,
+    required List<int> genreIds,
+  }) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    print('Base URL: $baseUrl');
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/insertMovie'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'CinemaID': cinemaID,
+          'Title': title,
+          'Description': description,
+          'Duration': duration,
+          'ReleaseDate': releaseDate,
+          'PosterUrl': posterUrl,
+          'TrailerUrl': trailerUrl,
+          'Age': age,
+          'SubTitle': subtitle,
+          'Voiceover': voiceover,
+          'StatusMovie': statusMovie,
+          'Price': price,
+          'ActorsData': actorsData,
+          'GenreIds': genreIds,
+        }),
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 201) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        print('Parsed Data: $data');
+
+        // Trả về message từ phản hồi của server
+        return data['message'];
+      } else {
+        throw Exception('Failed to create movie: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to create movie');
     }
   }
 }

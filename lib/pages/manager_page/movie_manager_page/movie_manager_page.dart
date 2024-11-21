@@ -91,6 +91,8 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
                 File(pickedFile.path); // Store the image file
             _image = File(pickedFile
                 .path); // Optionally store it in a separate variable if needed
+            print('load image');
+            print('$_image');
           } else {
             print('Index out of bounds');
           }

@@ -9,6 +9,11 @@ import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_profile/pag
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart'; // Import the image picker package
+import 'dart:io'; // Add this for mobile
+import 'package:flutter/foundation.dart'; // For kIsWeb
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class InfoUser extends StatefulWidget {
   const InfoUser({
@@ -29,6 +34,8 @@ class _InfoUser extends State<InfoUser> {
   late TextEditingController createDateController = TextEditingController();
   final TextEditingController idController = TextEditingController();
   final DateFormat dateFormatter = DateFormat('dd/MM/yyyy');
+  final ImagePicker _picker = ImagePicker();
+  XFile? _imageFile; // Lưu ảnh dưới dạng XFile
 
   @override
   void initState() {
@@ -38,33 +45,37 @@ class _InfoUser extends State<InfoUser> {
         _APIService.findByViewIDUser(UserManager.instance.user!.userId);
   }
 
-  @override
-  void dispose() {
-    super.dispose();
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = pickedFile; // Lưu ảnh dưới dạng XFile
+      });
+    }
   }
 
-  // Cập nhật thông tin người dùng
   Future<void> _saveChanges() async {
     try {
-      EasyLoading.show(status: 'Đang lưu...'); // Hiển thị thông báo đang lưu
+      EasyLoading.show(status: 'Đang lưu...'); // Show loading status
 
       final userId = UserManager.instance.user!.userId;
       final userName = usernameController.text;
       final fullName = fullnameController.text;
       final phoneNumber = int.tryParse(phoneController.text) ?? 0;
-      final photo = ''; // You can add logic to update the photo if needed
+      final photo = ''; // Placeholder for photo URL or file
+      print(_imageFile);
 
-      // Call the API to update user info
-      final response = await _APIService.updateInfoUser(
-          userId, userName, fullName, phoneNumber, photo);
+      //uploadImage
+      // final response = await _APIService.updateInfoUser(
+      //     userId, userName, fullName, phoneNumber, photo);
 
-      EasyLoading.showSuccess(response); // Hiển thị thông báo thành công
+      // EasyLoading.showSuccess(response); // Show success message
     } catch (e) {
-      EasyLoading.showError('Lỗi: $e'); // Hiển thị thông báo lỗi
+      EasyLoading.showError('Lỗi: $e'); // Show error message
     } finally {
-      // Đảm bảo luôn ẩn EasyLoading sau khi xử lý xong
       Future.delayed(Duration(seconds: 2), () {
-        EasyLoading.dismiss();
+        EasyLoading.dismiss(); // Dismiss loading
       });
     }
   }
@@ -106,6 +117,13 @@ class _InfoUser extends State<InfoUser> {
             phoneController.text = user.phoneNumber.toString();
             createDateController.text = dateFormatter.format(user.createDate);
 
+            // If user.photo is null, use a default image
+            String imageUrl =
+                user.photo ?? 'https://example.com/path_to_default_image';
+
+            print(
+                "Current selected image: ${_imageFile?.path ?? 'No image selected'}"); // Debug print to check selected image
+
             return SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -120,12 +138,27 @@ class _InfoUser extends State<InfoUser> {
                               radius: 40,
                               backgroundColor: Colors.blue,
                               child: ClipOval(
-                                child: Image.asset(
-                                  'assets/images/${user.photo}',
-                                  fit: BoxFit.cover,
-                                  width: 80,
-                                  height: 80,
-                                ),
+                                child: kIsWeb // Kiểm tra nếu là Web
+                                    ? Image.network(
+                                        imageUrl,
+                                        fit: BoxFit.cover,
+                                        width: 80,
+                                        height: 80,
+                                      )
+                                    : (_imageFile == null
+                                        ? Image.network(
+                                            imageUrl, // ảnh mặc định nếu chưa chọn
+                                            fit: BoxFit.cover,
+                                            width: 80,
+                                            height: 80,
+                                          )
+                                        : Image.file(
+                                            File(_imageFile!
+                                                .path), // Hiển thị ảnh đã chọn
+                                            fit: BoxFit.cover,
+                                            width: 80,
+                                            height: 80,
+                                          )),
                               ),
                             ),
                             Positioned(
@@ -140,9 +173,7 @@ class _InfoUser extends State<InfoUser> {
                                     color: Colors.white,
                                     size: 15,
                                   ),
-                                  onPressed: () {
-                                    // Handle edit profile picture
-                                  },
+                                  onPressed: _pickImage, // Khi nhấn sẽ chọn ảnh
                                   padding: EdgeInsets.zero,
                                   constraints: BoxConstraints(),
                                   iconSize: 16,
@@ -152,7 +183,7 @@ class _InfoUser extends State<InfoUser> {
                             ),
                           ],
                         ),
-                        const SizedBox(width: 15),
+                        SizedBox(width: 15),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -235,12 +266,11 @@ class _InfoUser extends State<InfoUser> {
                             text: 'Lưu thay đổi',
                             fontsize: 16,
                             paddingText: 16,
-                            onTap:
-                                _saveChanges, // Call the _saveChanges method here
+                            onTap: _saveChanges, // Save changes
                           ),
                         ),
                       ],
-                    ),
+                    )
                   ],
                 ),
               ),
