@@ -34,7 +34,7 @@ class ApiService {
     // String? ip = await info.getWifiIP(); // 192.168.1.43
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.1.47:8081';
+    baseUrl = 'http://192.168.10.92:8081';
 // server public
     // baseUrl = 'https://nodejs-sql-server-api.onrender.com';
   }
@@ -1607,6 +1607,32 @@ class ApiService {
         },
         body: jsonEncode({
           'UserId': userId,
+          'Password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        return data['message'] ?? 'Update successful';
+      } else {
+        throw Exception(
+            'Failed to update user. Status Code: ${response.statusCode}, Message: ${response.body}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<String> changePasswordForEmail(String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/changePasswordForEmail'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'Email': email,
           'Password': password,
         }),
       );

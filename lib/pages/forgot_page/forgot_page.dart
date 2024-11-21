@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,6 +26,7 @@ class _ForgotPageState extends State<ForgotPage> {
   final FocusNode _codeFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _passwordConfirmFocusNode = FocusNode();
+  late ApiService _APIService = ApiService();
 
   Map<String, String?> errorMessages = {
     'email': null,
@@ -41,9 +43,9 @@ class _ForgotPageState extends State<ForgotPage> {
     final String email = _emailController.text;
     final String password = _passwordController.text;
     final String passwordConfirm = _passwordConfirmController.text;
+    isCodeNotifier.value = codeIs == _codeController.text;
   }
 
-  // Hàm kiểm tra lỗi cho các trường văn bản
   bool _validateFields() {
     setState(() {
       errorMessages['email'] =
@@ -56,15 +58,46 @@ class _ForgotPageState extends State<ForgotPage> {
       errorMessages['passwordConfirm'] = _passwordConfirmController.text.isEmpty
           ? 'Vui lòng nhập lại mật khẩu mới'
           : null;
+
+      // Check if passwords match
+      if (_passwordController.text != _passwordConfirmController.text) {
+        errorMessages['passwordConfirm'] = 'Mật khẩu không khớp';
+      } else if (_passwordController.text.isNotEmpty &&
+          _passwordConfirmController.text.isNotEmpty) {
+        errorMessages['passwordConfirm'] =
+            null; // Clear the error if passwords match
+      }
     });
 
     return errorMessages.values.every((error) => error == null);
   }
 
+  Future<void> changePasswordForEmail() async {
+    try {
+      EasyLoading.show(status: 'Đang lưu...'); // Hiển thị thông báo đang lưu
+
+      final email = _emailController.text;
+      final password = _passwordController.text;
+
+      // Call the API to update user info
+      final response =
+          await _APIService.changePasswordForEmail(email, password);
+
+      EasyLoading.showSuccess(response); // Hiển thị thông báo thành công
+    } catch (e) {
+      EasyLoading.showError('Lỗi: $e'); // Hiển thị thông báo lỗi
+    } finally {
+      // Đảm bảo luôn ẩn EasyLoading sau khi xử lý xong
+      Future.delayed(Duration(seconds: 2), () {
+        EasyLoading.dismiss();
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _codeController.addListener(_checkCode); // Lắng nghe sự thay đổi của mã
+    _codeController.addListener(_checkCode);
   }
 
   @override
@@ -263,30 +296,31 @@ class _ForgotPageState extends State<ForgotPage> {
                             showIcon: false,
                             onTap: () async {
                               if (_validateFields()) {
-                                EasyLoading.show(status: 'Loading...');
+                                EasyLoading.show(status: 'Đang xử lý...');
                                 if (codeIs == _codeController.text) {
-                                  EasyLoading.dismiss();
-                                  await Future.delayed(
-                                    const Duration(milliseconds: 200),
-                                  );
-                                  EasyLoading.show();
-                                  Navigator.pushAndRemoveUntil(
-                                    context,
-                                    SlideFromRightPageRoute(
-                                        page: LoginPage(
-                                      isBack: true,
-                                    )),
-                                    (Route<dynamic> route) => false,
-                                  );
-                                  EasyLoading.dismiss();
+                                  try {
+                                    await changePasswordForEmail();
+                                    EasyLoading.dismiss();
+                                    EasyLoading.showSuccess(
+                                        "Đổi mật khẩu thành công!");
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      SlideFromRightPageRoute(
+                                          page: LoginPage(isBack: true)),
+                                      (Route<dynamic> route) => false,
+                                    );
+                                  } catch (e) {
+                                    EasyLoading.dismiss();
+                                    EasyLoading.showError(
+                                        "Đổi mật khẩu thất bại: $e");
+                                  }
                                 } else {
                                   EasyLoading.dismiss();
                                   EasyLoading.showError(
                                       "Mã xác nhận không đúng!");
                                 }
                               } else {
-                                EasyLoading.showError(
-                                    'Thông tin bạn điền chưa đầy đủ');
+                                EasyLoading.showError('Thông tin chưa đúng');
                               }
                             },
                           ),
