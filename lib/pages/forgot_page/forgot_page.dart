@@ -303,11 +303,11 @@ class _ForgotPageState extends State<ForgotPage> {
                                     EasyLoading.dismiss();
                                     EasyLoading.showSuccess(
                                         "Đổi mật khẩu thành công!");
-                                    Navigator.pushAndRemoveUntil(
+                                    Navigator.push(
                                       context,
                                       SlideFromRightPageRoute(
-                                          page: LoginPage(isBack: true)),
-                                      (Route<dynamic> route) => false,
+                                        page: LoginPage(),
+                                      ),
                                     );
                                   } catch (e) {
                                     EasyLoading.dismiss();
@@ -320,7 +320,8 @@ class _ForgotPageState extends State<ForgotPage> {
                                       "Mã xác nhận không đúng!");
                                 }
                               } else {
-                                EasyLoading.showError('Thông tin chưa đúng');
+                                EasyLoading.showError(
+                                    'Thông tin chưa đúng. Vui lòng kiểm tra lại');
                               }
                             },
                           ),
