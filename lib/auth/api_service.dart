@@ -35,7 +35,7 @@ class ApiService {
     // String? ip = await info.getWifiIP(); // 192.168.1.43
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.10.92:8081';
+    baseUrl = 'http://192.168.1.26:8081';
 // server public
 //     baseUrl = 'https://nodejs-sql-server-api.onrender.com';
   }
@@ -401,7 +401,12 @@ class ApiService {
   }
 
   Future<String> uploadImage(File image) async {
-    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    // Kiểm tra trước khi upload
+    if (image == null) {
+      return 'No image selected';
+    }
+
+    await _initBaseUrl(); // Đảm bảo baseUrl đã được khởi tạo
 
     final request = http.MultipartRequest(
       'POST',
@@ -412,6 +417,7 @@ class ApiService {
     final extension =
         path.extension(image.path).toLowerCase().replaceAll('.', '');
 
+    // Gửi file hình ảnh
     request.files.add(await http.MultipartFile.fromPath(
       'image',
       image.path,
@@ -423,6 +429,7 @@ class ApiService {
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
+      // Kiểm tra mã trạng thái phản hồi
       if (response.statusCode == 200) {
         print('Image uploaded successfully');
         final responseData = json.decode(response.body);
@@ -437,7 +444,7 @@ class ApiService {
       } else {
         print('Failed to upload image. Status code: ${response.statusCode}');
         print('Response body: ${response.body}');
-        return 'Failed to upload image';
+        return 'Failed to upload image: ${response.statusCode}';
       }
     } catch (e) {
       print('Error uploading image: $e');
@@ -1715,7 +1722,7 @@ class ApiService {
       print('Status Code: ${response.statusCode}');
       print('Response Body: ${response.body}');
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
         print('Parsed Data: $data');
 
@@ -1727,6 +1734,46 @@ class ApiService {
     } catch (e) {
       print('Error: $e');
       throw Exception('Failed to create movie');
+    }
+  }
+
+  Future<String> insertShowTime({
+    required String StartDate,
+    required String EndDate,
+    required List<Map<String, dynamic>>
+        Showtimes, // Đổi từ actorsData sang Showtimes
+  }) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+    print('Base URL: $baseUrl');
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/insertShowTime'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'StartDate': StartDate,
+          'EndDate': EndDate,
+          'Showtimes': Showtimes, // Truyền Showtimes thay vì ActorsData
+        }),
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        print('Parsed Data: $data');
+
+        // Trả về message từ phản hồi của server
+        return data['message'];
+      } else {
+        throw Exception('Failed to create showtimes: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Failed to create showtimes');
     }
   }
 }

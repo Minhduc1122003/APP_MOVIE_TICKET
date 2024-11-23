@@ -4,7 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'dart:io';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -75,11 +77,23 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
 
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _noidungPhim = TextEditingController();
+  final TextEditingController _price = TextEditingController();
+  XFile? _imageFile; // Lưu ảnh dưới dạng XFile
 
   @override
   void initState() {
     super.initState();
     _addNewRow(); // Initialize with one row
+  }
+
+  Future<void> _pickImage2() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = pickedFile; // Lưu ảnh dưới dạng XFile
+      });
+    }
   }
 
   Future<void> _pickImage(int index) async {
@@ -88,21 +102,17 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
           await _picker.pickImage(source: ImageSource.gallery);
       if (pickedFile != null) {
         setState(() {
-          // Ensure the index is within bounds
+          // Kiểm tra chỉ số hợp lệ và chỉ cập nhật ảnh cho mục tương ứng
           if (index >= 0 && index < _rows.length) {
             _rows[index]['image'] =
-                File(pickedFile.path); // Store the image file
-            _image = File(pickedFile
-                .path); // Optionally store it in a separate variable if needed
-            print('load image');
-            print('$_image');
+                File(pickedFile.path); // Chỉ thay đổi ảnh của mục tại index
           } else {
             print('Index out of bounds');
           }
         });
 
-        // Automatically upload the image after it is picked
-        await _uploadImage();
+        // Tự động upload ảnh sau khi chọn
+        await _uploadImage(_rows[index]['image']);
       } else {
         print('No image selected');
       }
@@ -111,12 +121,19 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
     }
   }
 
-  Future<void> _uploadImage() async {
-    if (_image != null) {
-      await _apiService.uploadImage(_image!);
+  Future<void> _uploadImage(File image) async {
+    if (image != null) {
+      await _apiService.uploadImage(image);
     } else {
       print('No image selected');
     }
+  }
+
+  String formatDate(DateTime? selectedDate) {
+    if (selectedDate != null) {
+      return DateFormat('yyyy-MM-dd').format(selectedDate);
+    }
+    return ''; // Trả về chuỗi rỗng nếu không có ngày được chọn
   }
 
   void _loadVideo(String url) {
@@ -138,6 +155,31 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
       );
     }
   }
+
+  Map<String, int> genreMap = {
+    'Hành động': 1,
+    'Phiêu lưu': 2,
+    'Hài': 3,
+    'Chính kịch': 4,
+    'Tâm lý': 5,
+    'Kinh dị': 6,
+    'Tội phạm': 7,
+    'Tình cảm': 8,
+    'Khoa học viễn tưởng': 9,
+    'Giả tưởng': 10,
+    'Hoạt hình': 11,
+    'Chiến tranh': 12,
+    'Âm nhạc': 13,
+    'Tài liệu': 14,
+    'Gia đình': 15,
+    'Thần thoại': 16,
+    'Lịch sử': 17,
+    'Hình sự': 18,
+    'Bí ẩn': 19,
+    'Võ thuật': 20,
+    'Siêu anh hùng': 21,
+    'Viễn Tây': 22,
+  };
 
   void _addNewRow() {
     setState(() {
@@ -324,7 +366,7 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
       top: false,
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: const Color(0XFF6F3CD7),
+          backgroundColor: mainColor,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_outlined,
                 color: Colors.white, size: 16),
@@ -385,6 +427,19 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
                 const SizedBox(height: 20),
                 _buildDescriptionInput(),
                 const SizedBox(height: 20),
+                TextField(
+                  controller: _price,
+                  decoration: InputDecoration(
+                    labelText: 'Giá vé',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                  maxLines: 1,
+                ),
+                const SizedBox(height: 20),
                 const Divider(
                   height: 0,
                   thickness: 6,
@@ -405,19 +460,10 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
                   text: 'Hoàn tất',
                   isBold: true,
                   onTap: () async {
-                    final ApiService _apiService = ApiService();
+                    bool isloading = false;
+                    EasyLoading.show();
 
-                    print('Click hoan tat');
-                    print('$_image');
-                    print('${_titleController.text}');
-                    print('${_selectedRating}');
-                    print('${selectedGenres}');
-                    print('${_selectedDate}');
-                    print('${_durationController.text}');
-                    print('${_isSubtitled}');
-                    print('${_isDubbed}');
-                    print('${_urlController.text}');
-                    print('${_noidungPhim.text}');
+                    final ApiService _apiService = ApiService();
 
                     List<Map<String, String>> actors = [];
 
@@ -434,30 +480,83 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
                         'name': actorName,
                         'image': actorImage,
                       });
+                      print(' actors: $actors');
 
-                      // Nếu có hình ảnh, thực hiện upload
-                      if (actorImage != 'Chưa chọn ảnh') {
-                        try {
-                          // Chuyển đường dẫn thành đối tượng File
-                          File imageFile = File(actorImage);
+                      for (var actor in actors) {
+                        String actorName = actor['name']!;
+                        String actorImage = actor['image']!;
 
-                          // Gửi ảnh đi upload
-                          final imageUploadResponsePhoto =
-                              await _apiService.uploadImage(imageFile);
+                        if (actorImage != 'Chưa chọn ảnh') {
+                          try {
+                            // Chuyển đường dẫn thành đối tượng File
+                            File imageFile = File(actorImage);
 
-                          // Cập nhật lại actors với URL của ảnh sau khi upload thành công
-                          actors[actors.length - 1]['image'] =
-                              imageUploadResponsePhoto;
-                          print(
-                              'Image upload response: $imageUploadResponsePhoto');
-                        } catch (e) {
-                          print('Error uploading image for $actorName: $e');
+                            // Gửi ảnh đi upload
+                            final imageUploadResponsePhoto =
+                                await _apiService.uploadImage(imageFile);
+
+                            // Cập nhật lại ảnh trong actors với URL của ảnh sau khi upload thành công
+                            actor['image'] = imageUploadResponsePhoto;
+                            print(
+                                'Image upload response: $imageUploadResponsePhoto');
+                          } catch (e) {
+                            print('Error uploading image for $actorName: $e');
+                          }
                         }
                       }
                     });
 
                     // Sau khi tất cả các ảnh đã được upload, in ra mảng actors với link hình ảnh cập nhật
                     print('Updated actors: $actors');
+                    isloading = true;
+                    if (isloading) {
+                      final imageUploadResponsePhoto =
+                          await _apiService.uploadImage(File(_imageFile!.path));
+                      print('Click hoan tat');
+                      print('$imageUploadResponsePhoto');
+                      print('${_titleController.text}');
+                      print('${_selectedRating}');
+                      print('${selectedGenres}');
+                      print('${_durationController.text}');
+                      print('${_isSubtitled}');
+                      print('${_isDubbed}');
+                      print('${_urlController.text}');
+                      print('${_noidungPhim.text}');
+                      formatDate(_selectedDate);
+                      String formattedDate = formatDate(_selectedDate);
+                      print('${formattedDate}');
+                      int isSubtitledValue = _isSubtitled ? 1 : 0;
+                      int _isDubbed2 = _isSubtitled ? 1 : 0;
+                      print('${isSubtitledValue}');
+                      print('${_isDubbed2}');
+                      List<int> updatedSelectedGenres = selectedGenres
+                          .where((genre) => genreMap.containsKey(genre))
+                          .map((genre) => genreMap[genre]!)
+                          .toList();
+                      print('${updatedSelectedGenres}');
+
+                      String insertmovie = await _apiService.insertMovie(
+                        cinemaID: 1,
+                        title: _titleController.text,
+                        duration: int.parse(_durationController.text),
+                        description: _noidungPhim.text,
+                        releaseDate: formattedDate,
+                        age: _selectedRating,
+                        posterUrl: imageUploadResponsePhoto,
+                        price: double.parse(_price.text),
+                        statusMovie: 'Đang chiếu',
+                        subtitle: isSubtitledValue,
+                        voiceover: _isDubbed2,
+                        trailerUrl: _urlController.text,
+                        genreIds: updatedSelectedGenres,
+                        actorsData: actors,
+                      );
+                      print('----------------------------insertttt');
+                      print(insertmovie);
+                      EasyLoading.dismiss();
+                      EasyLoading.showSuccess('Thêm phim thành công!');
+                      Navigator.of(context).pop();
+                    }
 
                     // Nếu bạn cần làm gì đó với actors, tiếp tục ở đây, ví dụ:
                   },
@@ -477,10 +576,9 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
         Stack(
           children: [
             MouseRegion(
-              cursor: SystemMouseCursors.click, // Change the cursor to a hand
+              cursor: SystemMouseCursors.click, // Thay đổi con trỏ thành tay
               child: GestureDetector(
-                onTap: () => _pickImage(
-                    0), // Trigger _pickImage when the container is tapped
+                onTap: () => _pickImage2(), // Gọi _pickImage2() khi nhấn
                 child: Container(
                   height: 200,
                   width: 120,
@@ -488,17 +586,18 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
                     color: Colors.grey[200],
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: _rows.isEmpty || _rows[0]['image'] == null
+                  child: _imageFile == null
                       ? Center(
                           child: Icon(Icons.add,
                               size: 40, color: Colors.grey[400]))
                       : ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: Image.file(
-                            _rows[0]['image'], // Display the image if it exists
+                            File(_imageFile!.path), // Hiển thị ảnh đã chọn
                             fit: BoxFit.cover,
-                          ),
-                        ),
+                            width: 80,
+                            height: 80,
+                          )),
                 ),
               ),
             ),
@@ -769,11 +868,12 @@ class _MovieManagerPageState extends State<MovieManagerPage> {
                             radius: 25,
                             backgroundColor: Colors.grey[300],
                             backgroundImage: row['image'] != null
-                                ? FileImage(row['image'])
+                                ? FileImage(row['image']) // Hiển thị ảnh nếu có
                                 : null,
                             child: row['image'] == null
                                 ? const Icon(Icons.add_a_photo,
-                                    color: Colors.white)
+                                    color: Colors
+                                        .white) // Nếu chưa có ảnh, hiển thị biểu tượng thêm ảnh
                                 : null,
                           ),
                         ),
@@ -877,10 +977,10 @@ class MovieInfo extends StatelessWidget {
                 children: [
                   const AutoSizeText(
                     'Ngày khởi chiếu',
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 12),
                     maxLines: 1,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   if (selectedDate != null)
                     AutoSizeText(
                       "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}",
@@ -921,7 +1021,7 @@ class MovieInfo extends StatelessWidget {
                 children: [
                   const AutoSizeText(
                     'Thời lượng',
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 12),
                     maxLines: 1,
                   ),
                   const SizedBox(height: 8),
@@ -930,11 +1030,12 @@ class MovieInfo extends StatelessWidget {
                     style: const TextStyle(fontSize: 14),
                     maxLines: 1,
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 10),
                   Container(
                     decoration: BoxDecoration(
-                      color: mainColor, // Replace with your desired color
-                      borderRadius: BorderRadius.circular(50),
+                      color: mainColor, // Màu sắc bạn mong muốn
+                      borderRadius:
+                          BorderRadius.circular(50), // Để tạo hình tròn
                     ),
                     child: IconButton(
                       icon: Icon(
@@ -943,7 +1044,7 @@ class MovieInfo extends StatelessWidget {
                       ),
                       onPressed: onDurationSelected,
                     ),
-                  ),
+                  )
                 ],
               ),
             ),
@@ -960,15 +1061,16 @@ class MovieInfo extends StatelessWidget {
                   const SizedBox(height: 20),
                   const AutoSizeText(
                     'Ngôn ngữ',
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 12),
                     maxLines: 1,
                   ),
                   const SizedBox(height: 5),
                   CheckboxListTile(
                     title: const AutoSizeText(
                       'Phụ đề',
-                      style: TextStyle(fontSize: 14),
                       maxLines: 1,
+                      maxFontSize: 8,
+                      minFontSize: 8,
                     ),
                     value: isSubtitled,
                     onChanged: onSubtitleChanged,
@@ -983,8 +1085,9 @@ class MovieInfo extends StatelessWidget {
                     child: CheckboxListTile(
                       title: const AutoSizeText(
                         'Lồng tiếng',
-                        style: TextStyle(fontSize: 14),
                         maxLines: 1,
+                        maxFontSize: 8,
+                        minFontSize: 8,
                       ),
                       value: isDubbed,
                       onChanged: onDubbedChanged,

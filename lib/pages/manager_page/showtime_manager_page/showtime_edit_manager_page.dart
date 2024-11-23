@@ -2,10 +2,12 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
+import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/models/showTimeForAdmin_model.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:intl/intl.dart';
 
 class ShowtimeEditManagerPage extends StatefulWidget {
   const ShowtimeEditManagerPage({Key? key}) : super(key: key);
@@ -35,6 +37,13 @@ class _ShowtimeEditManagerPageState extends State<ShowtimeEditManagerPage> {
   late Future<List<MovieDetails>> _moviesFuture;
   int? selectedRowIndex; // Biến để lưu chỉ số hàng đã chọn
   int? selectedShowtimeIndex; // Biến để lưu chỉ số showtime đã chọn
+  DateTime _currentWeekStart = DateTime.now().subtract(
+      Duration(days: DateTime.now().weekday - 1)); // Thứ 2 của tuần hiện tại
+  DateTime _currentWeekEnd = DateTime.now().add(
+      Duration(days: 7 - DateTime.now().weekday)); // Chủ nhật của tuần hiện tại
+  DateTime? _selectedDate;
+  TextEditingController _dateController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +58,22 @@ class _ShowtimeEditManagerPageState extends State<ShowtimeEditManagerPage> {
     setState(() {
       _searchTerm = value.toLowerCase(); // Store the search term in lowercase
     });
+  }
+
+  void _updateDateController() {
+    if (_selectedDate != null) {
+      _dateController.text =
+          'Tuần: ${DateFormat('dd/MM/yyyy').format(_getWeekStart(_selectedDate!))} - ${DateFormat('dd/MM/yyyy').format(_getWeekEnd(_selectedDate!))}';
+    }
+  }
+
+  DateTime _getWeekStart(DateTime date) {
+    return date.subtract(Duration(days: date.weekday - 1)); // Thứ 2 của tuần
+  }
+
+  // Hàm để lấy ngày kết thúc của tuần cho một ngày cụ thể
+  DateTime _getWeekEnd(DateTime date) {
+    return date.add(Duration(days: 7 - date.weekday)); // Chủ nhật của tuần
   }
 
   List<List<String>> _filteredShowtimes() {
@@ -275,6 +300,77 @@ class _ShowtimeEditManagerPageState extends State<ShowtimeEditManagerPage> {
             child: Column(
               children: [
                 SizedBox(
+                  height: 10,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.arrow_back),
+                        onPressed: () {
+                          setState(() {
+                            _currentWeekStart =
+                                _currentWeekStart.subtract(Duration(days: 7));
+                            _currentWeekEnd =
+                                _currentWeekEnd.subtract(Duration(days: 7));
+                            _selectedDate =
+                                _currentWeekStart; // Cập nhật ngày đã chọn
+                            _updateDateController(); // Cập nhật controller
+                          });
+                        },
+                      ),
+                      // TextField để chọn ngày
+                      Expanded(
+                        child: TextField(
+                          readOnly: true,
+                          decoration: InputDecoration(
+                            hintText: 'Chưa chọn tuần',
+                            border: OutlineInputBorder(),
+                          ),
+                          controller: _dateController,
+                          onTap: () async {
+                            DateTime? pickedDate = await showDatePicker(
+                              context: context,
+                              initialDate: _selectedDate ?? DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2101),
+                            );
+
+                            if (pickedDate != null) {
+                              setState(() {
+                                _selectedDate = pickedDate;
+                                _currentWeekStart =
+                                    _getWeekStart(_selectedDate!);
+                                _currentWeekEnd = _getWeekEnd(_selectedDate!);
+                                _updateDateController();
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.arrow_forward),
+                        onPressed: () {
+                          setState(() {
+                            _currentWeekStart =
+                                _currentWeekStart.add(Duration(days: 7));
+                            _currentWeekEnd =
+                                _currentWeekEnd.add(Duration(days: 7));
+                            _selectedDate =
+                                _currentWeekStart; // Cập nhật ngày đã chọn
+                            _updateDateController();
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                SizedBox(
                   height: 50,
                   child: Row(
                     children: [
@@ -302,78 +398,95 @@ class _ShowtimeEditManagerPageState extends State<ShowtimeEditManagerPage> {
                   ),
                 ),
                 SizedBox(
-                  height: 80,
+                  height: 10,
                 ),
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: MyButton(
+                    text: 'Lưu',
+                    paddingText: 13,
+                    fontsize: 16,
+                    onTap: () {
+                      // Danh sách lưu trữ kết quả dưới dạng model
+                      List<ShowtimeModel> showtimeModels = [];
+
+                      showtimes.asMap().entries.forEach((rowEntry) {
+                        int rowIndex = rowEntry.key;
+                        List<String> row = rowEntry.value;
+
+                        // Lấy mốc thời gian tương ứng với rowIndex từ timeSlots
+                        String timeSlot = (rowIndex < timeSlots.length)
+                            ? timeSlots[rowIndex]
+                            : 'N/A';
+
+                        // Danh sách phim trong hàng
+                        List<MovieItem> movieItems = [];
+
+                        row.asMap().entries.forEach((columnEntry) {
+                          int columnIndex = columnEntry.key;
+                          String showtime = columnEntry.value;
+
+                          // Nếu showtime không rỗng, lấy ID phim và thêm vào danh sách
+                          if (showtime.isNotEmpty) {
+                            String movieId = showtime.split(",")[0].trim();
+                            movieItems.add(MovieItem(
+                              movieId: movieId,
+                              columnIndex: columnIndex + 1,
+                            ));
+                          }
+                        });
+
+                        // Nếu có dữ liệu phim, thêm vào model
+                        if (movieItems.isNotEmpty) {
+                          showtimeModels.add(ShowtimeModel(
+                            timeSlot: timeSlot,
+                            movies: movieItems,
+                          ));
+                        }
+                      });
+
+                      // In ra danh sách model
+                      showtimeModels.forEach((model) {
+                        print('Thời gian: ${model.timeSlot}');
+                        model.movies.forEach((movie) {
+                          print(
+                              'Phim ID: ${movie.movieId}, Cột: ${movie.columnIndex}');
+                        });
+                      });
+
+                      // Chuyển đổi showtimeModels thành danh sách Showtimes cho API
+                      List<Map<String, dynamic>> showtimesForApi = [];
+
+                      showtimeModels.forEach((model) {
+                        model.movies.forEach((movie) {
+                          showtimesForApi.add({
+                            'MovieID': movie.movieId,
+                            'CinemaRoomID': movie.columnIndex.toString(),
+                            'StartTime': model
+                                .timeSlot, // Giả sử thời gian là StartTime của suất chiếu
+                          });
+                        });
+                      });
+
+                      String formattedStartDate =
+                          DateFormat('yyyy-MM-dd').format(_currentWeekStart);
+                      String formattedEndDate =
+                          DateFormat('yyyy-MM-dd').format(_currentWeekEnd);
+                      print('================');
+                      print(showtimesForApi);
+
+                      apiService.insertShowTime(
+                        StartDate: formattedStartDate,
+                        EndDate: formattedEndDate,
+                        Showtimes: showtimesForApi,
+                      );
+                    },
+                  ),
+                )
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0, 0, 20, 20),
-            child: Align(
-              alignment: Alignment.bottomRight,
-              child: SpeedDial(
-                icon: Icons.add,
-                activeIcon: Icons.close,
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                activeBackgroundColor: Colors.red,
-                activeForegroundColor: Colors.white,
-                visible: true,
-                closeManually: false,
-                curve: Curves.bounceIn,
-                overlayColor: Colors.black,
-                overlayOpacity: 0.5,
-                onOpen: () => print('OPENING DIAL'),
-                onClose: () => print('DIAL CLOSED'),
-                elevation: 8.0,
-                shape: CircleBorder(),
-                children: [
-                  SpeedDialChild(
-                    child: Icon(Icons.calendar_today),
-                    backgroundColor: Colors.green,
-                    label: 'Thêm lịch',
-                    labelStyle: TextStyle(fontSize: 15.0),
-                    onTap: () => print('Thêm lịch'),
-                  ),
-                  SpeedDialChild(
-                    child: Icon(Icons.edit),
-                    backgroundColor: Colors.orange,
-                    label: 'Sửa lịch',
-                    labelStyle: TextStyle(fontSize: 15.0),
-                    onTap: () => print('Sửa '),
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildButton(String label, IconData icon, Color color) {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 15.0, left: 20, right: 20),
-        child: ElevatedButton.icon(
-          onPressed: () {},
-          icon: Icon(icon, color: Colors.white),
-          label: Text(
-            label,
-            style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          style: ElevatedButton.styleFrom(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            backgroundColor: color,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -723,7 +836,7 @@ class _ShowtimeEditManagerPageState extends State<ShowtimeEditManagerPage> {
 
                                   // Cập nhật tên phim cho ô hiện tại
                                   showtimes[rowIndex][showtimeIndex] =
-                                      "${movie.title}|${movie.posterUrl}";
+                                      "${movie.movieId}, ${movie.title}, ${movie.posterUrl}";
                                   _sortShowtimes();
                                 });
                                 Navigator.pop(context);
@@ -820,10 +933,10 @@ class _ShowtimeEditManagerPageState extends State<ShowtimeEditManagerPage> {
 
                 bool isSelected = showtime.isNotEmpty;
                 bool shouldShowAddIcon = isUnlocked && !isSelected;
-                List<String> showtimeParts = showtime.split('|');
-                String title = showtimeParts.isNotEmpty ? showtimeParts[0] : '';
+                List<String> showtimeParts = showtime.split(', ');
+                String title = showtimeParts.length > 1 ? showtimeParts[1] : '';
                 String posterUrl =
-                    showtimeParts.length > 1 ? showtimeParts[1] : '';
+                    showtimeParts.length > 1 ? showtimeParts[2] : '';
                 // Kiểm tra xem có phim nào khác đã được chọn trong cùng khung giờ không
                 bool hasOtherMovieInSameTimeSlot =
                     row.where((s) => s.isNotEmpty).length > 1;
@@ -950,4 +1063,35 @@ class AddedRow {
   void updateAddedRowIndex(int newIndex) {
     addedRowIndex = newIndex;
   }
+}
+
+class ShowtimeItem {
+  final String timeSlot; // Thời gian chiếu
+  final String title; // Tên phim
+  final String posterUrl; // URL poster của phim
+
+  ShowtimeItem({
+    required this.timeSlot,
+    required this.title,
+    required this.posterUrl,
+  });
+
+  @override
+  String toString() {
+    return 'ShowtimeItem(timeSlot: $timeSlot, title: $title, posterUrl: $posterUrl)';
+  }
+}
+
+class ShowtimeModel {
+  final String timeSlot;
+  final List<MovieItem> movies;
+
+  ShowtimeModel({required this.timeSlot, required this.movies});
+}
+
+class MovieItem {
+  final String movieId;
+  final int columnIndex;
+
+  MovieItem({required this.movieId, required this.columnIndex});
 }

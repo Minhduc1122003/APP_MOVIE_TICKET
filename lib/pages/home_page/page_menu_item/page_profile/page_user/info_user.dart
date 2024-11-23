@@ -63,14 +63,25 @@ class _InfoUser extends State<InfoUser> {
       final userName = usernameController.text;
       final fullName = fullnameController.text;
       final phoneNumber = int.tryParse(phoneController.text) ?? 0;
-      final photo = ''; // Placeholder for photo URL or file
-      print(_imageFile);
 
-      //uploadImage
-      // final response = await _APIService.updateInfoUser(
-      //     userId, userName, fullName, phoneNumber, photo);
+      String image = '';
+      if (_imageFile != null) {
+        // Chờ kết quả từ hàm uploadImage
+        image = await _APIService.uploadImage(File(_imageFile!.path));
+      } else {
+        print('Không có ảnh để upload');
+      }
 
-      // EasyLoading.showSuccess(response); // Show success message
+      final response = await _APIService.updateInfoUser(
+        userId,
+        userName,
+        fullName,
+        phoneNumber,
+        image,
+      );
+
+      // Hiển thị thông báo thành công
+      EasyLoading.showSuccess(response);
     } catch (e) {
       EasyLoading.showError('Lỗi: $e'); // Show error message
     } finally {
