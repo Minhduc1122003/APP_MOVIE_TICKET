@@ -493,22 +493,48 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                                 'VNPAY'
                                             ? mainColor
                                             : Colors
-                                                .white, // Thay đổi màu sắc dựa trên trạng thái
+                                                .white, // Đổi màu nền khi đã chọn
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                              10), // Bo góc 10 cho button
+                                          side: BorderSide(
+                                            color: _selectedPaymentMethod ==
+                                                    'VNPAY'
+                                                ? Colors.transparent
+                                                : mainColor, // Đổi màu viền khi chưa chọn
+                                          ),
+                                        ),
                                       ),
                                       onPressed: () {
                                         setState(() {
-                                          _selectedPaymentMethod = 'VNPAY';
+                                          _selectedPaymentMethod =
+                                              'VNPAY'; // Cập nhật phương thức thanh toán khi nhấn
                                         });
                                       },
                                       child: Row(
                                         children: [
                                           Icon(Icons.qr_code,
-                                              color: Colors.blue),
+                                              color: _selectedPaymentMethod ==
+                                                      'VNPAY'
+                                                  ? Colors.white
+                                                  : Colors.blue),
                                           SizedBox(width: 16),
-                                          Text('VNPAY'),
+                                          Text(
+                                            'VNPAY',
+                                            style: TextStyle(
+                                              color: _selectedPaymentMethod ==
+                                                      'VNPAY'
+                                                  ? Colors.white
+                                                  : mainColor, // Đổi màu text khi đã chọn
+                                            ),
+                                          ),
                                           Spacer(),
                                           Icon(Icons.arrow_forward_ios,
-                                              size: 16),
+                                              size: 16,
+                                              color: _selectedPaymentMethod ==
+                                                      'VNPAY'
+                                                  ? Colors.white
+                                                  : mainColor),
                                         ],
                                       ),
                                     ),
@@ -524,25 +550,51 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                                 'MOMO'
                                             ? mainColor
                                             : Colors
-                                                .white, // Thay đổi màu sắc dựa trên trạng thái
+                                                .white, // Đổi màu nền khi đã chọn
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                              10), // Bo góc 10 cho button
+                                          side: BorderSide(
+                                            color: _selectedPaymentMethod ==
+                                                    'MOMO'
+                                                ? Colors.transparent
+                                                : mainColor, // Đổi màu viền khi chưa chọn
+                                          ),
+                                        ),
                                       ),
                                       onPressed: () {
                                         setState(() {
-                                          _selectedPaymentMethod = 'MOMO';
+                                          _selectedPaymentMethod =
+                                              'MOMO'; // Cập nhật phương thức thanh toán khi nhấn
                                         });
                                       },
                                       child: Row(
                                         children: [
                                           Icon(Icons.mobile_friendly,
-                                              color: Colors.pink),
+                                              color: _selectedPaymentMethod ==
+                                                      'MOMO'
+                                                  ? Colors.white
+                                                  : Colors.pink),
                                           SizedBox(width: 16),
-                                          Text('MOMO'),
+                                          Text(
+                                            'MOMO',
+                                            style: TextStyle(
+                                              color: _selectedPaymentMethod ==
+                                                      'MOMO'
+                                                  ? Colors.white
+                                                  : mainColor, // Đổi màu text khi đã chọn
+                                            ),
+                                          ),
                                           Spacer(),
                                           Icon(Icons.arrow_forward_ios,
-                                              size: 16),
+                                              size: 16,
+                                              color: _selectedPaymentMethod ==
+                                                      'MOMO'
+                                                  ? Colors.white
+                                                  : mainColor),
                                         ],
                                       ),
-                                    ),
+                                    )
                                   ],
                                 ),
                               ),

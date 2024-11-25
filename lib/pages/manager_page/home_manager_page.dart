@@ -15,6 +15,7 @@ import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/perso
 import 'package:flutter_app_chat/pages/manager_page/scan_code_manager/scan_QRcode.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/shift_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/showtime_manager_page/showtime_manager_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/statistical_manager_page/statistical_manager_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -401,6 +402,8 @@ class _HomeTabState extends State<HomeTab> {
             }),
             _buildGridItem('Thống kê', 'Thống kê doanh thu', state.count,
                 Icons.bar_chart, Colors.purple, () {
+              Navigator.push(context,
+                  SlideFromRightPageRoute(page: StatisticalManagerPage()));
               // Thêm sự kiện khi tap vào Cuộc họp
             }),
           ],

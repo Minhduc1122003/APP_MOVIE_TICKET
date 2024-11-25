@@ -35,7 +35,7 @@ class ApiService {
     // String? ip = await info.getWifiIP(); // 192.168.1.43
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.1.26:8081';
+    baseUrl = 'http://192.168.1.70:8081';
 // server public
 //     baseUrl = 'https://nodejs-sql-server-api.onrender.com';
   }
@@ -1774,6 +1774,46 @@ class ApiService {
     } catch (e) {
       print('Error: $e');
       throw Exception('Failed to create showtimes');
+    }
+  }
+
+  Future<Map<int, int>> getThongkeNguoiDungMoi(int year) async {
+    await _initBaseUrl();
+
+    try {
+      // Gửi yêu cầu GET đến API
+      final response = await http.get(
+        Uri.parse('$baseUrl/getThongkeNguoiDungMoi?Year=$year'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      // Kiểm tra mã trạng thái của phản hồi
+      if (response.statusCode == 200) {
+        // Phản hồi thành công, phân tích cú pháp JSON
+        final responseBody = response.body;
+        print('API Response: $responseBody');
+
+        // Phân tích JSON thành List
+        final List<dynamic> data = jsonDecode(responseBody);
+
+        // Chuyển List thành Map<int, int> (Map tháng -> tổng số người dùng)
+        Map<int, int> result = {};
+        for (var item in data) {
+          result[item['Month']] = item['TotalUsers'];
+        }
+
+        return result;
+      } else {
+        // Xử lý lỗi nếu API trả về mã trạng thái không thành công
+        throw Exception(
+            'Failed to update ticket status. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      // In lỗi ra console để debug
+      print('Error: $e');
+      throw Exception('Failed to update ticket status');
     }
   }
 }

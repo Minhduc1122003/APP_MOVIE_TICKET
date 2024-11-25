@@ -15,6 +15,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 late ApiService _apiService = ApiService();
+late String selectedDay1 = '';
 
 class BuyTicketPage extends StatefulWidget {
   final int movieId;
@@ -28,7 +29,6 @@ class BuyTicketPage extends StatefulWidget {
 class _BuyTicketPageState extends State<BuyTicketPage> {
   late final ApiService _APIService;
   late List<ShowTimeDetails> _showtimes = [];
-
   @override
   void initState() {
     super.initState();
@@ -43,7 +43,8 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
   }
 
   Future<void> _loadShowtimes() async {
-    DateTime dateGet = DateTime(2024, 9, 30);
+    print(selectedDay1);
+    DateTime dateGet = DateTime.now();
     TimeOfDay timeGet = TimeOfDay(hour: 08, minute: 0);
     try {
       _showtimes =
@@ -434,6 +435,7 @@ class _DateSelectorState extends State<DateSelector> {
   double _titlePadding = 10; // Giá trị padding cho tiêu đề
   double _leftPadding = 10; // Giá trị padding bên trái cho phần tử đầu tiên
   late ScrollController _scrollController;
+  String selectedDay = "";
 
   @override
   void initState() {
@@ -516,6 +518,7 @@ class _DateSelectorState extends State<DateSelector> {
                                 setState(() {
                                   _selectedIndex =
                                       index; // Cập nhật chỉ số của item được chọn
+                                  selectedDay1 = dayInfo['dayMonth'] ?? '';
                                 });
                               },
                             ),
