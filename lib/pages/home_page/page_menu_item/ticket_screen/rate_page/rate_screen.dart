@@ -38,7 +38,11 @@ class RateScreenState extends State<RateScreen>
     super.initState();
     _apiService = ApiService();
     _noteController = TextEditingController(); // Khởi tạo controller
+
+    print(widget.buyTicket.movieID);
+
     _fetchRateInfo(); // Gọi API để lấy thông tin đánh giá
+    print(widget.buyTicket.movieID);
   }
 
   Future<void> _insertRate(String content, int rating) async {
@@ -71,21 +75,26 @@ class RateScreenState extends State<RateScreen>
 
   void _fetchRateInfo() async {
     try {
-      // Giả sử API trả về dữ liệu đánh giá trong Map
+      // Gọi API để lấy thông tin đánh giá
       final rateInfo = await _apiService.getRate(
           UserManager.instance.user!.userId, widget.buyTicket.movieID);
 
-      setState(() {
-        _rateInfo = rateInfo; // Cập nhật dữ liệu đánh giá vào _rateInfo
-      });
+      // Nếu dữ liệu trả về rỗng, không làm gì cả
+      if (rateInfo == null || rateInfo.isEmpty) {
+        print("Dữ liệu đánh giá rỗng, không cần xử lý.");
+        return;
+      }
 
       // Cập nhật _noteController và RatingController khi có dữ liệu đánh giá
-      if (_rateInfo != null && _rateInfo!['Rating'] != null) {
+      if (_rateInfo!['Rating'] != null) {
         int rating = _rateInfo!['Rating'];
         final RatingController ratingController = Get.find<RatingController>();
         ratingController.updateStars(rating);
-        _noteController.text = _rateInfo!['Content'] ??
-            ''; // Cập nhật nội dung vào _noteController
+        _noteController.text = _rateInfo!['Content'] ?? '';
+
+        setState(() {
+          _rateInfo = rateInfo; // Cập nhật dữ liệu đánh giá vào _rateInfo
+        });
       }
     } catch (e) {
       // Xử lý lỗi khi gọi API

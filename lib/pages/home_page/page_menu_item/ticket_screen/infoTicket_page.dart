@@ -451,6 +451,8 @@ class InfoticketPageState extends State<InfoticketPage>
                                           vertical: 20, horizontal: 20),
                                     ),
                                     onPressed: () async {
+                                      print('object');
+                                      print(ticket.movieID);
                                       Navigator.push(
                                         context,
                                         SlideFromRightPageRoute(

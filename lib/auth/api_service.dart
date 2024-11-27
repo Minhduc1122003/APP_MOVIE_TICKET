@@ -35,7 +35,7 @@ class ApiService {
     // String? ip = await info.getWifiIP(); // 192.168.1.43
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.1.70:8081';
+    baseUrl = 'http://192.168.1.135:8081';
 // server public
 //     baseUrl = 'https://nodejs-sql-server-api.onrender.com';
   }

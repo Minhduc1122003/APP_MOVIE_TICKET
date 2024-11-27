@@ -29,12 +29,42 @@ class BuyTicketPage extends StatefulWidget {
 class _BuyTicketPageState extends State<BuyTicketPage> {
   late final ApiService _APIService;
   late List<ShowTimeDetails> _showtimes = [];
+
+  int _selectedIndex = 0; // Lưu trữ chỉ số của item được chọn
+  double _titlePadding = 10; // Giá trị padding cho tiêu đề
+  double _leftPadding = 10; // Giá trị padding bên trái cho phần tử đầu tiên
+  late ScrollController _scrollController;
+  String selectedDay = "";
+
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController()
+      ..addListener(() {
+        // Kiểm tra vị trí cuộn
+        if (_scrollController.position.pixels > 0) {
+          setState(() {
+            _titlePadding = 0; // Đặt padding bằng 0 khi cuộn
+            _leftPadding =
+                0; // Đặt padding bên trái của phần tử đầu tiên bằng 0
+          });
+        } else {
+          setState(() {
+            _titlePadding = 10; // Đặt padding về 10 khi ở đầu
+            _leftPadding =
+                10; // Đặt padding bên trái của phần tử đầu tiên về 10
+          });
+        }
+      });
     _APIService = ApiService(); // Khởi tạo _APIService ở cấp cha
     _loadShowtimes(); // Gọi hàm _loadShowtimes
     print('Đã load showtime, moviesID là : ${widget.movieId}');
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<MovieDetails?> _loadMovieDetails() async {
@@ -42,13 +72,16 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
         widget.movieId, UserManager.instance.user?.userId ?? 0);
   }
 
-  Future<void> _loadShowtimes() async {
-    print(selectedDay1);
-    DateTime dateGet = DateTime.now();
+  Future<void> _loadShowtimes({DateTime? selectedDate}) async {
+    // Nếu không có ngày được chọn, sử dụng ngày hiện tại
+    DateTime dateGet = selectedDate ?? DateTime.now();
     TimeOfDay timeGet = TimeOfDay(hour: 08, minute: 0);
+
     try {
       _showtimes =
           await _APIService.getShowtime(widget.movieId, dateGet, timeGet);
+
+      // Kiểm tra và in log như cũ
       if (_showtimes.isNotEmpty) {
         for (var showtime in _showtimes) {
           print('Cinema Room ID: ${showtime.cinemaRoomID}');
@@ -57,6 +90,9 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
           print('movieDuration: ${showtime.movieDuration}');
           print('endTime : ${showtime.getFormattedEndTime()}');
         }
+
+        // Force rebuild the cinema and showtime section
+        setState(() {});
       } else {
         print('Không tìm thấy lịch chiếu nào.');
       }
@@ -120,7 +156,100 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
                           thickness: 6,
                           color: Color(0xfff0f0f0),
                         ),
-                        DateSelector(),
+                        Container(
+                          color: Colors.white,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment
+                                .start, // Đặt tiêu đề ở góc trên bên trái
+                            children: [
+                              SizedBox(
+                                  height:
+                                      10), // Khoảng cách giữa tiêu đề và danh sách ngày
+
+                              const Padding(
+                                padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                child: Text(
+                                  'Chọn ngày',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                  height:
+                                      10), // Khoảng cách giữa tiêu đề và danh sách ngày
+                              BlocBuilder<BuyticketBloc, BuyticketBlocState>(
+                                builder: (context, state) {
+                                  return Row(
+                                    children: [
+                                      Expanded(
+                                        child: SingleChildScrollView(
+                                          scrollDirection: Axis.horizontal,
+                                          controller: _scrollController,
+                                          child: Wrap(
+                                            spacing: 8,
+                                            runSpacing: 8,
+                                            children: state.daysList
+                                                .asMap()
+                                                .entries
+                                                .map((entry) {
+                                              int index = entry.key;
+                                              var dayInfo = entry.value;
+                                              bool isSelected =
+                                                  index == _selectedIndex;
+
+                                              return Padding(
+                                                padding: EdgeInsets.only(
+                                                    left: index == 0
+                                                        ? _leftPadding
+                                                        : 0),
+                                                child: _buildDateItem(
+                                                  dayInfo['dayMonth'] ?? '',
+                                                  dayInfo['dayOfWeek'] ?? '',
+                                                  isSelected: isSelected,
+                                                  onTap: () {
+                                                    setState(() {
+                                                      _selectedIndex = index;
+                                                      selectedDay1 =
+                                                          dayInfo['dayMonth'] ??
+                                                              '';
+                                                    });
+
+                                                    // Parse the selected date
+                                                    List<String> dateParts =
+                                                        selectedDay1.split('/');
+                                                    if (dateParts.length == 2) {
+                                                      int day = int.parse(
+                                                          dateParts[0]);
+                                                      int month = int.parse(
+                                                          dateParts[1]);
+                                                      DateTime selectedDate =
+                                                          DateTime(
+                                                              DateTime.now()
+                                                                  .year,
+                                                              month,
+                                                              day);
+
+                                                      // Load showtimes for the selected date
+                                                      _loadShowtimes(
+                                                          selectedDate:
+                                                              selectedDate);
+                                                    }
+                                                  },
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
                         const SizedBox(
                           height: 10,
                         ),
@@ -155,6 +284,48 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
 
   @override
   bool get wantKeepAlive => true; // Giữ trạng thái của trang
+  Widget _buildDateItem(String day, String weekday,
+      {bool isSelected = false, required Function() onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: isSelected ? mainColor : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? Colors.transparent : Colors.grey,
+          ),
+        ),
+        constraints: const BoxConstraints(
+          minWidth: 50,
+          minHeight: 50,
+        ),
+        child: Center(
+          child: Container(
+            constraints: BoxConstraints(
+              maxWidth: double.infinity,
+              maxHeight: double.infinity,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(weekday,
+                    style: TextStyle(
+                        fontSize: 11,
+                        color: isSelected ? Colors.white : Colors.grey)),
+                SizedBox(height: 4), // Khoảng cách giữa các dòng text
+                Text(day,
+                    style: TextStyle(
+                        fontSize: 15,
+                        color: isSelected ? Colors.white : Colors.black)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class MovieHeader extends StatefulWidget {
@@ -421,161 +592,6 @@ class RatingSection extends StatelessWidget {
           style: TextStyle(fontSize: 10, color: Colors.black),
         ),
       ],
-    );
-  }
-}
-
-class DateSelector extends StatefulWidget {
-  @override
-  _DateSelectorState createState() => _DateSelectorState();
-}
-
-class _DateSelectorState extends State<DateSelector> {
-  int _selectedIndex = 0; // Lưu trữ chỉ số của item được chọn
-  double _titlePadding = 10; // Giá trị padding cho tiêu đề
-  double _leftPadding = 10; // Giá trị padding bên trái cho phần tử đầu tiên
-  late ScrollController _scrollController;
-  String selectedDay = "";
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController = ScrollController()
-      ..addListener(() {
-        // Kiểm tra vị trí cuộn
-        if (_scrollController.position.pixels > 0) {
-          setState(() {
-            _titlePadding = 0; // Đặt padding bằng 0 khi cuộn
-            _leftPadding =
-                0; // Đặt padding bên trái của phần tử đầu tiên bằng 0
-          });
-        } else {
-          setState(() {
-            _titlePadding = 10; // Đặt padding về 10 khi ở đầu
-            _leftPadding =
-                10; // Đặt padding bên trái của phần tử đầu tiên về 10
-          });
-        }
-      });
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start, // Đặt tiêu đề ở góc trên bên trái
-        children: [
-          SizedBox(height: 10), // Khoảng cách giữa tiêu đề và danh sách ngày
-
-          const Padding(
-            padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-            child: Text(
-              'Chọn ngày',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          SizedBox(height: 10), // Khoảng cách giữa tiêu đề và danh sách ngày
-
-          BlocBuilder<BuyticketBloc, BuyticketBlocState>(
-            builder: (context, state) {
-              return Row(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      controller: _scrollController,
-                      child: Wrap(
-                        spacing: 8, // Khoảng cách ngang giữa các button
-                        runSpacing:
-                            8, // Khoảng cách dọc giữa các hàng của button
-                        children: state.daysList
-                            .asMap() // Sử dụng asMap để lấy chỉ số của item
-                            .entries
-                            .map((entry) {
-                          int index = entry.key;
-                          var dayInfo = entry.value;
-                          bool isSelected = index == _selectedIndex;
-
-                          return Padding(
-                            padding: EdgeInsets.only(
-                                left: index == 0 ? _leftPadding : 0),
-                            child: _buildDateItem(
-                              dayInfo['dayMonth'] ?? '',
-                              dayInfo['dayOfWeek'] ?? '',
-                              isSelected: isSelected,
-                              onTap: () {
-                                setState(() {
-                                  _selectedIndex =
-                                      index; // Cập nhật chỉ số của item được chọn
-                                  selectedDay1 = dayInfo['dayMonth'] ?? '';
-                                });
-                              },
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDateItem(String day, String weekday,
-      {bool isSelected = false, required Function() onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: isSelected ? mainColor : Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected ? Colors.transparent : Colors.grey,
-          ),
-        ),
-        constraints: const BoxConstraints(
-          minWidth: 50,
-          minHeight: 50,
-        ),
-        child: Center(
-          child: Container(
-            constraints: BoxConstraints(
-              maxWidth: double.infinity,
-              maxHeight: double.infinity,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(weekday,
-                    style: TextStyle(
-                        fontSize: 11,
-                        color: isSelected ? Colors.white : Colors.grey)),
-                SizedBox(height: 4), // Khoảng cách giữa các dòng text
-                Text(day,
-                    style: TextStyle(
-                        fontSize: 15,
-                        color: isSelected ? Colors.white : Colors.black)),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

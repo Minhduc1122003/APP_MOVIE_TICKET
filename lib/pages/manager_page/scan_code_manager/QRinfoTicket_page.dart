@@ -325,7 +325,9 @@ class QrinfoticketPageState extends State<QrinfoticketPage>
                                                             'Chưa thanh toán'
                                                         ? Colors.orange
                                                         : ticket.status ==
-                                                                'Ðã thanh toán'
+                                                                    'Đã thanh toán' ||
+                                                                ticket.status ==
+                                                                    'Ðã thanh toán'
                                                             ? Colors.green
                                                             : ticket.status ==
                                                                     'Đã hủy'
@@ -396,7 +398,9 @@ class QrinfoticketPageState extends State<QrinfoticketPage>
                                             }
 
                                             if (ticket.status !=
-                                                'Ðã thanh toán') {
+                                                    'Ðã thanh toán' &&
+                                                ticket.status !=
+                                                    'Đã thanh toán') {
                                               EasyLoading.showError(
                                                   'Vé chưa thanh toán hoặc đã hủy!');
                                               WidgetsBinding.instance
