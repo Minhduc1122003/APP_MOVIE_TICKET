@@ -4,21 +4,24 @@ import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:intl/intl.dart';
 
-class NewPersonnelInfoManagerPage extends StatefulWidget {
-  const NewPersonnelInfoManagerPage({super.key});
+class TicketStatiscialManagerPage extends StatefulWidget {
+  const TicketStatiscialManagerPage({super.key});
 
   @override
-  State<NewPersonnelInfoManagerPage> createState() =>
-      _NewPersonnelInfoManagerPageState();
+  State<TicketStatiscialManagerPage> createState() =>
+      _TicketStatiscialManagerPageState();
 }
 
-class _NewPersonnelInfoManagerPageState
-    extends State<NewPersonnelInfoManagerPage> {
+class _TicketStatiscialManagerPageState
+    extends State<TicketStatiscialManagerPage> {
   late ApiService _apiService;
   int _activeTabIndex = 0;
 
-  late Future<Map<int, int>> _getThongke;
+  late Future<List<Map<String, dynamic>>> _getThongke;
   String selectedDay = ''; // Di chuyển khai báo biến `selectedDay` ra ngoài
+  late List<String> months = [];
+
+  late List<dynamic> userCounts = [];
   DateTime _currentWeekStart = DateTime.now().subtract(
       Duration(days: DateTime.now().weekday - 1)); // Thứ 2 của tuần hiện tại
   DateTime _currentWeekEnd = DateTime.now().add(
@@ -26,14 +29,12 @@ class _NewPersonnelInfoManagerPageState
   DateTime? _selectedDate;
   TextEditingController _dateController = TextEditingController();
   bool isLoading = true;
-  late List<String> months = [];
 
-  late List<dynamic> userCounts = [];
   @override
   void initState() {
     super.initState();
     _apiService = ApiService();
-    _fetchThongkeData();
+    _fetchThongkeData(); // Gọi hàm để xử lý API và cập nhật dữ liệu
   }
 
   void _fetchThongkeData() async {
@@ -43,7 +44,7 @@ class _NewPersonnelInfoManagerPageState
 
     try {
       // Gọi API
-      final data = await _apiService.getThongkeNguoiDungMoi(
+      final data = await _apiService.getThongkeDoanhThuOnline(
         _currentWeekStart.toIso8601String(),
         _currentWeekEnd.toIso8601String(),
         "0",
@@ -56,12 +57,14 @@ class _NewPersonnelInfoManagerPageState
       // Tách dữ liệu thành months và userCounts
       setState(() {
         months = parsedData.map((item) {
-          DateTime date = DateTime.parse(item['Date']);
-          return DateFormat('dd/MM').format(date);
+          // Chuyển ngày từ chuỗi sang DateTime UTC
+          DateTime date = DateTime.parse(item['Date']).toUtc();
+          return DateFormat('dd/MM')
+              .format(date); // Định dạng không bị lệch múi giờ
         }).toList();
 
         userCounts = parsedData.map((item) {
-          return item['NumberOfUsers'] ?? 0;
+          return item['TotalRevenue'] ?? 0;
         }).toList();
         isLoading = false; // Dữ liệu đã tải xong
       });
@@ -99,7 +102,7 @@ class _NewPersonnelInfoManagerPageState
           icon: Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text('Thống kê người dùng',
+        title: Text('Doanh thu đặt vé online',
             style: TextStyle(color: Colors.white, fontSize: 20)),
         centerTitle: true,
       ),
@@ -159,6 +162,7 @@ class _NewPersonnelInfoManagerPageState
         : 0;
     final double maxY =
         maxValue / 0.8; // Tính maxY để giá trị lớn nhất chiếm 80%
+
     // Lấy ngày hôm nay
     DateTime now = DateTime.now();
     int daysInMonth = DateTime(now.year, now.month + 1, 0).day;

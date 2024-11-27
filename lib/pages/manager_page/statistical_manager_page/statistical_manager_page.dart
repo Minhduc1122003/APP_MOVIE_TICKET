@@ -9,6 +9,7 @@ import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/calendar_
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/location_manager_page/location_list_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/shift_page/shift_list_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/statistical_manager_page/new_personnel_manager_page/new_personnel_info_manager_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/statistical_manager_page/ticket_statiscial_manager_page/ticket_statiscial_manager_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:diacritic/diacritic.dart'; // Để xử lý loại bỏ dấu
 
@@ -113,7 +114,7 @@ class _StatisticalManagerPageState extends State<StatisticalManagerPage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       UtilitySection(
-                        title: 'Người dùng tổng quan',
+                        title: 'Tài khoản',
                         buttons: [
                           UtilityButton(
                             color: mainColor,
@@ -124,7 +125,7 @@ class _StatisticalManagerPageState extends State<StatisticalManagerPage> {
                             expandedItems: [
                               UtilityButton(
                                 color: mainColor,
-                                title: 'Khách hàng mới',
+                                title: 'Người dùng mới',
                                 icon: Icons
                                     .account_box, // Đổi thành icon phù hợp với "Chi tiết người dùng"
                                 textStyle: TextStyle(fontSize: 16),
@@ -180,7 +181,7 @@ class _StatisticalManagerPageState extends State<StatisticalManagerPage> {
                                     context,
                                     SlideFromRightPageRoute(
                                       page:
-                                          LocationListPage(), // Thay editPage() bằng trang cần chuyển tới
+                                          TicketStatiscialManagerPage(), // Thay editPage() bằng trang cần chuyển tới
                                     ),
                                   );
                                 },

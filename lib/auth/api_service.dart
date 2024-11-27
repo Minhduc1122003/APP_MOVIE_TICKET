@@ -1777,43 +1777,67 @@ class ApiService {
     }
   }
 
-  Future<Map<int, int>> getThongkeNguoiDungMoi(int year) async {
-    await _initBaseUrl();
+  Future<List<Map<String, dynamic>>> getThongkeNguoiDungMoi(
+      String startDate, String endDate, String role) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
 
-    try {
-      // Gửi yêu cầu GET đến API
-      final response = await http.get(
-        Uri.parse('$baseUrl/getThongkeNguoiDungMoi?Year=$year'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-      );
+    final response = await http.post(
+      Uri.parse('$baseUrl/getThongkeNguoiDungMoi'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        "StartDate": startDate,
+        "EndDate": endDate,
+        "Role": role,
+      }),
+    );
 
-      // Kiểm tra mã trạng thái của phản hồi
-      if (response.statusCode == 200) {
-        // Phản hồi thành công, phân tích cú pháp JSON
-        final responseBody = response.body;
-        print('API Response: $responseBody');
+    if (response.statusCode == 200) {
+      // Giải mã response body và trả về List<Map<String, dynamic>>
+      final responseData = jsonDecode(response.body) as List<dynamic>;
 
-        // Phân tích JSON thành List
-        final List<dynamic> data = jsonDecode(responseBody);
+      // Chuyển List<dynamic> thành List<Map<String, dynamic>>
+      List<Map<String, dynamic>> resultList = List<Map<String, dynamic>>.from(
+          responseData.map((item) => item as Map<String, dynamic>));
 
-        // Chuyển List thành Map<int, int> (Map tháng -> tổng số người dùng)
-        Map<int, int> result = {};
-        for (var item in data) {
-          result[item['Month']] = item['TotalUsers'];
-        }
+      return resultList;
+    } else {
+      // Nếu server trả về lỗi
+      final errorResponse = jsonDecode(response.body);
+      throw Exception(errorResponse['message'] ?? 'Failed to get revenue');
+    }
+  }
 
-        return result;
-      } else {
-        // Xử lý lỗi nếu API trả về mã trạng thái không thành công
-        throw Exception(
-            'Failed to update ticket status. Status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      // In lỗi ra console để debug
-      print('Error: $e');
-      throw Exception('Failed to update ticket status');
+  Future<List<Map<String, dynamic>>> getThongkeDoanhThuOnline(
+      String startDate, String endDate, String role) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/getThongkeDoanhThu'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        "StartDate": startDate,
+        "EndDate": endDate,
+        "Role": role,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Giải mã response body và trả về List<Map<String, dynamic>>
+      final responseData = jsonDecode(response.body) as List<dynamic>;
+
+      // Chuyển List<dynamic> thành List<Map<String, dynamic>>
+      List<Map<String, dynamic>> resultList = List<Map<String, dynamic>>.from(
+          responseData.map((item) => item as Map<String, dynamic>));
+
+      return resultList;
+    } else {
+      // Nếu server trả về lỗi
+      final errorResponse = jsonDecode(response.body);
+      throw Exception(errorResponse['message'] ?? 'Failed to get revenue');
     }
   }
 }
