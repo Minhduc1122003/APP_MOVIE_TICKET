@@ -35,7 +35,8 @@ class ApiService {
     // String? ip = await info.getWifiIP(); // 192.168.1.43
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.1.135:8081';
+    baseUrl = 'http://192.168.1.139:8081';
+
 // server public
 //     baseUrl = 'https://nodejs-sql-server-api.onrender.com';
   }
@@ -1838,6 +1839,35 @@ class ApiService {
       // Nếu server trả về lỗi
       final errorResponse = jsonDecode(response.body);
       throw Exception(errorResponse['message'] ?? 'Failed to get revenue');
+    }
+  }
+
+  Future<void> updateUserStatus(int userId, String status) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/updateUserStatus'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'UserId': userId,
+          'Status': status,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+      } else {
+        // Log lỗi khi server trả về lỗi
+        print('Lỗi cập nhật trạng thái: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        throw Exception('Cập nhật trạng thái không thành công');
+      }
+    } catch (e) {
+      // Log chi tiết lỗi ngoại lệ
+      print('Lỗi khi gọi API updateUserStatus: $e');
+      rethrow; // Ném lại lỗi để xử lý phía trên nếu cần
     }
   }
 }

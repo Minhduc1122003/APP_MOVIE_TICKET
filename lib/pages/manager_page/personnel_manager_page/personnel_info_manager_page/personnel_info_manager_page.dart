@@ -1,16 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_chat/auth/api_service.dart';
+import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 
 class PersonnelInfoManagerPage extends StatefulWidget {
-  const PersonnelInfoManagerPage({super.key});
+  final User user; // Nhận user được chọn
 
+  const PersonnelInfoManagerPage({Key? key, required this.user})
+      : super(key: key);
   @override
   State<PersonnelInfoManagerPage> createState() =>
       _PersonnelInfoManagerPageState();
 }
 
-class _PersonnelInfoManagerPageState extends State<PersonnelInfoManagerPage> {
+class _PersonnelInfoManagerPageState extends State<PersonnelInfoManagerPage>
+    with SingleTickerProviderStateMixin {
   int _activeTabIndex = 0;
+  late ApiService _APIService;
+  late Future<List<User>> _userList;
+  int? _selectedUserId;
+  late Future<User> _userDetail;
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _APIService = ApiService();
+    _userList = _APIService.getUserListForAdmin();
+    _userDetail = _APIService.findByViewIDUser(widget.user.userId);
+    _tabController = TabController(length: 3, vsync: this); // 2 tab
+// Gọi API
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,33 +60,55 @@ class _PersonnelInfoManagerPageState extends State<PersonnelInfoManagerPage> {
   }
 
   Widget _buildUserHeader() {
-    return Container(
-      padding: EdgeInsets.all(16),
-      color: Colors.white,
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: mainColor,
-            child: Icon(Icons.person, size: 40, color: Colors.grey[400]),
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return FutureBuilder<User>(
+      future: _userDetail,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Lỗi: ${snapshot.error}'));
+        } else if (snapshot.hasData) {
+          final user = snapshot.data!;
+          return Container(
+            padding: EdgeInsets.all(16),
+            color: Colors.white,
+            child: Row(
               children: [
-                Text('Huỳnh Nhi',
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold)),
-                Text('Hyn_0912@gmail.com',
-                    style: TextStyle(color: Colors.black)),
+                CircleAvatar(
+                  radius: 30,
+                  backgroundImage:
+                      user.photo != null ? NetworkImage(user.photo!) : null,
+                  backgroundColor: user.photo == null ? Colors.grey[300] : null,
+                  child: user.photo == null
+                      ? Icon(Icons.person, size: 40, color: Colors.grey[400])
+                      : null,
+                ),
+                SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        user.userName,
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        user.email,
+                        style: TextStyle(color: Colors.black),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
-      ),
+          );
+        } else {
+          return Center(child: Text('Không tìm thấy dữ liệu.'));
+        }
+      },
     );
   }
 
@@ -121,17 +167,30 @@ class _PersonnelInfoManagerPageState extends State<PersonnelInfoManagerPage> {
   }
 
   Widget _buildInfoContent() {
-    return ListView(
-      children: [
-        _buildInfoItem('ID người dùng:', 'PT09122004'),
-        _buildInfoItem('Tên người dùng:', 'Huỳnh Thị Yến Nhi'),
-        _buildInfoItem('Ngày sinh:', '09/12/2004'),
-        _buildInfoItem('Số điện thoại:', '0386706328'),
-        _buildInfoItem('Ngày tạo tài khoản:', '12/09/2024'),
-        _buildInfoItem('Mật khẩu:', '••••••••••••'),
-        SizedBox(height: 20),
-        _buildActionButtons(),
-      ],
+    return FutureBuilder<User>(
+      future: _userDetail,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Lỗi: ${snapshot.error}'));
+        } else if (snapshot.hasData) {
+          final user = snapshot.data!;
+          return ListView(
+            children: [
+              _buildInfoItem('ID người dùng:', user.userId.toString()),
+              _buildInfoItem('Tên người dùng:', user.fullName),
+              _buildInfoItem('Số điện thoại:', user.phoneNumber.toString()),
+              _buildInfoItem(
+                  'Ngày tạo tài khoản:', _formatDate(user.createDate)),
+              SizedBox(height: 20),
+              _buildActionButtons(),
+            ],
+          );
+        } else {
+          return Center(child: Text('Không có dữ liệu.'));
+        }
+      },
     );
   }
 
@@ -150,22 +209,38 @@ class _PersonnelInfoManagerPageState extends State<PersonnelInfoManagerPage> {
   }
 
   Widget _buildActionButtons() {
+    bool isLocked = widget.user.status == 'Đã khóa'; // Kiểm tra trạng thái
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
           Expanded(
             child: ElevatedButton(
-              onPressed: () {},
-              child: Text('Khóa tài khoản'),
-              style: ElevatedButton.styleFrom(),
-            ),
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () {},
-              child: Text('Xóa tài khoản'),
+              onPressed: () async {
+                try {
+                  // Gọi API để cập nhật trạng thái
+                  String newStatus = isLocked ? 'Đang hoạt động' : 'Đã khóa';
+                  await _APIService.updateUserStatus(
+                      widget.user.userId, newStatus);
+
+                  // Hiển thị thông báo thành công
+                  String action = isLocked ? 'mở khóa' : 'khóa';
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Tài khoản đã được $action.')),
+                  );
+
+                  // Quay lại trang trước và thông báo cần làm mới
+                  Navigator.of(context)
+                      .pop(true); // Trả về `true` để yêu cầu làm mới danh sách
+                } catch (e) {
+                  // Hiển thị lỗi
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Lỗi: $e')),
+                  );
+                }
+              },
+              child: Text(isLocked ? 'Mở tài khoản' : 'Khóa tài khoản'),
               style: ElevatedButton.styleFrom(),
             ),
           ),

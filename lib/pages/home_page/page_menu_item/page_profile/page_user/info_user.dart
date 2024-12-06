@@ -35,7 +35,7 @@ class _InfoUser extends State<InfoUser> {
   final TextEditingController idController = TextEditingController();
   final DateFormat dateFormatter = DateFormat('dd/MM/yyyy');
   final ImagePicker _picker = ImagePicker();
-  XFile? _imageFile; // Lưu ảnh dưới dạng XFile
+  File? _image; // Biến lưu ảnh dưới dạng File
 
   @override
   void initState() {
@@ -45,13 +45,24 @@ class _InfoUser extends State<InfoUser> {
         _APIService.findByViewIDUser(UserManager.instance.user!.userId);
   }
 
+  Uint8List? _webImage; // Ảnh trên web
+
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      setState(() {
-        _imageFile = pickedFile; // Lưu ảnh dưới dạng XFile
-      });
+      if (kIsWeb) {
+        // Đọc dữ liệu ảnh dưới dạng Uint8List cho web
+        final bytes = await pickedFile.readAsBytes();
+        setState(() {
+          _webImage = bytes;
+        });
+      } else {
+        // Chuyển đổi sang File cho Mobile/Desktop
+        setState(() {
+          _image = File(pickedFile.path);
+        });
+      }
     }
   }
 
@@ -63,14 +74,36 @@ class _InfoUser extends State<InfoUser> {
       final userName = usernameController.text;
       final fullName = fullnameController.text;
       final phoneNumber = int.tryParse(phoneController.text) ?? 0;
+      final photo = ''; // Placeholder for photo URL or file
+      print(_image);
+      // try {
+      //   // Chuyển đường dẫn thành đối tượng File
+      //   if (_image != null) {
+      //     try {
+      //       // Chuyển từ XFile sang File
+      //       File imageFile = File(_image!.path);
+      //       print(imageFile);
+      //       // Gửi file để upload
+      //       final imageUploadResponsePhoto =
+      //           await _APIService.uploadImage(imageFile);
+      //
+      //       print('Image upload response: $imageUploadResponsePhoto');
+      //     } catch (e) {
+      //       print('Error uploading image: $e');
+      //     }
+      //   }
+      // } catch (e) {
+      //   print('Error uploading image for');
+      // }
 
       String image = '';
-      if (_imageFile != null) {
-        // Chờ kết quả từ hàm uploadImage
-        image = await _APIService.uploadImage(File(_imageFile!.path));
-      } else {
-        print('Không có ảnh để upload');
-      }
+      // if (_imageFile != null) {
+      //   // Chờ kết quả từ hàm uploadImage
+      //   image = await _APIService.uploadImage(File(_imageFile!.path));
+      // }
+      // else {
+      //   print('Không có ảnh để upload');
+      // }
 
       final response = await _APIService.updateInfoUser(
         userId,
@@ -133,7 +166,7 @@ class _InfoUser extends State<InfoUser> {
                 user.photo ?? 'https://example.com/path_to_default_image';
 
             print(
-                "Current selected image: ${_imageFile?.path ?? 'No image selected'}"); // Debug print to check selected image
+                "Current selected image: ${_image?.path ?? 'No image selected'}"); // Debug print to check selected image
 
             return SingleChildScrollView(
               child: Padding(
@@ -156,7 +189,7 @@ class _InfoUser extends State<InfoUser> {
                                         width: 80,
                                         height: 80,
                                       )
-                                    : (_imageFile == null
+                                    : (_image == null
                                         ? Image.network(
                                             imageUrl, // ảnh mặc định nếu chưa chọn
                                             fit: BoxFit.cover,
@@ -164,7 +197,7 @@ class _InfoUser extends State<InfoUser> {
                                             height: 80,
                                           )
                                         : Image.file(
-                                            File(_imageFile!
+                                            File(_image!
                                                 .path), // Hiển thị ảnh đã chọn
                                             fit: BoxFit.cover,
                                             width: 80,
