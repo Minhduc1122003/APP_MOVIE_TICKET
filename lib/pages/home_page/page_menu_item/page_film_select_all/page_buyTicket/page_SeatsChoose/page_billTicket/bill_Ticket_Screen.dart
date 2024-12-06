@@ -609,35 +609,80 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                       ),
                       Padding(
                         padding: const EdgeInsets.all(15),
-                        child: MyButton(
-                          fontsize: 20,
-                          paddingText: 10,
-                          text: 'Thanh toán',
-                          isBold: true,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              SlideFromRightPageRoute(
-                                  page: DetailInvoice(
-                                movieDetails: _movieDetails,
-                                quantity: selectedCount,
-                                sumPrice:
-                                    (_movieDetails!.price! * selectedCount),
-                                showTimeID: widget.showTimeID,
-                                seatCodes: widget.seatCodes,
-                                idTicket: idTicket,
-                                tongTienConLai: tongTienConLai,
-                                quantityCombo: widget.quantityCombo,
-                                ticketPrice: widget.ticketPrice,
-                                titleCombo: widget.titleCombo,
-                                totalComboPrice: widget.totalComboPrice,
-                                showtimeDate: widget.showtimeDate,
-                                cinemaRoomID: widget.cinemaRoomID,
-                                startTime: widget.startTime,
-                                endTime: widget.endTime,
-                              )),
-                            );
-                          },
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 1, // Hủy chiếm 1 phần trong tổng 3 phần
+                              child: MyButton(
+                                fontsize: 20,
+                                paddingText: 10,
+                                text: 'Hủy',
+                                isBold: true,
+                                color: Colors.redAccent,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    SlideFromRightPageRoute(
+                                        page: DetailInvoice(
+                                      movieDetails: _movieDetails,
+                                      quantity: selectedCount,
+                                      sumPrice: (_movieDetails!.price! *
+                                          selectedCount),
+                                      showTimeID: widget.showTimeID,
+                                      seatCodes: widget.seatCodes,
+                                      idTicket: idTicket,
+                                      tongTienConLai: tongTienConLai,
+                                      quantityCombo: widget.quantityCombo,
+                                      ticketPrice: widget.ticketPrice,
+                                      titleCombo: widget.titleCombo,
+                                      totalComboPrice: widget.totalComboPrice,
+                                      showtimeDate: widget.showtimeDate,
+                                      cinemaRoomID: widget.cinemaRoomID,
+                                      startTime: widget.startTime,
+                                      endTime: widget.endTime,
+                                    )),
+                                  );
+                                },
+                              ),
+                            ),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Expanded(
+                              flex:
+                                  2, // Thanh toán chiếm 2 phần trong tổng 3 phần
+                              child: MyButton(
+                                fontsize: 20,
+                                paddingText: 10,
+                                text: 'Thanh toán',
+                                isBold: true,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    SlideFromRightPageRoute(
+                                        page: DetailInvoice(
+                                      movieDetails: _movieDetails,
+                                      quantity: selectedCount,
+                                      sumPrice: (_movieDetails!.price! *
+                                          selectedCount),
+                                      showTimeID: widget.showTimeID,
+                                      seatCodes: widget.seatCodes,
+                                      idTicket: idTicket,
+                                      tongTienConLai: tongTienConLai,
+                                      quantityCombo: widget.quantityCombo,
+                                      ticketPrice: widget.ticketPrice,
+                                      titleCombo: widget.titleCombo,
+                                      totalComboPrice: widget.totalComboPrice,
+                                      showtimeDate: widget.showtimeDate,
+                                      cinemaRoomID: widget.cinemaRoomID,
+                                      startTime: widget.startTime,
+                                      endTime: widget.endTime,
+                                    )),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

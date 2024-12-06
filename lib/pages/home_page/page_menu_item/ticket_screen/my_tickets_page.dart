@@ -40,18 +40,20 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
   Future<List<BuyTicket>> _fetchBuyticket() async {
     print('đã gọi load data');
     try {
+      // Lấy tất cả danh sách BuyTicket từ API
       List<BuyTicket> buyticket = await _apiService
           .findAllBuyTicketByUserId(UserManager.instance.user!.userId);
 
-      // Lọc ra các mục có isCheckIn = false
-      List<BuyTicket> filteredBuyTickets =
-          buyticket.where((ticket) => ticket.isCheckIn == false).toList();
+      // Lọc ra các mục có isCheckIn = false và status = 'Đã thanh toán'
+      List<BuyTicket> filteredBuyTickets = buyticket.where((ticket) {
+        return ticket.isCheckIn == false && ticket.status == 'Đã thanh toán';
+      }).toList();
 
       widget.onRefresh?.call();
 
-      return filteredBuyTickets;
+      return filteredBuyTickets; // Trả về danh sách đã lọc
     } catch (e) {
-      print('Error fetching favorite films: $e');
+      print('Error fetching buy tickets: $e');
       return [];
     }
   }

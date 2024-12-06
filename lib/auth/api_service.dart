@@ -35,7 +35,7 @@ class ApiService {
     // String? ip = await info.getWifiIP(); // 192.168.1.43
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.1.135:8081';
+    baseUrl = 'http://192.168.1.94:8081';
 // server public
 //     baseUrl = 'https://nodejs-sql-server-api.onrender.com';
   }
@@ -1359,6 +1359,36 @@ class ApiService {
         // Phản hồi thành công, trả về nội dung phản hồi
         final responseBody = response.body;
         print('API Response: $responseBody');
+        return responseBody;
+      } else {
+        // Xử lý lỗi nếu API trả về mã trạng thái không thành công
+        throw Exception(
+            'Failed to update ticket status. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      // In lỗi ra console để debug
+      print('Error: $e');
+      throw Exception('Failed to update ticket status');
+    }
+  }
+
+  Future<String> deleteOneBuyTicketById(String buyTicketId) async {
+    await _initBaseUrl();
+
+    try {
+      // Gửi yêu cầu GET đến API
+      final response = await http.get(
+        Uri.parse('$baseUrl/deleteOneBuyTicketById?BuyTicketId=$buyTicketId'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+
+      // Kiểm tra mã trạng thái của phản hồi
+      if (response.statusCode == 200) {
+        // Phản hồi thành công, trả về nội dung phản hồi
+        final responseBody = response.body;
+        print('API Response deleteOneBuyTicketById: $responseBody');
         return responseBody;
       } else {
         // Xử lý lỗi nếu API trả về mã trạng thái không thành công

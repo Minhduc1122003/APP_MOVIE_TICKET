@@ -61,8 +61,10 @@ class DetailInvoiceState extends State<DetailInvoice>
     with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
   late ApiService _apiService;
   String? _payUrl;
-  Timer? _timer;
   String? status;
+  bool _isScrolled = false;
+  late int _remainingTime; // Thời gian còn lại tính bằng giây
+  late Timer _timer;
 
   @override
   void initState() {
@@ -72,12 +74,33 @@ class DetailInvoiceState extends State<DetailInvoice>
     _createMomoPayment();
     WidgetsBinding.instance.addObserver(this); // Thêm observer
     _startPeriodicCheck();
+    _remainingTime = 1 * 60;
+    _startTimer();
+  }
+
+  String _formatRemainingTime() {
+    int minutes = _remainingTime ~/ 60;
+    int seconds = _remainingTime % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
   Future<void> _launchInWebView(Uri url) async {
     if (!await launchUrl(url, mode: LaunchMode.inAppWebView)) {
       throw Exception('Could not launch $url');
     }
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_remainingTime > 0) {
+        setState(() {
+          _remainingTime--;
+        });
+      } else {
+        _timer.cancel(); // Dừng khi thời gian còn lại bằng 0
+        _deleteOneBuyTicketById();
+      }
+    });
   }
 
   void _startPeriodicCheck() {
@@ -105,6 +128,46 @@ class DetailInvoiceState extends State<DetailInvoice>
       await _launchInWebView(Uri.parse(payUrl));
     } catch (e) {
       print("Lỗi khi gọi API thanh toán MoMo: $e");
+    }
+  }
+
+  Future<void> _deleteOneBuyTicketById() async {
+    try {
+      EasyLoading.show(status: 'Đang xử lý...'); // Hiển thị loading
+      print(widget.idTicket);
+
+      // Gửi yêu cầu xóa
+      final String statusMessage =
+          await _apiService.deleteOneBuyTicketById(widget.idTicket);
+      print("Status message: $statusMessage");
+
+      if (statusMessage == "Successfully") {
+        // Nếu trả về Successfully, gọi API cập nhật trạng thái
+
+        EasyLoading.dismiss();
+        EasyLoading.showError('Thanh toán Đã bị hủy!',
+            duration: const Duration(seconds: 5));
+
+        setState(() {
+          status = 'Đã bị hủy!';
+        });
+        Navigator.pushAndRemoveUntil(
+          context,
+          SlideFromLeftPageRoute(page: HomePage()),
+          (Route<dynamic> route) => false, // Xóa tất cả các route trước đó
+        );
+      } else {
+        // Xử lý trường hợp không thành công
+        EasyLoading.dismiss();
+        EasyLoading.showError('Hủy thất bại! Vui lòng thử lại.',
+            duration: const Duration(seconds: 2));
+      }
+    } catch (e) {
+      // Xử lý lỗi
+      EasyLoading.dismiss();
+      EasyLoading.showError('Đã xảy ra lỗi: $e',
+          duration: const Duration(seconds: 2));
+      print("Lỗi khi kiểm tra trạng thái giao dịch: $e");
     }
   }
 
@@ -159,9 +222,6 @@ class DetailInvoiceState extends State<DetailInvoice>
         );
       } else {
         EasyLoading.dismiss();
-
-        EasyLoading.showError('Lỗi: $statusMessage',
-            duration: const Duration(seconds: 2));
       }
     } catch (e) {}
   }
@@ -405,6 +465,44 @@ class DetailInvoiceState extends State<DetailInvoice>
                                   ),
                                 ],
                               ),
+                              Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: AnimatedOpacity(
+                                  duration: Duration(milliseconds: 300),
+                                  opacity: _isScrolled ? 0 : 1,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: mainColor,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    padding: const EdgeInsets.all(2),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Text(
+                                          'Thời gian còn lại:',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 4, vertical: 8),
+                                          child: Text(
+                                            _formatRemainingTime(),
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
                               const SizedBox(height: 20),
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.start,
@@ -607,13 +705,107 @@ class DetailInvoiceState extends State<DetailInvoice>
                               SizedBox(
                                 height: 10,
                               ),
-                              MyButton(
-                                  fontsize: 18,
-                                  paddingText: 14,
-                                  text: 'Kiểm tra thanh toán',
-                                  onTap: () {
-                                    _checkStatus();
-                                  }),
+                              Padding(
+                                padding: const EdgeInsets.all(15),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      flex:
+                                          1, // Hủy chiếm 1 phần trong tổng 3 phần
+                                      child: MyButton(
+                                        fontsize: 18,
+                                        paddingText: 8,
+                                        text: 'Hủy',
+                                        isBold: true,
+                                        color: Colors.red,
+                                        onTap: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: const Text(
+                                                    'Hủy thanh toán!'),
+                                                content: RichText(
+                                                  text: TextSpan(
+                                                    children: [
+                                                      TextSpan(
+                                                        text:
+                                                            'Bạn có chắc muốn',
+                                                        style:
+                                                            DefaultTextStyle.of(
+                                                                    context)
+                                                                .style,
+                                                      ),
+                                                      const TextSpan(
+                                                        text:
+                                                            ' hủy thanh toán?',
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: mainColor,
+                                                        ),
+                                                      ),
+                                                      TextSpan(
+                                                        text:
+                                                            ' Nếu bấm hủy ghế của bạn sẽ được trả về trạng thái chưa đặt!',
+                                                        style:
+                                                            DefaultTextStyle.of(
+                                                                    context)
+                                                                .style,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                actions: <Widget>[
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                    child: const Text(
+                                                        'Tiếp tục thanh toán',
+                                                        style: TextStyle(
+                                                            color: mainColor)),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () async {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      _deleteOneBuyTicketById();
+                                                    },
+                                                    child: const Text(
+                                                      'Xác nhận hủy',
+                                                      style: TextStyle(
+                                                        color: Colors.red,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 10,
+                                    ),
+                                    Expanded(
+                                      flex:
+                                          2, // Thanh toán chiếm 2 phần trong tổng 3 phần
+                                      child: MyButton(
+                                          fontsize: 18,
+                                          paddingText: 10,
+                                          text: 'Kiểm tra thanh toán',
+                                          onTap: () {
+                                            _checkStatus();
+                                          }),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),

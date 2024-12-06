@@ -29,13 +29,14 @@ class BuyTicketPage extends StatefulWidget {
 class _BuyTicketPageState extends State<BuyTicketPage> {
   late final ApiService _APIService;
   late List<ShowTimeDetails> _showtimes = [];
+  List<Map<String, String>> daysList = []; // Thêm danh sách ngày ở đây.
 
   int _selectedIndex = 0; // Lưu trữ chỉ số của item được chọn
   double _titlePadding = 10; // Giá trị padding cho tiêu đề
   double _leftPadding = 10; // Giá trị padding bên trái cho phần tử đầu tiên
   late ScrollController _scrollController;
   String selectedDay = "";
-
+  bool isLoading = true;
   @override
   void initState() {
     super.initState();
@@ -57,8 +58,45 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
         }
       });
     _APIService = ApiService(); // Khởi tạo _APIService ở cấp cha
-    _loadShowtimes(); // Gọi hàm _loadShowtimes
+    _initializeDaysList(); // Gọi hàm khởi tạo daysList
+
+    _loadShowtimes();
     print('Đã load showtime, moviesID là : ${widget.movieId}');
+  }
+
+  void _initializeDaysList() {
+    // Khởi tạo danh sách ngày
+    daysList = List.generate(
+      7,
+      (index) {
+        DateTime date = DateTime.now().add(Duration(days: index));
+        return {
+          'dayMonth': '${date.day}/${date.month}',
+          'dayOfWeek': _getWeekdayName(date.weekday),
+        };
+      },
+    );
+  }
+
+  String _getWeekdayName(int weekday) {
+    switch (weekday) {
+      case DateTime.monday:
+        return 'Thứ 2';
+      case DateTime.tuesday:
+        return 'Thứ 3';
+      case DateTime.wednesday:
+        return 'Thứ 4';
+      case DateTime.thursday:
+        return 'Thứ 5';
+      case DateTime.friday:
+        return 'Thứ 6';
+      case DateTime.saturday:
+        return 'Thứ 7';
+      case DateTime.sunday:
+        return 'CN';
+      default:
+        return '';
+    }
   }
 
   @override
@@ -68,6 +106,9 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
   }
 
   Future<MovieDetails?> _loadMovieDetails() async {
+    setState(() {
+      isLoading = true;
+    });
     return await _APIService.findByViewMovieID(
         widget.movieId, UserManager.instance.user?.userId ?? 0);
   }
@@ -83,16 +124,9 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
 
       // Kiểm tra và in log như cũ
       if (_showtimes.isNotEmpty) {
-        for (var showtime in _showtimes) {
-          print('Cinema Room ID: ${showtime.cinemaRoomID}');
-          print('Showtime Date: ${showtime.getFormattedDate()}');
-          print('Start Time: ${showtime.getFormattedTime()}');
-          print('movieDuration: ${showtime.movieDuration}');
-          print('endTime : ${showtime.getFormattedEndTime()}');
-        }
-
-        // Force rebuild the cinema and showtime section
-        setState(() {});
+        setState(() {
+          isLoading = false;
+        });
       } else {
         print('Không tìm thấy lịch chiếu nào.');
       }
@@ -111,7 +145,7 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
           appBar: AppBar(
             backgroundColor: mainColor,
             leading: IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.arrow_back_ios_new_outlined,
                 color: Colors.white,
                 size: 16,
@@ -120,163 +154,111 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
                 Navigator.of(context).pop();
               },
             ),
-            title: Text(
+            title: const Text(
               'Trung Tâm Đặt Vé',
               style: TextStyle(color: Colors.white, fontSize: 20),
             ),
             centerTitle: true,
           ),
           backgroundColor: Colors.white,
-          body: SingleChildScrollView(
-              child: FutureBuilder<MovieDetails?>(
-                  future: _loadMovieDetails(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Lỗi: ${snapshot.error}'));
-                    } else if (!snapshot.hasData) {
-                      return Center(child: Text('Không có dữ liệu'));
-                    }
-
-                    final movieDetails = snapshot.data!;
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        MovieHeader(
-                          movieId: widget.movieId,
-                          apiService: _APIService,
+          body: FutureBuilder<MovieDetails?>(
+            future: _loadMovieDetails(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text('Có lỗi xảy ra: ${snapshot.error}'),
+                );
+              } else if (!snapshot.hasData || snapshot.data == null) {
+                return const Center(
+                  child: Text('Không có dữ liệu để hiển thị'),
+                );
+              }
+              final movieDetails = snapshot.data!;
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    MovieHeader(
+                      movieId: widget.movieId,
+                      apiService: _APIService,
+                    ),
+                    const Divider(
+                      height: 0,
+                      thickness: 6,
+                      color: Color(0xfff0f0f0),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: const Text(
+                        'Chọn ngày',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        const Divider(
-                          height: 0,
-                          thickness: 6,
-                          color: Color(0xfff0f0f0),
-                        ),
-                        Container(
-                          color: Colors.white,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment
-                                .start, // Đặt tiêu đề ở góc trên bên trái
-                            children: [
-                              SizedBox(
-                                  height:
-                                      10), // Khoảng cách giữa tiêu đề và danh sách ngày
+                      ),
+                    ),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: List.generate(daysList.length, (index) {
+                          var dayInfo = daysList[index];
+                          bool isSelected = index == _selectedIndex;
 
-                              const Padding(
-                                padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                                child: Text(
-                                  'Chọn ngày',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(
-                                  height:
-                                      10), // Khoảng cách giữa tiêu đề và danh sách ngày
-                              BlocBuilder<BuyticketBloc, BuyticketBlocState>(
-                                builder: (context, state) {
-                                  return Row(
-                                    children: [
-                                      Expanded(
-                                        child: SingleChildScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          controller: _scrollController,
-                                          child: Wrap(
-                                            spacing: 8,
-                                            runSpacing: 8,
-                                            children: state.daysList
-                                                .asMap()
-                                                .entries
-                                                .map((entry) {
-                                              int index = entry.key;
-                                              var dayInfo = entry.value;
-                                              bool isSelected =
-                                                  index == _selectedIndex;
-
-                                              return Padding(
-                                                padding: EdgeInsets.only(
-                                                    left: index == 0
-                                                        ? _leftPadding
-                                                        : 0),
-                                                child: _buildDateItem(
-                                                  dayInfo['dayMonth'] ?? '',
-                                                  dayInfo['dayOfWeek'] ?? '',
-                                                  isSelected: isSelected,
-                                                  onTap: () {
-                                                    setState(() {
-                                                      _selectedIndex = index;
-                                                      selectedDay1 =
-                                                          dayInfo['dayMonth'] ??
-                                                              '';
-                                                    });
-
-                                                    // Parse the selected date
-                                                    List<String> dateParts =
-                                                        selectedDay1.split('/');
-                                                    if (dateParts.length == 2) {
-                                                      int day = int.parse(
-                                                          dateParts[0]);
-                                                      int month = int.parse(
-                                                          dateParts[1]);
-                                                      DateTime selectedDate =
-                                                          DateTime(
-                                                              DateTime.now()
-                                                                  .year,
-                                                              month,
-                                                              day);
-
-                                                      // Load showtimes for the selected date
-                                                      _loadShowtimes(
-                                                          selectedDate:
-                                                              selectedDate);
-                                                    }
-                                                  },
-                                                ),
-                                              );
-                                            }).toList(),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const Divider(
-                          height: 2,
-                          thickness: 6,
-                          color: Color(0xfff0f0f0),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
-                          child: Text(
-                            'Chọn rạp',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                          return Padding(
+                            padding: EdgeInsets.only(
+                              left: index == 0 ? _leftPadding : 0,
                             ),
-                          ),
+                            child: _buildDateItem(
+                              dayInfo['dayMonth'] ?? '',
+                              dayInfo['dayOfWeek'] ?? '',
+                              isSelected: isSelected,
+                              onTap: () {
+                                setState(() {
+                                  _selectedIndex = index;
+                                  selectedDay1 = dayInfo['dayMonth'] ?? '';
+                                });
+
+                                List<String> dateParts =
+                                    selectedDay1.split('/');
+                                if (dateParts.length == 2) {
+                                  int day = int.parse(dateParts[0]);
+                                  int month = int.parse(dateParts[1]);
+                                  DateTime selectedDate = DateTime(
+                                    DateTime.now().year,
+                                    month,
+                                    day,
+                                  );
+                                  _loadShowtimes(selectedDate: selectedDate);
+                                }
+                              },
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Text(
+                        'Chọn rạp',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                        _buildCinemaItem(
-                            context,
-                            widget.movieId,
-                            '${movieDetails.cinemaName}',
-                            '${movieDetails.cinemaAddress}',
-                            _showtimes),
-                      ],
-                    );
-                  })),
+                      ),
+                    ),
+                    _buildCinemaItem(
+                      context,
+                      widget.movieId,
+                      '${movieDetails.cinemaName}',
+                      '${movieDetails.cinemaAddress}',
+                      _showtimes,
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -288,38 +270,41 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
       {bool isSelected = false, required Function() onTap}) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: isSelected ? mainColor : Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected ? Colors.transparent : Colors.grey,
-          ),
-        ),
-        constraints: const BoxConstraints(
-          minWidth: 50,
-          minHeight: 50,
-        ),
-        child: Center(
-          child: Container(
-            constraints: BoxConstraints(
-              maxWidth: double.infinity,
-              maxHeight: double.infinity,
+      child: Padding(
+        padding: const EdgeInsets.all(2),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isSelected ? mainColor : Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected ? Colors.transparent : Colors.grey,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(weekday,
-                    style: TextStyle(
-                        fontSize: 11,
-                        color: isSelected ? Colors.white : Colors.grey)),
-                SizedBox(height: 4), // Khoảng cách giữa các dòng text
-                Text(day,
-                    style: TextStyle(
-                        fontSize: 15,
-                        color: isSelected ? Colors.white : Colors.black)),
-              ],
+          ),
+          constraints: const BoxConstraints(
+            minWidth: 50,
+            minHeight: 50,
+          ),
+          child: Center(
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: double.infinity,
+                maxHeight: double.infinity,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(weekday,
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: isSelected ? Colors.white : Colors.grey)),
+                  SizedBox(height: 4), // Khoảng cách giữa các dòng text
+                  Text(day,
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: isSelected ? Colors.white : Colors.black)),
+                ],
+              ),
             ),
           ),
         ),
@@ -372,14 +357,6 @@ class _MovieHeaderState extends State<MovieHeader>
       child: FutureBuilder<MovieDetails?>(
         future: _loadMovieDetails(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Lỗi: ${snapshot.error}'));
-          } else if (!snapshot.hasData) {
-            return Center(child: Text('Không có dữ liệu'));
-          }
-
           final movieDetails = snapshot.data!;
 
           return Row(
