@@ -1,38 +1,80 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_info_manager_page/personnel_info_manager_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
-import 'package:diacritic/diacritic.dart'; // Để xử lý loại bỏ dấu
 
 class PersonnelManagerPage extends StatefulWidget {
-  const PersonnelManagerPage({super.key});
+  final int role; // Tham số xác định Role (0: Khách hàng, 1: Nhân viên)
+
+  const PersonnelManagerPage({super.key, required this.role});
 
   @override
   State<PersonnelManagerPage> createState() => _PersonnelManagerPageState();
 }
 
-class _PersonnelManagerPageState extends State<PersonnelManagerPage> {
+class _PersonnelManagerPageState extends State<PersonnelManagerPage>
+    with SingleTickerProviderStateMixin {
   late ApiService _APIService;
-  bool isSearching = false;
-  FocusNode _focusNode = FocusNode();
-  TextEditingController _searchController = TextEditingController();
-  late Future<List<User>> _alluser;
+  late Future<List<User>> _filteredUsers;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     _APIService = ApiService();
-    _alluser = _APIService.getUserListForAdmin();
+    _filteredUsers =
+        _filterUsersByRole(widget.role); // Lọc người dùng theo Role
+    _tabController = TabController(length: 2, vsync: this); // 2 tab
   }
 
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    _searchController.dispose();
-    super.dispose();
+  void _refreshUserList() {
+    setState(() {
+      _filteredUsers = _filterUsersByRole(widget.role);
+    });
+  }
+
+  Future<List<User>> _filterUsersByRole(int role) async {
+    final users = await _APIService.getUserListForAdmin();
+    return users.where((user) => user.role == role).toList();
+  }
+
+  Widget buildUserList(List<User> users, String statusFilter) {
+    // Lọc danh sách người dùng theo status
+    final filteredUsers =
+        users.where((user) => user.status == statusFilter).toList();
+    if (filteredUsers.isEmpty) {
+      return Center(child: Text('Không có dữ liệu.'));
+    }
+
+    return ListView.builder(
+      itemCount: filteredUsers.length,
+      itemBuilder: (context, index) {
+        final user = filteredUsers[index];
+        return ListTile(
+          title: Text(user.fullName),
+          subtitle: Text(user.email),
+          leading: user.photo != null
+              ? Image.network(user.photo!)
+              : Icon(Icons.person),
+          trailing: Text(user.status),
+          onTap: () async {
+            final shouldRefresh = await Navigator.push(
+              context,
+              SlideFromRightPageRoute(
+                page: PersonnelInfoManagerPage(user: user),
+              ),
+            );
+
+            // Nếu cần làm mới danh sách, gọi hàm _refreshUserList
+            if (shouldRefresh == true) {
+              _refreshUserList();
+            }
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -53,83 +95,37 @@ class _PersonnelManagerPageState extends State<PersonnelManagerPage> {
                 Navigator.of(context).pop();
               },
             ),
-            title: AnimatedSwitcher(
-                duration: Duration(milliseconds: 300),
-                transitionBuilder: (Widget child, Animation<double> animation) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: SizeTransition(
-                      sizeFactor: animation,
-                      axis: Axis.horizontal,
-                      child: child,
-                    ),
-                  );
-                },
-                child: isSearching || _searchController.text.isNotEmpty
-                    ? TextField(
-                        controller: _searchController,
-                        focusNode: _focusNode,
-                        autofocus: true,
-                        decoration: InputDecoration(
-                          hintText: 'Tìm kiếm nhân viên...',
-                          hintStyle: TextStyle(color: Colors.grey),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20.0),
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                        ),
-                        style: TextStyle(color: Colors.black),
-                      )
-                    : Text('Danh sách nhân viên',
-                        style: TextStyle(color: Colors.white, fontSize: 20))),
+            title: Text(
+              widget.role == 1 ? 'Danh sách nhân viên' : 'Danh sách khách hàng',
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
             centerTitle: true,
-            actions: [
-              IconButton(
-                icon: Icon(Icons.search, color: Colors.white, size: 20),
-                onPressed: () {
-                  setState(() {
-                    if (isSearching || _searchController.text.isNotEmpty) {
-                      _searchController.clear();
-                      isSearching = false;
-                    } else {
-                      isSearching = true;
-                    }
-                  });
-                },
-              ),
-            ],
+            bottom: TabBar(
+              controller: _tabController,
+              indicatorColor: Colors.white,
+              tabs: const [
+                Tab(text: 'Đang hoạt động'),
+                Tab(text: 'Đã khóa'),
+              ],
+            ),
           ),
           backgroundColor: Colors.white,
           body: FutureBuilder<List<User>>(
-            future: _alluser,
+            future: _filteredUsers,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
               } else if (snapshot.hasError) {
                 return Center(child: Text('Error: ${snapshot.error}'));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(child: Text('No users found.'));
+                return Center(child: Text('Không tìm thấy dữ liệu.'));
               } else {
-                return ListView.builder(
-                  itemCount: snapshot.data!.length,
-                  itemBuilder: (context, index) {
-                    final user = snapshot.data![index];
-                    return ListTile(
-                      title: Text(user.fullName),
-                      subtitle: Text(user.email),
-                      leading: user.photo != null
-                          ? Image.network(user.photo!)
-                          : Icon(Icons.person),
-                      trailing: Text(user.status),
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            SlideFromRightPageRoute(
-                                page: PersonnelInfoManagerPage()));
-                      },
-                    );
-                  },
+                return TabBarView(
+                  controller: _tabController,
+                  children: [
+                    buildUserList(snapshot.data!, 'Đang hoạt động'), // Tab 1
+                    buildUserList(snapshot.data!, 'Đã khóa'), // Tab 2
+                  ],
                 );
               }
             },

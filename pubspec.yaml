@@ -47,6 +47,8 @@ dependencies:
   qr_flutter: ^4.1.0
   get: ^4.6.6
   fl_chart: ^0.69.2
+  mime: ^1.0.0
+
 
 
 
