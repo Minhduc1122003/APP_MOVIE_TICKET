@@ -226,49 +226,6 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                           controller: _scrollController,
                           child: Column(
                             children: [
-                              SizedBox(
-                                  height: _isScrolled
-                                      ? 50
-                                      : 4), // Thêm space khi có fixed container
-                              Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: AnimatedOpacity(
-                                  duration: Duration(milliseconds: 300),
-                                  opacity: _isScrolled ? 0 : 1,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: mainColor,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    padding: const EdgeInsets.all(2),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const Text(
-                                          'Thời gian còn lại:',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 4, vertical: 8),
-                                          child: Text(
-                                            _formatRemainingTime(),
-                                            style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-
                               SizedBox(height: 16),
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
@@ -325,16 +282,6 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                             minFontSize: 12,
                                           ),
                                           SizedBox(height: 8),
-                                          AutoSizeText(
-                                            _movieDetails!.age,
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.normal,
-                                            ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            minFontSize: 12,
-                                          ),
                                         ],
                                       ),
                                     ),
@@ -358,7 +305,7 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                         Text(
                                             '${widget.quantity} Vé - ${widget.seatCodes.map((seat) => seat['code']).join(', ')}'),
                                         Text(
-                                            '${formatPrice(widget.ticketPrice)}đ'),
+                                            '${formatPrice(widget.ticketPrice)} đ'),
                                       ],
                                     ),
                                     Row(
@@ -390,7 +337,7 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                         Expanded(
                                           flex: 1,
                                           child: Text(
-                                            '${formatPrice(widget.totalComboPrice)}đ', // Giá combo = 0
+                                            '${formatPrice(widget.totalComboPrice)} đ', // Giá combo = 0
                                             textAlign: TextAlign.right,
                                           ),
                                         ),
@@ -609,122 +556,38 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                       ),
                       Padding(
                         padding: const EdgeInsets.all(15),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 1, // Hủy chiếm 1 phần trong tổng 3 phần
-                              child: MyButton(
-                                fontsize: 20,
-                                paddingText: 10,
-                                text: 'Hủy',
-                                isBold: true,
-                                color: Colors.redAccent,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    SlideFromRightPageRoute(
-                                        page: DetailInvoice(
-                                      movieDetails: _movieDetails,
-                                      quantity: selectedCount,
-                                      sumPrice: (_movieDetails!.price! *
-                                          selectedCount),
-                                      showTimeID: widget.showTimeID,
-                                      seatCodes: widget.seatCodes,
-                                      idTicket: idTicket,
-                                      tongTienConLai: tongTienConLai,
-                                      quantityCombo: widget.quantityCombo,
-                                      ticketPrice: widget.ticketPrice,
-                                      titleCombo: widget.titleCombo,
-                                      totalComboPrice: widget.totalComboPrice,
-                                      showtimeDate: widget.showtimeDate,
-                                      cinemaRoomID: widget.cinemaRoomID,
-                                      startTime: widget.startTime,
-                                      endTime: widget.endTime,
-                                    )),
-                                  );
-                                },
-                              ),
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Expanded(
-                              flex:
-                                  2, // Thanh toán chiếm 2 phần trong tổng 3 phần
-                              child: MyButton(
-                                fontsize: 20,
-                                paddingText: 10,
-                                text: 'Thanh toán',
-                                isBold: true,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    SlideFromRightPageRoute(
-                                        page: DetailInvoice(
-                                      movieDetails: _movieDetails,
-                                      quantity: selectedCount,
-                                      sumPrice: (_movieDetails!.price! *
-                                          selectedCount),
-                                      showTimeID: widget.showTimeID,
-                                      seatCodes: widget.seatCodes,
-                                      idTicket: idTicket,
-                                      tongTienConLai: tongTienConLai,
-                                      quantityCombo: widget.quantityCombo,
-                                      ticketPrice: widget.ticketPrice,
-                                      titleCombo: widget.titleCombo,
-                                      totalComboPrice: widget.totalComboPrice,
-                                      showtimeDate: widget.showtimeDate,
-                                      cinemaRoomID: widget.cinemaRoomID,
-                                      startTime: widget.startTime,
-                                      endTime: widget.endTime,
-                                    )),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
+                        child: MyButton(
+                          fontsize: 20,
+                          paddingText: 10,
+                          text: 'Thanh toán',
+                          isBold: true,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              SlideFromRightPageRoute(
+                                  page: DetailInvoice(
+                                movieDetails: _movieDetails,
+                                quantity: selectedCount,
+                                sumPrice:
+                                    (_movieDetails!.price! * selectedCount),
+                                showTimeID: widget.showTimeID,
+                                seatCodes: widget.seatCodes,
+                                idTicket: idTicket,
+                                tongTienConLai: tongTienConLai,
+                                quantityCombo: widget.quantityCombo,
+                                ticketPrice: widget.ticketPrice,
+                                titleCombo: widget.titleCombo,
+                                totalComboPrice: widget.totalComboPrice,
+                                showtimeDate: widget.showtimeDate,
+                                cinemaRoomID: widget.cinemaRoomID,
+                                startTime: widget.startTime,
+                                endTime: widget.endTime,
+                              )),
+                            );
+                          },
                         ),
                       ),
                     ],
-                  ),
-                  AnimatedPositioned(
-                    duration: Duration(milliseconds: 300),
-                    top: _isScrolled ? 0 : -100, // Thay đổi từ 0 thành 10
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(8),
-                          bottomRight: Radius.circular(8),
-                        ),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'Thời gian còn lại:',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 4, vertical: 8),
-                            child: Text(
-                              _formatRemainingTime(),
-                              style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   ),
                 ],
               ),

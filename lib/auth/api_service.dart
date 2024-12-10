@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app_chat/models/Attendance_model.dart';
 import 'package:flutter_app_chat/models/BuyTicket_model.dart';
 import 'package:flutter_app_chat/models/Chair_modal.dart';
 import 'package:flutter_app_chat/models/Location_modal.dart';
@@ -35,7 +36,7 @@ class ApiService {
     // String? ip = await info.getWifiIP(); // 192.168.1.43
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.1.94:8081';
+    baseUrl = 'http://192.168.1.70:8081';
 
 // server public
 //     baseUrl = 'https://nodejs-sql-server-api.onrender.com';
@@ -1805,6 +1806,131 @@ class ApiService {
     } catch (e) {
       print('Error: $e');
       throw Exception('Failed to create showtimes');
+    }
+  }
+
+  Future<String> insertAttendance({
+    required int UserId,
+    required int ShiftId,
+    required String Latitude,
+    required String Longitude,
+    required String Location,
+    required bool IsLate,
+    required bool IsEarlyLeave,
+  }) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+
+    try {
+      // Kiểm tra dữ liệu đầu vào
+      if (UserId <= 0 ||
+          ShiftId <= 0 ||
+          Latitude.isEmpty ||
+          Longitude.isEmpty ||
+          Location.isEmpty) {
+        throw Exception('Dữ liệu đầu vào không hợp lệ.');
+      }
+
+      // Gửi yêu cầu đến server
+      final response = await http.post(
+        Uri.parse('$baseUrl/insertAttendance'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'UserId': UserId,
+          'ShiftId': ShiftId,
+          'Latitude': Latitude,
+          'Longitude': Longitude,
+          'Location': Location,
+          'IsLate': IsLate,
+          'IsEarlyLeave': IsEarlyLeave,
+        }),
+      );
+
+      // Xử lý phản hồi từ server
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        return data['message'] ?? 'Chấm công thành công';
+      } else {
+        throw Exception('Chấm công thất bại: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Lỗi: $e');
+      throw Exception('Không thể thực hiện chấm công.');
+    }
+  }
+
+  Future<Attendance?> checkAttendance({
+    required int UserId,
+  }) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+
+    try {
+      // Gửi yêu cầu đến server
+      final response = await http.post(
+        Uri.parse('$baseUrl/checkAttendance'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'UserId': UserId,
+        }),
+      );
+
+      // Xử lý phản hồi từ server
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+
+        // Kiểm tra xem `data` có chứa danh sách hay không
+        if (data['data'] != null && data['data'].isNotEmpty) {
+          // Trả về đối tượng Attendance từ JSON
+          return Attendance.fromJson(data['data'][0]);
+        } else {
+          print('Không có dữ liệu chấm công');
+          return null; // Trả về null khi không có dữ liệu
+        }
+      } else {
+        throw Exception('Chấm công thất bại: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Lỗi: $e');
+      throw Exception('Không thể thực hiện kiểm tra chấm công.');
+    }
+  }
+
+  Future<String?> checkOutAttendance(int attendanceId) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+
+    try {
+      // Gửi yêu cầu đến server
+      final response = await http.post(
+        Uri.parse('$baseUrl/checkOutAttendance'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'AttendanceId': attendanceId,
+        }),
+      );
+
+      // Xử lý phản hồi từ server
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+
+        // Trả về message từ phản hồi nếu có
+        if (data.containsKey('message') && data['message'] is String) {
+          return data['message'];
+        } else {
+          return 'Đã cập nhật nhưng không có thông báo cụ thể.';
+        }
+      } else {
+        // Phản hồi lỗi từ server
+        return 'Chấm công thất bại: ${response.statusCode}';
+      }
+    } catch (e) {
+      // Bắt lỗi trong quá trình gửi yêu cầu
+      print('Lỗi: $e');
+      return 'Không thể thực hiện chấm công do lỗi: $e';
     }
   }
 

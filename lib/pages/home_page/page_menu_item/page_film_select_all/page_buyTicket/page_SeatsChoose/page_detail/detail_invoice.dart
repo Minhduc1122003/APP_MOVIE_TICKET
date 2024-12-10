@@ -64,67 +64,63 @@ class DetailInvoiceState extends State<DetailInvoice>
   String? status;
   bool _isScrolled = false;
   late int _remainingTime; // Thời gian còn lại tính bằng giây
-  late Timer _timer;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     _apiService = ApiService();
-    // _insertBuyTicket();
-    _createMomoPayment();
+    _remainingTime = 15 * 60;
+
     WidgetsBinding.instance.addObserver(this); // Thêm observer
-    _startPeriodicCheck();
-    _remainingTime = 1 * 60;
     _startTimer();
+    _createMomoPayment();
+    _startPeriodicCheck();
   }
 
   String _formatRemainingTime() {
-    int minutes = _remainingTime ~/ 60;
-    int seconds = _remainingTime % 60;
+    final minutes = _remainingTime ~/ 60;
+    final seconds = _remainingTime % 60;
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
-  Future<void> _launchInWebView(Uri url) async {
-    if (!await launchUrl(url, mode: LaunchMode.inAppWebView)) {
-      throw Exception('Could not launch $url');
-    }
-  }
-
   void _startTimer() {
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer?.cancel(); // Hủy timer trước khi khởi tạo mới
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_remainingTime > 0) {
-        setState(() {
-          _remainingTime--;
-        });
+        setState(() => _remainingTime--);
       } else {
-        _timer.cancel(); // Dừng khi thời gian còn lại bằng 0
+        timer.cancel();
         _deleteOneBuyTicketById();
       }
     });
   }
 
   void _startPeriodicCheck() {
-    // Gọi hàm _checkStatus mỗi 5 giây
-    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      _checkStatusAuto();
-    });
+    _timer?.cancel();
+    _timer =
+        Timer.periodic(const Duration(seconds: 5), (_) => _checkStatusAuto());
+  }
+
+  Future<void> _launchInWebView(Uri url) async {
+    try {
+      if (!await launchUrl(url, mode: LaunchMode.inAppWebView)) {
+        throw Exception('Could not launch $url');
+      }
+    } catch (e) {
+      print('Lỗi khi mở WebView: $e');
+    }
   }
 
   Future<void> _createMomoPayment() async {
     try {
-      String formattedDate = DateFormat('MMddHHmmss').format(DateTime.now());
-
-      // Gọi API để tạo URL thanh toán
       final payUrl = await _apiService.createMomoPayment(
         widget.tongTienConLai,
         widget.idTicket,
-        'Thanh toán hóa đơn ${UserManager.instance.user?.fullName}', // Thông tin đơn hàng
+        'Thanh toán hóa đơn ${UserManager.instance.user?.fullName}',
       );
 
-      // Lưu URL thanh toán vào biến và cập nhật giao diện
-      setState(() {
-        _payUrl = payUrl;
-      });
+      setState(() => _payUrl = payUrl);
       await _launchInWebView(Uri.parse(payUrl));
     } catch (e) {
       print("Lỗi khi gọi API thanh toán MoMo: $e");

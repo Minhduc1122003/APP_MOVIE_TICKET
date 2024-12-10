@@ -10,6 +10,7 @@ import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/ticket_screen/infoTicket_page.dart';
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 
 class HistoryTicketsPage extends StatefulWidget {
@@ -248,16 +249,29 @@ class _HistoryTicketsPageState extends State<HistoryTicketsPage> {
                                       final ticket = listBuyTicket[index];
                                       return GestureDetector(
                                         onTap: () {
-                                          // In ra posterUrl khi nhấn vào Card
-                                          print(ticket.buyTicketId);
-                                          Navigator.push(
-                                            context,
-                                            SlideFromRightPageRoute(
-                                              page: InfoticketPage(
-                                                  buyTicketID:
-                                                      ticket.buyTicketId),
-                                            ),
-                                          );
+                                          if (ticket.status == 'Ðã hủy') {
+                                            Fluttertoast.showToast(
+                                              msg: "Vé này đã bị hủy!",
+                                              toastLength: Toast.LENGTH_SHORT,
+                                              gravity: ToastGravity.CENTER,
+                                              timeInSecForIosWeb: 1,
+                                              backgroundColor:
+                                                  Colors.black.withOpacity(0.8),
+                                              textColor: Colors.white,
+                                              fontSize: 16.0,
+                                            );
+                                          } else {
+                                            // In ra posterUrl khi nhấn vào Card
+                                            print(ticket.buyTicketId);
+                                            Navigator.push(
+                                              context,
+                                              SlideFromRightPageRoute(
+                                                page: InfoticketPage(
+                                                    buyTicketID:
+                                                        ticket.buyTicketId),
+                                              ),
+                                            );
+                                          }
                                         },
                                         child: Card(
                                           color: Colors.white,
@@ -279,8 +293,8 @@ class _HistoryTicketsPageState extends State<HistoryTicketsPage> {
                                                       BorderRadius.circular(8),
                                                   child: CachedNetworkImage(
                                                     imageUrl: ticket.posterUrl,
-                                                    height: 80,
-                                                    width: 60,
+                                                    height: 110,
+                                                    width: 80,
                                                     fit: BoxFit.cover,
                                                     errorWidget: (context, url,
                                                             error) =>
@@ -343,6 +357,30 @@ class _HistoryTicketsPageState extends State<HistoryTicketsPage> {
                                                         children: [
                                                           Icon(
                                                               Icons
+                                                                  .calendar_month_outlined,
+                                                              size: 14),
+                                                          const SizedBox(
+                                                              width: 5),
+                                                          AutoSizeText(
+                                                            'Ngày tạo: ${formatDateTime(ticket.createDate)}',
+                                                            style: TextStyle(
+                                                                fontSize: 12,
+                                                                color: Colors
+                                                                    .black),
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            minFontSize: 8,
+                                                            maxFontSize: 12,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      const SizedBox(height: 5),
+                                                      Row(
+                                                        children: [
+                                                          Icon(
+                                                              Icons
                                                                   .info_outline_rounded,
                                                               size: 14),
                                                           const SizedBox(
@@ -357,15 +395,17 @@ class _HistoryTicketsPageState extends State<HistoryTicketsPage> {
                                                                   ? Colors
                                                                       .orange
                                                                   : ticket.status ==
-                                                                          'Ðã thanh toán'
+                                                                              'Đã thanh toán' ||
+                                                                          ticket.status ==
+                                                                              'Ðã thanh toán'
                                                                       ? Colors
                                                                           .green
                                                                       : ticket.status ==
-                                                                              'Đã hủy'
+                                                                              'Ðã hủy' // Kiểm tra đúng "Đã hủy"
                                                                           ? Colors
                                                                               .redAccent
                                                                           : Colors
-                                                                              .grey, // Màu mặc định nếu không khớp với các giá trị trên
+                                                                              .grey,
                                                             ),
                                                             maxLines: 1,
                                                             overflow:
@@ -374,33 +414,47 @@ class _HistoryTicketsPageState extends State<HistoryTicketsPage> {
                                                             minFontSize: 8,
                                                             maxFontSize: 12,
                                                           ),
-                                                          Text(
-                                                            ' - ',
-                                                            style:
-                                                                const TextStyle(
-                                                              fontSize: 12,
-                                                              color:
-                                                                  Colors.grey,
+                                                          if (ticket.status !=
+                                                                  'Ðã hủy' &&
+                                                              ticket.status !=
+                                                                  'Chưa thanh toán')
+                                                            // Hiển thị isCheckIn nếu trạng thái không phải "Đã hủy"
+                                                            Row(
+                                                              children: [
+                                                                Text(
+                                                                  ' - ',
+                                                                  style:
+                                                                      const TextStyle(
+                                                                    fontSize:
+                                                                        12,
+                                                                    color: Colors
+                                                                        .grey,
+                                                                  ),
+                                                                ),
+                                                                AutoSizeText(
+                                                                  '${ticket.isCheckIn == false ? 'Chưa sử dụng' : 'Đã sử dụng'}',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize:
+                                                                        12,
+                                                                    color: ticket.isCheckIn ==
+                                                                            false
+                                                                        ? Colors
+                                                                            .green
+                                                                        : Colors
+                                                                            .redAccent,
+                                                                  ),
+                                                                  maxLines: 1,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+                                                                  minFontSize:
+                                                                      8,
+                                                                  maxFontSize:
+                                                                      12,
+                                                                ),
+                                                              ],
                                                             ),
-                                                          ),
-                                                          AutoSizeText(
-                                                            '${ticket.isCheckIn == false ? 'Chưa sử dụng' : 'Đã sử dụng'}',
-                                                            style: TextStyle(
-                                                                fontSize: 12,
-                                                                color: ticket
-                                                                            .isCheckIn ==
-                                                                        false
-                                                                    ? Colors
-                                                                        .green
-                                                                    : Colors
-                                                                        .redAccent),
-                                                            maxLines: 1,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                            minFontSize: 8,
-                                                            maxFontSize: 12,
-                                                          ),
                                                         ],
                                                       ),
                                                       const SizedBox(height: 5),

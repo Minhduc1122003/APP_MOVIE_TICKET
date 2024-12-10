@@ -164,15 +164,15 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
           body: FutureBuilder<MovieDetails?>(
             future: _loadMovieDetails(),
             builder: (context, snapshot) {
+              // Existing null checks look good, but ensure _loadMovieDetails
+              // always returns a non-null value or handles errors gracefully
               if (snapshot.connectionState == ConnectionState.waiting) {
-              } else if (snapshot.hasError) {
-                return Center(
-                  child: Text('Có lỗi xảy ra: ${snapshot.error}'),
-                );
-              } else if (!snapshot.hasData || snapshot.data == null) {
-                return const Center(
-                  child: Text('Không có dữ liệu để hiển thị'),
-                );
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              // Add a more explicit null check
+              if (!snapshot.hasData || snapshot.data == null) {
+                return const Center(child: Text('No movie details available'));
               }
               final movieDetails = snapshot.data!;
               return SingleChildScrollView(
@@ -180,7 +180,8 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     MovieHeader(
-                      movieId: widget.movieId,
+                      movieId:
+                          widget.movieId ?? 0, // Provide a default if possible
                       apiService: _APIService,
                     ),
                     const Divider(
@@ -357,8 +358,34 @@ class _MovieHeaderState extends State<MovieHeader>
       child: FutureBuilder<MovieDetails?>(
         future: _loadMovieDetails(),
         builder: (context, snapshot) {
-          final movieDetails = snapshot.data!;
+          // Kiểm tra trạng thái của snapshot
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // Hiển thị spinner trong khi đợi dữ liệu
+            return Center(
+              child:
+                  CircularProgressIndicator(), // Thay thế bằng spinner tùy thích
+            );
+          }
 
+          if (snapshot.hasError) {
+            // Hiển thị thông báo lỗi nếu có lỗi xảy ra
+            return Center(
+              child: Text(
+                'Đã xảy ra lỗi khi tải dữ liệu!',
+                style: TextStyle(color: Colors.red),
+              ),
+            );
+          }
+
+          if (!snapshot.hasData || snapshot.data == null) {
+            // Hiển thị thông báo khi không có dữ liệu
+            return Center(
+              child: Text('Không có dữ liệu!'),
+            );
+          }
+
+          // Khi có dữ liệu, tiếp tục hiển thị UI
+          final movieDetails = snapshot.data!;
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

@@ -65,6 +65,8 @@ class RateScreenState extends State<RateScreen>
         EasyLoading.showError("Lỗi khi gửi đánh giá!");
       }
     } catch (e) {
+      EasyLoading.dismiss();
+
       // Xử lý lỗi khi gọi API
       print("Lỗi khi gọi API đánh giá: $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -77,7 +79,9 @@ class RateScreenState extends State<RateScreen>
     try {
       // Gọi API để lấy thông tin đánh giá
       final rateInfo = await _apiService.getRate(
-          UserManager.instance.user!.userId, widget.buyTicket.movieID);
+        UserManager.instance.user!.userId,
+        widget.buyTicket.movieID,
+      );
 
       // Nếu dữ liệu trả về rỗng, không làm gì cả
       if (rateInfo == null || rateInfo.isEmpty) {
@@ -85,17 +89,25 @@ class RateScreenState extends State<RateScreen>
         return;
       }
 
-      // Cập nhật _noteController và RatingController khi có dữ liệu đánh giá
-      if (_rateInfo!['Rating'] != null) {
-        int rating = _rateInfo!['Rating'];
+      // Lấy giá trị từ rateInfo
+      final int? rating = rateInfo['Rating'];
+      final String? content = rateInfo['Content'];
+
+      // Kiểm tra và cập nhật RatingController
+      if (rating != null) {
         final RatingController ratingController = Get.find<RatingController>();
         ratingController.updateStars(rating);
-        _noteController.text = _rateInfo!['Content'] ?? '';
-
-        setState(() {
-          _rateInfo = rateInfo; // Cập nhật dữ liệu đánh giá vào _rateInfo
-        });
       }
+
+      // Cập nhật nội dung ghi chú
+      if (content != null) {
+        _noteController.text = content;
+      }
+
+      // Cập nhật trạng thái của widget
+      setState(() {
+        _rateInfo = rateInfo; // Cập nhật dữ liệu đánh giá
+      });
     } catch (e) {
       // Xử lý lỗi khi gọi API
       print("Lỗi khi tải thông tin đánh giá: $e");
@@ -142,6 +154,24 @@ class RateScreenState extends State<RateScreen>
               const SizedBox(height: 10),
               Divider(height: 1, color: basicColor, thickness: 1),
               const SizedBox(height: 10),
+              if (_noteController != null)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Bạn đã đánh giá phim này!',
+                        style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: RatingStars(),
@@ -205,26 +235,41 @@ class RateScreenState extends State<RateScreen>
 
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: basicColor, // Nền là basicColor
-                    borderRadius: BorderRadius.circular(10), // Border radius 10
-                    border: Border.all(
-                        color: Colors.black, width: 1), // Viền màu đen
-                  ),
-                  padding: const EdgeInsets.all(10),
-                  child: TextField(
-                    controller: _noteController,
-                    maxLines: 5, // Hiển thị 5 dòng văn bản
-                    decoration: InputDecoration(
-                      hintText:
-                          "Chia sẻ cảm nghĩ của bạn sau khi xem phim tại rạp nhé!.",
-                      hintStyle: TextStyle(color: Colors.grey[600]),
-                      border:
-                          InputBorder.none, // Xóa viền mặc định của TextField
+                child: TextField(
+                  controller: _noteController,
+                  decoration: InputDecoration(
+                    hintText:
+                        "Chia sẻ cảm nghĩ của bạn sau khi xem phim tại rạp nhé!.",
+                    labelText:
+                        "Nội dung đánh giá", // Tiêu đề sẽ hiển thị và không bị mất khi nhập
+                    labelStyle: TextStyle(
+                      color: mainColor, // Màu sắc của tiêu đề
+                      fontWeight: FontWeight.bold,
                     ),
-                    style: const TextStyle(fontSize: 16, color: Colors.black),
+                    // Viền của TextField
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color:
+                            mainColor, // Màu viền mặc định khi không có focus
+                        width: 2.0, // Độ dày của viền
+                      ),
+                    ),
+                    // Viền khi đang có focus
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: mainColor, // Màu viền khi có focus
+                        width: 2.0, // Độ dày của viền
+                      ),
+                    ),
+                    // Viền khi TextField đang được sử dụng
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: mainColor, // Màu viền khi đang sử dụng
+                        width: 2.0, // Độ dày của viền
+                      ),
+                    ),
                   ),
+                  maxLines: 5, // Hiển thị 5 dòng văn bản
                 ),
               ),
               const SizedBox(height: 10),

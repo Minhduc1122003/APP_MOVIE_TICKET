@@ -46,7 +46,9 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
 
       // Lọc ra các mục có isCheckIn = false và status = 'Đã thanh toán'
       List<BuyTicket> filteredBuyTickets = buyticket.where((ticket) {
-        return ticket.isCheckIn == false && ticket.status == 'Đã thanh toán';
+        return ticket.isCheckIn == false &&
+            (ticket.status == 'Đã thanh toán' ||
+                ticket.status == 'Ðã thanh toán');
       }).toList();
 
       widget.onRefresh?.call();
@@ -75,7 +77,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
           backgroundColor: mainColor,
           automaticallyImplyLeading: false,
           title: Text(
-            'Quản lý vé',
+            'Vé chưa sử dụng',
             style: TextStyle(color: Colors.white, fontSize: 20),
           ),
           centerTitle: true,
@@ -267,8 +269,9 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                     SizedBox(height: 16),
                     Text(
                       'Bạn không có vé nào chưa sử dụng',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
@@ -277,7 +280,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                     Text(
                       'Đặt ngay để không bỏ lỡ những phim hot nhất nhé!',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         color: Colors.grey,
                       ),
                       textAlign: TextAlign.center,
@@ -374,14 +377,19 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                   final ticket = tickets[index];
                   return GestureDetector(
                     onTap: () {
-                      // In ra posterUrl khi nhấn vào Card
-                      print(ticket.buyTicketId);
-                      Navigator.push(
-                        context,
-                        SlideFromRightPageRoute(
-                          page: InfoticketPage(buyTicketID: ticket.buyTicketId),
-                        ),
-                      );
+                      if (ticket.status == 'Ðã hủy') {
+                        print('Đã hủy không thể mở');
+                      } else {
+                        // In ra posterUrl khi nhấn vào Card
+                        print(ticket.buyTicketId);
+                        Navigator.push(
+                          context,
+                          SlideFromRightPageRoute(
+                            page:
+                                InfoticketPage(buyTicketID: ticket.buyTicketId),
+                          ),
+                        );
+                      }
                     },
                     child: Card(
                       color: Colors.white,
@@ -400,12 +408,14 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                               borderRadius: BorderRadius.circular(8),
                               child: CachedNetworkImage(
                                 imageUrl: ticket.posterUrl,
-                                height: 80,
-                                width: 60,
+                                height: 110,
+                                width: 80,
                                 fit: BoxFit.cover,
                                 errorWidget: (context, url, error) =>
                                     const Icon(Icons.error),
-                                fadeInDuration: const Duration(seconds: 1),
+                                // Hiển thị icon lỗi nếu tải ảnh không thành công
+                                fadeInDuration: const Duration(
+                                    seconds: 1), // Thời gian hiệu ứng fade-in
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -421,8 +431,8 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    minFontSize: 14,
-                                    maxFontSize: 16,
+                                    minFontSize: 14, // Kích thước chữ tối thiểu
+                                    maxFontSize: 16, // Kích thước chữ tối đa
                                   ),
                                   const SizedBox(height: 5),
                                   Row(
@@ -445,6 +455,23 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                                   const SizedBox(height: 5),
                                   Row(
                                     children: [
+                                      Icon(Icons.calendar_month_outlined,
+                                          size: 14),
+                                      const SizedBox(width: 5),
+                                      AutoSizeText(
+                                        'Ngày tạo: ${formatDateTime(ticket.createDate)}',
+                                        style: TextStyle(
+                                            fontSize: 12, color: Colors.black),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        minFontSize: 8,
+                                        maxFontSize: 12,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Row(
+                                    children: [
                                       Icon(Icons.info_outline_rounded,
                                           size: 14),
                                       const SizedBox(width: 5),
@@ -455,9 +482,12 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                                           color: ticket.status ==
                                                   'Chưa thanh toán'
                                               ? Colors.orange
-                                              : ticket.status == 'Ðã thanh toán'
+                                              : ticket.status ==
+                                                          'Đã thanh toán' ||
+                                                      ticket.status ==
+                                                          'Ðã thanh toán'
                                                   ? Colors.green
-                                                  : ticket.status == 'Đã hủy'
+                                                  : ticket.status == 'Ðã hủy'
                                                       ? Colors.redAccent
                                                       : Colors.grey,
                                         ),
@@ -466,25 +496,33 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                                         minFontSize: 8,
                                         maxFontSize: 12,
                                       ),
-                                      Text(
-                                        ' - ',
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey,
+                                      if (ticket.status != 'Ðã hủy' &&
+                                          ticket.status != 'Chưa thanh toán')
+                                        // Hiển thị isCheckIn nếu trạng thái không phải "Đã hủy"
+                                        Row(
+                                          children: [
+                                            Text(
+                                              ' - ',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                            AutoSizeText(
+                                              '${ticket.isCheckIn == false ? 'Chưa sử dụng' : 'Đã sử dụng'}',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: ticket.isCheckIn == false
+                                                    ? Colors.green
+                                                    : Colors.redAccent,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              minFontSize: 8,
+                                              maxFontSize: 12,
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                      AutoSizeText(
-                                        '${ticket.isCheckIn == false ? 'Chưa sử dụng' : 'Đã sử dụng'}',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: ticket.isCheckIn == false
-                                                ? Colors.green
-                                                : Colors.redAccent),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        minFontSize: 8,
-                                        maxFontSize: 12,
-                                      ),
                                     ],
                                   ),
                                   const SizedBox(height: 5),

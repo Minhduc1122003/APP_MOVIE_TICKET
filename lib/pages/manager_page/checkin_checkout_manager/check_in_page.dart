@@ -31,7 +31,6 @@ class _TimekeepingScreenState extends State<TimekeepingScreen> {
   bool _isLocationPermissionGranted = false;
   LatLng? _currentPosition;
   GoogleMapController? _mapController;
-  final LatLng _targetPosition = LatLng(10.830126, 106.618113);
   final double banKinh = 50;
   String? _selectedImagePath; // Biến lưu đường dẫn ảnh đã chọn
   final TextEditingController shiftController = TextEditingController();
@@ -44,6 +43,9 @@ class _TimekeepingScreenState extends State<TimekeepingScreen> {
   Set<Marker> allMarkers = {};
   GoogleMapController? mapController;
   Set<Circle> _circles = {};
+  late double _targetPosition_long;
+  late double _targetPosition_lat;
+  late int ShiftId;
 
   @override
   void initState() {
@@ -160,29 +162,88 @@ class _TimekeepingScreenState extends State<TimekeepingScreen> {
     });
   }
 
-  void _checkIn() {
+  void _checkIn() async {
     if (_currentPosition == null) {
       EasyLoading.showError('Không thể lấy vị trí hiện tại');
       return;
     }
 
+    // Lấy vị trí hiện tại
     double currentLatitude = _currentPosition!.latitude;
     double currentLongitude = _currentPosition!.longitude;
-    print('vi tri cua toi: $currentLatitude');
-    print('vi tri cua toi: $currentLongitude');
-    print('vi tri dich: ${_targetPosition.latitude}');
-    print('vi tri dich: ${_targetPosition.longitude}');
 
+    print('Vị trí của tôi: $currentLatitude, $currentLongitude');
+    print('Vị trí đích: $_targetPosition_lat, $_targetPosition_long');
+
+    // Tính khoảng cách
     double distance = Geolocator.distanceBetween(
       currentLatitude,
       currentLongitude,
-      _targetPosition.latitude,
-      _targetPosition.longitude,
+      _targetPosition_lat,
+      _targetPosition_long,
     );
-    print(distance);
 
+    print('Khoảng cách: $distance');
+
+    // Kiểm tra khoảng cách
     if (distance <= banKinh) {
-      EasyLoading.showSuccess('Chấm công thành công lúc $_currentTime');
+      print('bắt đầu: ${_selectedShift!.startTime}');
+      DateTime now = DateTime.now();
+
+      List<String> timeParts = _selectedShift!.startTime.split(':');
+      int startHour = int.parse(timeParts[0]);
+      int startMinute = int.parse(timeParts[1]);
+
+      DateTime startDateTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        startHour,
+        startMinute,
+      );
+
+      int differenceInMinutes = now.difference(startDateTime).inMinutes;
+
+      // Kiểm tra điều kiện không chấm công trước 5 phút và sau 30 phút
+      if (differenceInMinutes < -5) {
+        EasyLoading.showError(
+            'Không thể chấm công trước 5 phút so với giờ vào ca.');
+        return;
+      }
+
+      if (differenceInMinutes > 30) {
+        EasyLoading.showError(
+            'Không thể chấm công sau 30 phút so với giờ vào ca.');
+        return;
+      }
+
+      bool isLate = differenceInMinutes > 15;
+
+      // In kết quả
+      print('Thời gian hiện tại: ${now.hour}:${now.minute}');
+      print('Thời gian bắt đầu: ${_selectedShift!.startTime}');
+      print('Chênh lệch phút: $differenceInMinutes');
+      print('Có trễ không? $isLate');
+
+      try {
+        EasyLoading.show(status: 'Đang chấm công...');
+
+        // Gọi API chấm công
+        String response = await _APIService.insertAttendance(
+          UserId: UserManager.instance.user!.userId,
+          ShiftId: ShiftId,
+          Latitude: currentLatitude.toString(),
+          Longitude: currentLongitude.toString(),
+          Location: 'Tọa độ tại Rạp: $currentLatitude, $currentLongitude',
+          IsLate: isLate,
+          IsEarlyLeave: false, // Thay bằng logic kiểm tra về sớm
+        );
+
+        EasyLoading.showSuccess(response);
+        Navigator.pop(context, true);
+      } catch (e) {
+        EasyLoading.showError('Lỗi khi chấm công: $e');
+      }
     } else {
       EasyLoading.showError(
           'Bạn không nằm trong bán kính cho phép để chấm công');
@@ -312,8 +373,14 @@ class _TimekeepingScreenState extends State<TimekeepingScreen> {
                                 print('Đã chọn  ${shift.shiftName}');
 
                                 setState(() {
-                                  controller.text = shift.shiftName;
                                   _selectedShift = shift;
+
+                                  controller.text = shift.shiftName;
+                                  _targetPosition_long =
+                                      double.parse(shift.longitude);
+                                  _targetPosition_lat =
+                                      double.parse(shift.latitude);
+                                  ShiftId = shift.shiftId;
                                 });
                                 _moveCameraToShift(shift.latitude,
                                     shift.longitude, shift.radius);
@@ -348,7 +415,7 @@ class _TimekeepingScreenState extends State<TimekeepingScreen> {
             leading: IconButton(
               icon: Icon(Icons.arrow_back_ios_new_outlined,
                   color: Colors.white, size: 18),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.pop(context),
             ),
             title: Text('Chấm công',
                 style: TextStyle(color: Colors.white, fontSize: 18)),

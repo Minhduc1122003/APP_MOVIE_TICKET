@@ -313,10 +313,8 @@ class _LocationEditPageState extends State<LocationEditPage> {
 
       // Kiểm tra nếu message là "Shift created successfully"
       if (message == 'Location created successfully') {
-        EasyLoading.showSuccess('Tạo ca làm thành công!');
-        Future.delayed(Duration(seconds: 1), () {
-          Navigator.of(context).pop(true); // Trả về true khi tạo ca thành công
-        });
+        EasyLoading.showSuccess('Tạo vị trí làm thành công!');
+        Navigator.of(context).pop(true); // Trả về true khi tạo ca thành công
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Lỗi khi tạo ca làm: $message')),

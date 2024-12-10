@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
+import 'package:flutter_app_chat/models/Attendance_model.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/home_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/buyTicket_page.dart';
@@ -17,7 +19,9 @@ import 'package:flutter_app_chat/pages/manager_page/scan_code_manager/scan_QRcod
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/shift_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/showtime_manager_page/showtime_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/statistical_manager_page/statistical_manager_page.dart';
+import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:auto_size_text/auto_size_text.dart'; // Import package
@@ -31,9 +35,69 @@ class HomeTab extends StatefulWidget {
 
 @override
 class _HomeTabState extends State<HomeTab> {
+  late ApiService _APIService;
+  Attendance? _attendanceData;
   @override
   void initState() {
+    _APIService = ApiService();
     super.initState();
+    if (UserManager.instance.user?.role == 1) {
+      handleAttendanceCheck();
+    }
+  }
+
+  void handleAttendanceCheck() async {
+    try {
+      final attendanceData = await _APIService.checkAttendance(
+          UserId: UserManager.instance.user!.userId);
+
+      if (attendanceData != null) {
+        print('Dữ liệu chấm công: $attendanceData');
+
+        // Lưu dữ liệu chấm công vào biến _attendanceData
+        setState(() {
+          _attendanceData = attendanceData;
+        });
+      } else {
+        print('Không có dữ liệu chấm công.');
+        setState(() {
+          _attendanceData = attendanceData;
+        });
+      }
+    } catch (e) {
+      print('Lỗi khi kiểm tra chấm công: $e');
+    }
+  }
+
+  void checkOut() async {
+    try {
+      // Hiển thị loading spinner
+      EasyLoading.show(status: 'Đang xử lý...');
+
+      final String? result =
+          await _APIService.checkOutAttendance(_attendanceData!.attendanceId);
+
+      // Ẩn loading spinner
+      EasyLoading.dismiss();
+
+      // Kiểm tra kết quả từ server
+      if (result == "Cập nhật thông tin ra ca thành công.") {
+        print(result);
+        EasyLoading.showSuccess(
+            'Ra ca thành công!'); // Hiển thị thông báo thành công
+
+        // Cập nhật UI nếu cần
+        setState(() {
+          _attendanceData = null; // Xóa dữ liệu chấm công
+        });
+      } else {
+        EasyLoading.showError('Thất bại, lỗi: $result'); // Hiển thị lỗi
+      }
+    } catch (e) {
+      EasyLoading.dismiss(); // Ẩn loading nếu xảy ra lỗi
+      EasyLoading.showError('Lỗi khi kiểm tra chấm công: $e');
+      print('Lỗi khi kiểm tra chấm công: $e');
+    }
   }
 
   @override
@@ -217,7 +281,7 @@ class _HomeTabState extends State<HomeTab> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-// Date Badge
+                        // Date Badge
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 5),
@@ -249,93 +313,192 @@ class _HomeTabState extends State<HomeTab> {
                             },
                           ),
                         ),
-// Attendance Status
-                        const Flexible(
+                        // Attendance Status
+                        Flexible(
                           child: Padding(
-                            padding: EdgeInsets.all(1),
+                            padding: const EdgeInsets.all(1),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                AutoSizeText(
-                                  'Hôm nay bạn chưa chấm công',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                                if (_attendanceData != null)
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment
+                                        .center, // Căn giữa Row
+                                    children: [
+                                      AutoSizeText(
+                                        // Kiểm tra dữ liệu và thay đổi thông báo
+                                        ' Đang trong ca làm ',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                        textAlign: TextAlign.left,
+                                        maxLines: 1,
+                                        minFontSize: 10,
+                                      ),
+                                      AutoSizeText(
+                                        // Kiểm tra dữ liệu và thay đổi thông báo
+                                        '${_attendanceData!.shiftName}',
+                                        style: TextStyle(
+                                          color: mainColor,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                        textAlign: TextAlign.left,
+                                        maxLines: 1,
+                                        minFontSize: 10,
+                                      ),
+                                    ],
                                   ),
-                                  textAlign: TextAlign.left,
-
-                                  maxLines: 1, // Giới hạn số dòng hiển thị là 2
-
-                                  minFontSize:
-                                      12, // Kích thước font tối thiểu khi tự động điều chỉnh
-                                ),
-                                SizedBox(height: 4),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 4,
-                                  alignment: WrapAlignment.center,
-                                  children: [
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          'SA 8:30',
-                                          style: TextStyle(color: Colors.blue),
+                                if (_attendanceData == null)
+                                  const Row(
+                                    mainAxisAlignment: MainAxisAlignment
+                                        .center, // Căn giữa Row
+                                    children: [
+                                      AutoSizeText(
+                                        // Kiểm tra dữ liệu và thay đổi thông báo
+                                        ' Hôm nay bạn chưa chấm công',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
                                         ),
-                                        SizedBox(width: 4),
-                                        Icon(Icons.check_circle,
-                                            color: Colors.green, size: 16),
-                                      ],
-                                    ),
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          'CH 13:30',
-                                          style: TextStyle(color: Colors.blue),
-                                        ),
-                                        SizedBox(width: 4),
-                                        Icon(Icons.remove_circle,
-                                            color: Colors.red, size: 16),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                                        textAlign: TextAlign.left,
+                                        maxLines: 1,
+                                        minFontSize: 10,
+                                      ),
+                                    ],
+                                  ),
+                                const SizedBox(height: 4),
+                                if (_attendanceData != null)
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 4,
+                                    alignment: WrapAlignment.center,
+                                    children: [
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            '${_attendanceData!.shiftStartTime}',
+                                            style:
+                                                TextStyle(color: Colors.blue),
+                                          ),
+                                          SizedBox(width: 4),
+                                          Icon(Icons.check_circle,
+                                              color: Colors.green, size: 16),
+                                        ],
+                                      ),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            '${_attendanceData!.shiftEndTime}',
+                                            style:
+                                                TextStyle(color: Colors.blue),
+                                          ),
+                                          SizedBox(width: 4),
+                                          Icon(Icons.remove_circle,
+                                              color: Colors.red, size: 16),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                               ],
                             ),
                           ),
                         ),
-// Location Badge
                         // Action Icon (Right side)
-                        Padding(
-                          padding: const EdgeInsets.all(5.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.circular(10),
+                        if (_attendanceData != null)
+                          Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.redAccent,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: TextButton(
+                                onPressed: () async {
+                                  // Hiển thị hộp thoại xác nhận
+                                  final bool? confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: const Text('Xác nhận ra ca'),
+                                        content: const Text(
+                                            'Bạn có chắc chắn muốn ra ca?'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context)
+                                                  .pop(false); // Không xác nhận
+                                            },
+                                            child: const Text('Không'),
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              Navigator.of(context)
+                                                  .pop(true); // Xác nhận
+                                            },
+                                            child: const Text('Có'),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+
+                                  // Nếu người dùng chọn "Có", gọi hàm checkOut
+                                  if (confirm == true) {
+                                    checkOut();
+                                  }
+                                },
+                                child: Text(
+                                  'Ra ca', // Chữ hiển thị trên nút
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                             ),
-                            child: IconButton(
+                          )
+                        else
+                          Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.blue,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: IconButton(
                                 icon: const Icon(
                                   Icons.fullscreen,
                                   color: Colors.white,
                                   size: 40,
                                 ),
-                                onPressed: () {
-                                  Navigator.push(
+                                onPressed: () async {
+                                  final result = await Navigator.push(
                                     context,
                                     SlideFromRightPageRoute(
-                                      page:
-                                          TimekeepingScreen(), // Thay editPage() bằng trang cần chuyển tới
+                                      page: TimekeepingScreen(),
                                     ),
                                   );
-                                }),
+
+                                  if (result == true) {
+                                    print('Đã callback');
+                                    // Thực hiện hành động khác nếu cần
+                                    handleAttendanceCheck();
+                                  }
+                                },
+                              ),
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   ),
