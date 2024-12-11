@@ -5,16 +5,16 @@ import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_info_manager_page/personnel_info_manager_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 
-class PersonnelManagerPage extends StatefulWidget {
+class PersonnelManagerPage2 extends StatefulWidget {
   final int role; // Tham số xác định Role (0: Khách hàng, 1: Nhân viên)
 
-  const PersonnelManagerPage({super.key, required this.role});
+  const PersonnelManagerPage2({super.key, required this.role});
 
   @override
-  State<PersonnelManagerPage> createState() => _PersonnelManagerPageState();
+  State<PersonnelManagerPage2> createState() => _PersonnelManagerPage2State();
 }
 
-class _PersonnelManagerPageState extends State<PersonnelManagerPage>
+class _PersonnelManagerPage2State extends State<PersonnelManagerPage2>
     with SingleTickerProviderStateMixin {
   late ApiService _APIService;
   late Future<List<User>> _filteredUsers;
@@ -63,7 +63,8 @@ class _PersonnelManagerPageState extends State<PersonnelManagerPage>
             final shouldRefresh = await Navigator.push(
               context,
               SlideFromRightPageRoute(
-                page: PersonnelInfoManagerPage(user: user),
+                page:
+                    PersonnelInfoManagerPage(user: user, isUpdate: widget.role),
               ),
             );
 

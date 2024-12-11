@@ -29,13 +29,18 @@ class _TicketStatiscialManagerPageState
   DateTime? _selectedDate;
   TextEditingController _dateController = TextEditingController();
   bool isLoading = true;
-
+  int totalInvoiceCount = 0;
+  double totalTicketPrice = 0.0;
+  double totalComboPrice = 0.0;
+  double totalRevenue = 0.0;
   @override
   void initState() {
     super.initState();
     _apiService = ApiService();
     _fetchThongkeData(); // Gọi hàm để xử lý API và cập nhật dữ liệu
   }
+
+  double totalPreviousWeekRevenue = 0.0; // Biến lưu tổng doanh thu tuần trước
 
   void _fetchThongkeData() async {
     setState(() {
@@ -50,12 +55,21 @@ class _TicketStatiscialManagerPageState
         "0",
       );
 
-      // Phân tích dữ liệu trả về
-      List<Map<String, dynamic>> parsedData =
-          List<Map<String, dynamic>>.from(data);
+      totalInvoiceCount = 0;
+      totalTicketPrice = 0;
+      totalComboPrice = 0;
+      totalRevenue = 0;
 
-      // Tách dữ liệu thành months và userCounts
+      // Phân tích dữ liệu trả về
+      Map<String, dynamic> parsedResponse = Map<String, dynamic>.from(data);
+      List<Map<String, dynamic>> parsedData =
+          List<Map<String, dynamic>>.from(parsedResponse['data']);
+
+      // Gán giá trị totalPreviousWeekRevenue
       setState(() {
+        totalPreviousWeekRevenue =
+            parsedResponse['totalPreviousWeekRevenue']?.toDouble() ?? 0.0;
+
         months = parsedData.map((item) {
           // Chuyển ngày từ chuỗi sang DateTime UTC
           DateTime date = DateTime.parse(item['Date']).toUtc();
@@ -66,6 +80,31 @@ class _TicketStatiscialManagerPageState
         userCounts = parsedData.map((item) {
           return item['TotalRevenue'] ?? 0;
         }).toList();
+
+        // Tính tổng các trường
+        for (var item in parsedData) {
+          totalInvoiceCount += (item['InvoiceCount'] as int) ?? 0;
+          totalTicketPrice += item['TotalTicketPrice']?.toDouble() ?? 0.0;
+          totalComboPrice += item['TotalComboPrice']?.toDouble() ?? 0.0;
+          totalRevenue += item['TotalRevenue']?.toDouble() ?? 0.0;
+        }
+
+        // Tính toán tỷ lệ tăng trưởng
+        double growthRate = 0.0;
+        if (totalPreviousWeekRevenue != 0) {
+          growthRate = ((totalRevenue - totalPreviousWeekRevenue) /
+                  totalPreviousWeekRevenue) *
+              100;
+        }
+
+        // In kết quả ra console
+        print("Tổng số hóa đơn: $totalInvoiceCount");
+        print("Tổng tiền vé: $totalTicketPrice");
+        print("Tổng tiền combo: $totalComboPrice");
+        print("Tổng doanh thu: $totalRevenue");
+        print("Tổng doanh thu tuần trước: $totalPreviousWeekRevenue");
+        print("Tăng trưởng doanh thu: ${growthRate.toStringAsFixed(2)}%");
+
         isLoading = false; // Dữ liệu đã tải xong
       });
     } catch (error) {
@@ -96,6 +135,7 @@ class _TicketStatiscialManagerPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: mainColor,
         leading: IconButton(
@@ -188,7 +228,7 @@ class _TicketStatiscialManagerPageState
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
-                      icon: Icon(Icons.arrow_back),
+                      icon: Icon(Icons.arrow_back_ios),
                       onPressed: () {
                         setState(() {
                           _currentWeekStart =
@@ -204,6 +244,7 @@ class _TicketStatiscialManagerPageState
                     Expanded(
                       child: TextField(
                         readOnly: true,
+                        textAlign: TextAlign.center,
                         decoration: InputDecoration(
                           hintText:
                               'Tuần: ${DateFormat('dd/MM').format(_currentWeekStart)} - ${DateFormat('dd/MM').format(_currentWeekEnd)}',
@@ -230,7 +271,7 @@ class _TicketStatiscialManagerPageState
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.arrow_forward),
+                      icon: Icon(Icons.arrow_forward_ios),
                       onPressed: () {
                         setState(() {
                           _currentWeekStart =
@@ -349,20 +390,89 @@ class _TicketStatiscialManagerPageState
                   ),
                 ),
               SizedBox(height: 16),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Text(
-                  'Số người dùng theo tháng',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Tổng hóa đơn:',
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          '$totalInvoiceCount đơn hàng',
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.black),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Tổng tiền vé:',
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          '${formatPrice(totalTicketPrice)} đ',
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.black),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Tổng tiền combo:',
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          '${formatPrice(totalComboPrice)} đ',
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.black),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 4),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Tổng doanh thu:',
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          '${formatPrice(totalRevenue)} đ',
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.deepOrange),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Thông tin thêm',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -376,4 +486,9 @@ class _TicketStatiscialManagerPageState
         return Container();
     }
   }
+}
+
+String formatPrice(double price) {
+  final formatter = NumberFormat('#,###', 'vi');
+  return formatter.format(price);
 }

@@ -4,10 +4,14 @@ import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 
 class PersonnelInfoManagerPage extends StatefulWidget {
-  final User user; // Nhận user được chọn
+  final User user;
+  final int? isUpdate;
 
-  const PersonnelInfoManagerPage({Key? key, required this.user})
-      : super(key: key);
+  const PersonnelInfoManagerPage({
+    Key? key,
+    required this.user,
+    this.isUpdate = 10,
+  }) : super(key: key);
   @override
   State<PersonnelInfoManagerPage> createState() =>
       _PersonnelInfoManagerPageState();
@@ -215,35 +219,134 @@ class _PersonnelInfoManagerPageState extends State<PersonnelInfoManagerPage>
       padding: EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () async {
-                try {
-                  // Gọi API để cập nhật trạng thái
-                  String newStatus = isLocked ? 'Đang hoạt động' : 'Đã khóa';
-                  await _APIService.updateUserStatus(
-                      widget.user.userId, newStatus);
+          if (widget.isUpdate == 10)
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  try {
+                    // Gọi API để cập nhật trạng thái
+                    String newStatus = isLocked ? 'Đang hoạt động' : 'Đã khóa';
+                    await _APIService.updateUserStatus(
+                        widget.user.userId, newStatus);
 
-                  // Hiển thị thông báo thành công
-                  String action = isLocked ? 'mở khóa' : 'khóa';
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Tài khoản đã được $action.')),
-                  );
+                    // Hiển thị thông báo thành công
+                    String action = isLocked ? 'mở khóa' : 'khóa';
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Tài khoản đã được $action.')),
+                    );
 
-                  // Quay lại trang trước và thông báo cần làm mới
-                  Navigator.of(context)
-                      .pop(true); // Trả về `true` để yêu cầu làm mới danh sách
-                } catch (e) {
-                  // Hiển thị lỗi
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi: $e')),
-                  );
-                }
-              },
-              child: Text(isLocked ? 'Mở tài khoản' : 'Khóa tài khoản'),
-              style: ElevatedButton.styleFrom(),
+                    // Quay lại trang trước và thông báo cần làm mới
+                    Navigator.of(context).pop(
+                        true); // Trả về `true` để yêu cầu làm mới danh sách
+                  } catch (e) {
+                    // Hiển thị lỗi
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Lỗi: $e')),
+                    );
+                  }
+                },
+                icon: Icon(
+                  isLocked
+                      ? Icons.lock_open
+                      : Icons.lock, // Icon thay đổi dựa trên isLocked
+                  color: Colors.white, // Màu của icon
+                ),
+                label: Text(
+                  isLocked ? 'Mở tài khoản' : 'Khóa tài khoản',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold, // Text in đậm
+                    fontSize: 16, // Kích thước chữ
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      isLocked ? Colors.orange : Colors.red, // Nền nút
+                  foregroundColor: Colors.white, // Màu chữ và icon
+                  padding: const EdgeInsets.all(10), // Padding của nút
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10), // Bo góc nút
+                  ),
+                ),
+              ),
             ),
-          ),
+          if (widget.isUpdate == 0)
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () async {
+                  try {
+                    // Gọi API để cập nhật trạng thái
+                    String newStatus = isLocked ? 'Đang hoạt động' : 'Đã khóa';
+                    await _APIService.updateUserStatus(
+                        widget.user.userId, newStatus);
+
+                    // Hiển thị thông báo thành công
+                    String action = isLocked ? 'mở khóa' : 'khóa';
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Tài khoản đã được $action.')),
+                    );
+
+                    // Quay lại trang trước và thông báo cần làm mới
+                    Navigator.of(context).pop(
+                        true); // Trả về `true` để yêu cầu làm mới danh sách
+                  } catch (e) {
+                    // Hiển thị lỗi
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Lỗi: $e')),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: mainColor, // Nền là mainColor
+                  foregroundColor: Colors.white, // Text màu trắng
+                  textStyle: const TextStyle(
+                    fontWeight: FontWeight.bold, // Chữ đậm
+                  ),
+                  padding: const EdgeInsets.all(10), // Padding bên trong nút
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10), // Bo góc
+                  ),
+                ),
+                child: const Text('Cấp quyền Nhân Viên'),
+              ),
+            ),
+          if (widget.isUpdate == 1)
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () async {
+                  try {
+                    // Gọi API để cập nhật trạng thái
+                    String newStatus = isLocked ? 'Đang hoạt động' : 'Đã khóa';
+                    await _APIService.updateUserStatus(
+                        widget.user.userId, newStatus);
+
+                    // Hiển thị thông báo thành công
+                    String action = isLocked ? 'mở khóa' : 'khóa';
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Tài khoản đã được $action.')),
+                    );
+
+                    // Quay lại trang trước và thông báo cần làm mới
+                    Navigator.of(context).pop(
+                        true); // Trả về `true` để yêu cầu làm mới danh sách
+                  } catch (e) {
+                    // Hiển thị lỗi
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Lỗi: $e')),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: mainColor, // Nền là mainColor
+                  foregroundColor: Colors.white, // Text màu trắng
+
+                  padding: const EdgeInsets.all(10), // Padding bên trong nút
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10), // Bo góc
+                  ),
+                ),
+                child: const Text('Cấp quyền quản lý (Admin)'),
+              ),
+            ),
         ],
       ),
     );

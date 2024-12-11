@@ -1,19 +1,27 @@
+import 'dart:async';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/models/BuyTicket_model.dart';
+import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/pages/home_page/home_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/ticket_screen/rate_page/rate_screen.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../../../../auth/api_service.dart';
 
 class InfoticketPage extends StatefulWidget {
   final String buyTicketID;
+  final int? thanhToan;
 
-  const InfoticketPage({Key? key, required this.buyTicketID}) : super(key: key);
+  const InfoticketPage(
+      {Key? key, required this.buyTicketID, this.thanhToan = 0})
+      : super(key: key);
 
   @override
   InfoticketPageState createState() => InfoticketPageState();
@@ -24,6 +32,10 @@ class InfoticketPageState extends State<InfoticketPage>
   late ApiService _apiService;
   late String qrText = '';
   late Future<BuyTicket> _futureBuyTickets;
+  String? _payUrl;
+  late int _remainingTime; // Thời gian còn lại tính bằng giây
+  bool _isScrolled = false;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -31,6 +43,157 @@ class InfoticketPageState extends State<InfoticketPage>
     _apiService = ApiService();
     _futureBuyTickets = _apiService.FindOneBuyTicketById(widget.buyTicketID);
     qrText = '';
+    _remainingTime = 0; // Khởi tạo giá trị mặc định
+    _updateRemainingTime(); // Cập nhật thời gian còn lại
+    if (widget.thanhToan == 1) {
+      _startTimer();
+    }
+  }
+
+  Future<void> _updateRemainingTime() async {
+    try {
+      BuyTicket buyTicket = await _futureBuyTickets;
+
+      // Parse the server timestamp
+      DateTime createDate = DateTime.parse(buyTicket.createDate);
+
+      // Get current time in UTC
+      DateTime currentTime = DateTime.now().toUtc();
+
+      // Calculate elapsed time
+      Duration elapsedTime = currentTime.difference(createDate);
+
+      // Assuming the ticket has a standard validity period (e.g., 30 minutes = 1800 seconds)
+      int totalValiditySeconds = 1800;
+      int elapsedSeconds = elapsedTime.inSeconds;
+
+      // Calculate remaining time
+      int remainingTime = totalValiditySeconds - elapsedSeconds;
+
+      // Ensure remaining time is not negative
+      remainingTime = remainingTime < 0 ? 0 : remainingTime;
+
+      setState(() {
+        _remainingTime = remainingTime;
+      });
+
+      print('Thời gian còn lại: $_remainingTime giây');
+    } catch (e) {
+      print('Lỗi khi tính thời gian còn lại: $e');
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Cập nhật thời gian còn lại khi dữ liệu BuyTicket có sẵn
+    _updateRemainingTime();
+  }
+
+  Future<void> _launchInWebView(Uri url) async {
+    try {
+      if (!await launchUrl(url, mode: LaunchMode.inAppWebView)) {
+        throw Exception('Could not launch $url');
+      }
+    } catch (e) {
+      print('Lỗi khi mở WebView: $e');
+    }
+  }
+
+  void _startTimer() {
+    print("Starting timer. Initial remaining time: $_remainingTime");
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingTime > 0) {
+        setState(() {
+          _remainingTime--;
+          print("Updated remaining time: $_remainingTime");
+        });
+      } else {
+        print("Timer completed. Cancelling and deleting ticket.");
+        timer.cancel();
+        _deleteOneBuyTicketById(widget.buyTicketID);
+      }
+    });
+  }
+
+  String _formatRemainingTime() {
+    final minutes = _remainingTime ~/ 60;
+    final seconds = _remainingTime % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _deleteOneBuyTicketById(String idTicket) async {
+    try {
+      EasyLoading.show(status: 'Đang xử lý...'); // Hiển thị loading
+      print(idTicket);
+
+      // Gửi yêu cầu xóa
+      final String statusMessage =
+          await _apiService.deleteOneBuyTicketById(idTicket);
+      print("Status message: $statusMessage");
+
+      if (statusMessage == "Successfully") {
+        // Nếu trả về Successfully, gọi API cập nhật trạng thái
+
+        EasyLoading.dismiss();
+
+        // Hiển thị dialog xác nhận
+        showDialog(
+          context: context,
+          barrierDismissible:
+              false, // Ngăn không cho đóng dialog bằng cách nhấn ra ngoài
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Thông báo"),
+              content: const Text("Thanh toán đã bị hủy!"),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    _timer?.cancel();
+                    Navigator.pop(context, true);
+                  },
+                  child: const Text("Xác nhận"),
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        // Xử lý trường hợp không thành công
+        EasyLoading.dismiss();
+        EasyLoading.showError('Hủy thất bại! Vui lòng thử lại.',
+            duration: const Duration(seconds: 2));
+      }
+    } catch (e) {
+      // Xử lý lỗi
+      EasyLoading.dismiss();
+      EasyLoading.showError('Đã xảy ra lỗi: $e',
+          duration: const Duration(seconds: 2));
+      print("Lỗi khi kiểm tra trạng thái giao dịch: $e");
+    }
+  }
+
+  Future<void> _createMomoPayment(
+      double tongTienConLai, String idTicket) async {
+    try {
+      final payUrl = await _apiService.createMomoPayment(
+        tongTienConLai,
+        idTicket,
+        'Thanh toán hóa đơn ${UserManager.instance.user?.fullName}',
+      );
+
+      setState(() => _payUrl = payUrl);
+      await _launchInWebView(Uri.parse(payUrl));
+    } catch (e) {
+      print("Lỗi khi gọi API thanh toán MoMo: $e");
+    }
+  }
+
+  @override
+  void dispose() {
+    // Hủy timer khi widget bị hủy
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -412,6 +575,48 @@ class InfoticketPageState extends State<InfoticketPage>
                               ),
                               Padding(
                                 padding: const EdgeInsets.all(10.0),
+                                child: AnimatedOpacity(
+                                  duration: Duration(milliseconds: 300),
+                                  opacity: _isScrolled ? 0 : 1,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: mainColor,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    padding: const EdgeInsets.all(2),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Text(
+                                          'Thời gian còn lại:',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 4, vertical: 8),
+                                          child: Text(
+                                            _formatRemainingTime(),
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Divider(
+                                height: 1,
+                                thickness: 0,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(10.0),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -419,7 +624,7 @@ class InfoticketPageState extends State<InfoticketPage>
                                     Expanded(
                                       child: Align(
                                         alignment: Alignment.topLeft,
-                                        child: Text('Thanh toán: ',
+                                        child: Text('Tổng thanh toán: ',
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 18)),
@@ -440,6 +645,47 @@ class InfoticketPageState extends State<InfoticketPage>
                                   ],
                                 ),
                               ),
+                              if (ticket.status == 'Chưa thanh toán')
+                                ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors
+                                          .deepOrangeAccent, // Màu của nút
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            8), // Bo tròn góc
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12, horizontal: 20),
+                                    ),
+                                    onPressed: () async {
+                                      _createMomoPayment(ticket.totalPrice,
+                                          ticket.buyTicketId);
+                                    },
+                                    child: const Row(
+                                      mainAxisAlignment: MainAxisAlignment
+                                          .center, // Căn giữa theo chiều ngang
+                                      children: [
+                                        Expanded(
+                                          child: Align(
+                                            alignment: Alignment
+                                                .center, // Căn giữa văn bản
+                                            child: Text(
+                                              'Tiếp tục thanh toán',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Icon(
+                                          Icons.arrow_forward_ios,
+                                          color: Colors.white,
+                                          size: 15,
+                                        ), // Mũi tên bên phải
+                                      ],
+                                    )),
                               if (ticket.isCheckIn)
                                 ElevatedButton(
                                     style: ElevatedButton.styleFrom(

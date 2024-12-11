@@ -36,7 +36,7 @@ class ApiService {
     // String? ip = await info.getWifiIP(); // 192.168.1.43
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.1.70:8081';
+    baseUrl = 'http://192.168.1.84:8081';
 
 // server public
 //     baseUrl = 'https://nodejs-sql-server-api.onrender.com';
@@ -1966,7 +1966,7 @@ class ApiService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getThongkeDoanhThuOnline(
+  Future<Map<String, dynamic>> getThongkeDoanhThuOnline(
       String startDate, String endDate, String role) async {
     await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
 
@@ -1983,14 +1983,9 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      // Giải mã response body và trả về List<Map<String, dynamic>>
-      final responseData = jsonDecode(response.body) as List<dynamic>;
-
-      // Chuyển List<dynamic> thành List<Map<String, dynamic>>
-      List<Map<String, dynamic>> resultList = List<Map<String, dynamic>>.from(
-          responseData.map((item) => item as Map<String, dynamic>));
-
-      return resultList;
+      // Giải mã response body và trả về Map<String, dynamic>
+      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+      return responseData;
     } else {
       // Nếu server trả về lỗi
       final errorResponse = jsonDecode(response.body);

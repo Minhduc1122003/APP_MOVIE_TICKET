@@ -5,6 +5,8 @@ import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_InfoCard.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_info_manager_page/personnel_info_manager_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_manager_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_manager_page2.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/calendar_shift_manager_page/calendar_shift_list_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/location_manager_page/location_list_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/shift_page/shift_list_page.dart';
@@ -195,22 +197,49 @@ class _ShiftManagerPageState extends State<ShiftManagerPage> {
                                 textStyle: TextStyle(fontSize: 16),
                                 onPressed: () {},
                               ),
+
+                              // Add more sub-items here as needed
+                            ],
+                            onPressed:
+                                () {}, // This will be called when the item is tapped, even if it's expandable
+                          ),
+                          UtilityButton(
+                            color: mainColor,
+                            title: 'Phân quyền nhân viên',
+                            icon: Icons.manage_accounts,
+                            isExpandable: true,
+                            expandedItems: [
                               UtilityButton(
                                 color: mainColor,
-                                title: 'Thông báo cho khách hàng',
-                                icon: Icons
-                                    .notifications, // Đổi thành icon phù hợp với "Chỉnh sửa nội dung"
+                                title: 'Cấp quyền nhân viên',
+                                icon: Icons.manage_accounts,
                                 textStyle: TextStyle(fontSize: 16),
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    SlideFromRightPageRoute(
+                                      page: PersonnelManagerPage2(
+                                          role: 0), // Role = 0 (Khách hàng)
+                                    ),
+                                  );
+                                },
                               ),
                               UtilityButton(
                                 color: mainColor,
-                                title: 'Thông báo cho khách hàng',
-                                icon: Icons
-                                    .notifications, // Đổi thành icon phù hợp với "Chỉnh sửa nội dung"
+                                title: 'Cấp quyền quản lý',
+                                icon: Icons.manage_accounts,
                                 textStyle: TextStyle(fontSize: 16),
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    SlideFromRightPageRoute(
+                                      page: PersonnelManagerPage2(
+                                          role: 1), // Role = 0 (Khách hàng)
+                                    ),
+                                  );
+                                },
                               ),
+
                               // Add more sub-items here as needed
                             ],
                             onPressed:
@@ -279,12 +308,6 @@ class _ShiftManagerPageState extends State<ShiftManagerPage> {
                             color: mainColor,
                             title: 'Thông tin admin',
                             icon: Icons.info_outline_rounded,
-                            onPressed: () {},
-                          ),
-                          UtilityButton(
-                            color: mainColor,
-                            title: 'Cấp quyền quản lý',
-                            icon: Icons.manage_accounts,
                             onPressed: () {},
                           ),
                         ],

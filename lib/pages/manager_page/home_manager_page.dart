@@ -15,6 +15,7 @@ import 'package:flutter_app_chat/pages/manager_page/combo_ticket_staff_page/comb
 import 'package:flutter_app_chat/pages/manager_page/movie_manager_page/movie_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_manager_tab.dart';
+import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_manager_tab2.dart';
 import 'package:flutter_app_chat/pages/manager_page/scan_code_manager/scan_QRcode.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/shift_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/showtime_manager_page/showtime_manager_page.dart';
@@ -543,33 +544,38 @@ class _HomeTabState extends State<HomeTab> {
                 Icons.history, Colors.blue, () {
               // Thêm sự kiện khi tap vào Cuộc họp
             }),
-            _buildGridItem('Cài đặt', 'Thiết lập ca làm', state.count,
-                Icons.settings, Colors.purple, () {
-              Navigator.push(
-                  context, SlideFromRightPageRoute(page: ShiftManagerPage()));
-            }),
-            _buildGridItem('Nhân Sự', 'Quản lý nhân sự', state.count,
-                Icons.people_alt_outlined, Colors.purple, () {
-              Navigator.push(context,
-                  SlideFromRightPageRoute(page: PersonnelManagerTab()));
-              // Thêm sự kiện khi tap vào Cuộc họp
-            }),
-            _buildGridItem('Phim', 'Quản lý phim', state.count,
-                Icons.local_movies_outlined, Colors.purple, () {
-              Navigator.push(
-                  context, SlideFromRightPageRoute(page: MovieManagerPage()));
-            }),
-            _buildGridItem('Lịch chiếu', 'Quản lý lịch chiếu', state.count,
-                Icons.calendar_month_outlined, Colors.purple, () {
-              Navigator.push(context,
-                  SlideFromRightPageRoute(page: ShowtimeManagerPage()));
-            }),
-            _buildGridItem('Thống kê', 'Thống kê doanh thu', state.count,
-                Icons.bar_chart, Colors.purple, () {
-              Navigator.push(context,
-                  SlideFromRightPageRoute(page: StatisticalManagerPage()));
-              // Thêm sự kiện khi tap vào Cuộc họp
-            }),
+            if (UserManager.instance.user?.role == 2)
+              _buildGridItem('Cài đặt', 'Thiết lập ca làm', state.count,
+                  Icons.settings, Colors.purple, () {
+                Navigator.push(
+                    context, SlideFromRightPageRoute(page: ShiftManagerPage()));
+              }),
+            if (UserManager.instance.user?.role == 2)
+              _buildGridItem('Nhân Sự', 'Quản lý nhân sự', state.count,
+                  Icons.people_alt_outlined, Colors.purple, () {
+                Navigator.push(context,
+                    SlideFromRightPageRoute(page: PersonnelManagerTab()));
+                // Thêm sự kiện khi tap vào Cuộc họp
+              }),
+            if (UserManager.instance.user?.role == 2)
+              _buildGridItem('Phim', 'Quản lý phim', state.count,
+                  Icons.local_movies_outlined, Colors.purple, () {
+                Navigator.push(
+                    context, SlideFromRightPageRoute(page: MovieManagerPage()));
+              }),
+            if (UserManager.instance.user?.role == 2)
+              _buildGridItem('Lịch chiếu', 'Quản lý lịch chiếu', state.count,
+                  Icons.calendar_month_outlined, Colors.purple, () {
+                Navigator.push(context,
+                    SlideFromRightPageRoute(page: ShowtimeManagerPage()));
+              }),
+            if (UserManager.instance.user?.role == 2)
+              _buildGridItem('Thống kê', 'Thống kê doanh thu', state.count,
+                  Icons.bar_chart, Colors.purple, () {
+                Navigator.push(context,
+                    SlideFromRightPageRoute(page: StatisticalManagerPage()));
+                // Thêm sự kiện khi tap vào Cuộc họp
+              }),
           ],
         );
       },

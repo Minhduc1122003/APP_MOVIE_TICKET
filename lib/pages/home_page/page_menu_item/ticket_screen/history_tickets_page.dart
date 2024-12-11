@@ -10,6 +10,7 @@ import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/ticket_screen/infoTicket_page.dart';
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 
@@ -24,6 +25,7 @@ class HistoryTicketsPage extends StatefulWidget {
 class _HistoryTicketsPageState extends State<HistoryTicketsPage> {
   late ApiService _apiService;
   List<BuyTicket> listBuyTicket = [];
+  bool isLoading = false; // Biến trạng thái loading
 
   @override
   void initState() {
@@ -35,17 +37,72 @@ class _HistoryTicketsPageState extends State<HistoryTicketsPage> {
   }
 
   Future<void> _fetchBuyticket() async {
+    setState(() {
+      listBuyTicket = []; // Clear dữ liệu hiện tại
+      isLoading = true;
+    });
     print('đã gọi load data');
+
     try {
       List<BuyTicket> buyticket = await _apiService
           .findAllBuyTicketByUserId(UserManager.instance.user!.userId);
+
+      // Lọc ra các vé "Chưa thanh toán"
+      List<BuyTicket> ticketsToDelete = [];
+
+      for (var ticket in buyticket) {
+        // Convert CreateDate từ chuỗi JSON sang DateTime
+        DateTime createDate = DateTime.parse(ticket.createDate);
+
+        // Kiểm tra xem đã qua 15 phút chưa
+        if (ticket.status == "Chưa thanh toán" &&
+            DateTime.now().difference(createDate).inMinutes > 15) {
+          ticketsToDelete
+              .add(ticket); // Thêm vào danh sách xóa nếu đã qua 15 phút
+        }
+      }
+
+      // Xóa các vé "Chưa thanh toán" đã qua 15 phút
+      for (var ticket in ticketsToDelete) {
+        await _deleteOneBuyTicketById(ticket.buyTicketId); // Xóa hóa đơn
+      }
+
+      // Sau khi xóa xong, gọi lại API để lấy lại toàn bộ dữ liệu mới
+      List<BuyTicket> updatedBuyTickets = await _apiService
+          .findAllBuyTicketByUserId(UserManager.instance.user!.userId);
+
+      // Cập nhật lại danh sách mới
       setState(() {
-        listBuyTicket = buyticket;
+        listBuyTicket = updatedBuyTickets; // Cập nhật danh sách với dữ liệu mới
+        isLoading = false;
       });
+
       // Gọi callback onRefresh nếu có
       widget.onRefresh?.call();
     } catch (e) {
-      print('Error fetching favorite films: $e');
+      print('Error fetching buy tickets: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _deleteOneBuyTicketById(String idTicket) async {
+    try {
+      EasyLoading.show(status: 'Đang xử lý...'); // Hiển thị loading
+      print(idTicket);
+
+      // Gửi yêu cầu xóa
+      final String statusMessage =
+          await _apiService.deleteOneBuyTicketById(idTicket);
+      print("Status message: $statusMessage");
+      EasyLoading.dismiss();
+    } catch (e) {
+      // Xử lý lỗi
+      EasyLoading.dismiss();
+      EasyLoading.showError('Đã xảy ra lỗi: $e',
+          duration: const Duration(seconds: 2));
+      print("Lỗi khi kiểm tra trạng thái giao dịch: $e");
     }
   }
 
@@ -56,8 +113,6 @@ class _HistoryTicketsPageState extends State<HistoryTicketsPage> {
       _fetchBuyticket();
     }
   }
-
-  bool isLoading = false; // Biến trạng thái loading
 
   @override
   Widget build(BuildContext context) {
@@ -267,8 +322,10 @@ class _HistoryTicketsPageState extends State<HistoryTicketsPage> {
                                               context,
                                               SlideFromRightPageRoute(
                                                 page: InfoticketPage(
-                                                    buyTicketID:
-                                                        ticket.buyTicketId),
+                                                  buyTicketID:
+                                                      ticket.buyTicketId,
+                                                  thanhToan: 1,
+                                                ),
                                               ),
                                             );
                                           }

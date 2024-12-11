@@ -70,12 +70,17 @@ class DetailInvoiceState extends State<DetailInvoice>
   void initState() {
     super.initState();
     _apiService = ApiService();
-    _remainingTime = 15 * 60;
+    _remainingTime = 1 * 60;
 
     WidgetsBinding.instance.addObserver(this); // Thêm observer
-    _startTimer();
+
+    print("Creating Momo Payment...");
     _createMomoPayment();
+
+    print("Starting Periodic Check...");
     _startPeriodicCheck();
+    print("Starting Timer...");
+    _startTimer();
   }
 
   String _formatRemainingTime() {
@@ -85,11 +90,15 @@ class DetailInvoiceState extends State<DetailInvoice>
   }
 
   void _startTimer() {
-    _timer?.cancel(); // Hủy timer trước khi khởi tạo mới
+    print("Starting timer. Initial remaining time: $_remainingTime");
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_remainingTime > 0) {
-        setState(() => _remainingTime--);
+        setState(() {
+          _remainingTime--;
+          print("Updated remaining time: $_remainingTime");
+        });
       } else {
+        print("Timer completed. Cancelling and deleting ticket.");
         timer.cancel();
         _deleteOneBuyTicketById();
       }
@@ -110,6 +119,15 @@ class DetailInvoiceState extends State<DetailInvoice>
     } catch (e) {
       print('Lỗi khi mở WebView: $e');
     }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance
+        .removeObserver(this); // Gỡ observer khi widget bị huỷ
+    _timer?.cancel();
+
+    super.dispose();
   }
 
   Future<void> _createMomoPayment() async {
@@ -141,16 +159,37 @@ class DetailInvoiceState extends State<DetailInvoice>
         // Nếu trả về Successfully, gọi API cập nhật trạng thái
 
         EasyLoading.dismiss();
-        EasyLoading.showError('Thanh toán Đã bị hủy!',
-            duration: const Duration(seconds: 5));
 
         setState(() {
           status = 'Đã bị hủy!';
         });
-        Navigator.pushAndRemoveUntil(
-          context,
-          SlideFromLeftPageRoute(page: HomePage()),
-          (Route<dynamic> route) => false, // Xóa tất cả các route trước đó
+
+        // Hiển thị dialog xác nhận
+        showDialog(
+          context: context,
+          barrierDismissible:
+              false, // Ngăn không cho đóng dialog bằng cách nhấn ra ngoài
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Thông báo"),
+              content: const Text(
+                  "Thanh toán đã bị hủy! Bạn sẽ được đưa về trang chủ."),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    _timer?.cancel();
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      SlideFromLeftPageRoute(page: HomePage()),
+                      (Route<dynamic> route) =>
+                          false, // Xóa tất cả các route trước đó
+                    );
+                  },
+                  child: const Text("Xác nhận"),
+                ),
+              ],
+            );
+          },
         );
       } else {
         // Xử lý trường hợp không thành công
@@ -224,7 +263,7 @@ class DetailInvoiceState extends State<DetailInvoice>
 
   Future<void> _checkStatusAuto() async {
     try {
-      if (status == 'Thành công!') {
+      if (status == 'Thành công!' || status == 'Đã bị hủy!') {
         // Nếu trạng thái đã thành công, dừng việc kiểm tra tiếp
         _timer?.cancel(); // Hủy timer để không gọi lại mỗi 5 giây nữa
 
@@ -289,15 +328,6 @@ class DetailInvoiceState extends State<DetailInvoice>
   }
 
   @override
-  void dispose() {
-    WidgetsBinding.instance
-        .removeObserver(this); // Gỡ observer khi widget bị huỷ
-    _timer?.cancel();
-
-    super.dispose();
-  }
-
-  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
@@ -324,6 +354,9 @@ class DetailInvoiceState extends State<DetailInvoice>
             size: 16,
           ),
           onPressed: () {
+            setState(() {
+              status = 'Đã bị hủy!';
+            });
             Navigator.of(context).pop();
           },
         ),

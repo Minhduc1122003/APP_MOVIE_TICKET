@@ -5,6 +5,7 @@ import 'package:flutter_app_chat/pages/login_page/loginBloc/login_bloc.dart';
 import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/bloc/hometab_bloc.dart';
 import 'package:flutter_app_chat/pages/manager_page/statistical_manager_page/statistical_manager_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/statistical_manager_page/ticket_statiscial_manager_page/ticket_statiscial_manager_page.dart';
 import 'package:flutter_app_chat/pages/register_page/createAccount_bloc/createAccount_bloc.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -46,7 +47,7 @@ class _MyAppState extends State<MyApp> {
           debugShowCheckedModeBanner: false,
           builder: EasyLoading.init(),
           home: HomePage(),
-          // home: StatisticalManagerPage(),
+          // home: TicketStatiscialManagerPage(),
         ));
   }
 }
