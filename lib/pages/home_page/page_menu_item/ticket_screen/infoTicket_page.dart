@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/models/BuyTicket_model.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
-import 'package:flutter_app_chat/pages/home_page/home_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/ticket_screen/rate_page/rate_screen.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -43,9 +42,10 @@ class InfoticketPageState extends State<InfoticketPage>
     _apiService = ApiService();
     _futureBuyTickets = _apiService.FindOneBuyTicketById(widget.buyTicketID);
     qrText = '';
-    _remainingTime = 0; // Khởi tạo giá trị mặc định
-    _updateRemainingTime(); // Cập nhật thời gian còn lại
+
     if (widget.thanhToan == 1) {
+      _remainingTime = 0; // Khởi tạo giá trị mặc định
+      _updateRemainingTime(); // Cập nhật thời gian còn lại
       _startTimer();
     }
   }
@@ -573,44 +573,45 @@ class InfoticketPageState extends State<InfoticketPage>
                                   ],
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: AnimatedOpacity(
-                                  duration: Duration(milliseconds: 300),
-                                  opacity: _isScrolled ? 0 : 1,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: mainColor,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    padding: const EdgeInsets.all(2),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const Text(
-                                          'Thời gian còn lại:',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
+                              if (widget.thanhToan == 1)
+                                Padding(
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: AnimatedOpacity(
+                                    duration: Duration(milliseconds: 300),
+                                    opacity: _isScrolled ? 0 : 1,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: mainColor,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      padding: const EdgeInsets.all(2),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          const Text(
+                                            'Thời gian còn lại:',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                            ),
                                           ),
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 4, vertical: 8),
-                                          child: Text(
-                                            _formatRemainingTime(),
-                                            style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 4, vertical: 8),
+                                            child: Text(
+                                              _formatRemainingTime(),
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
                               Divider(
                                 height: 1,
                                 thickness: 0,

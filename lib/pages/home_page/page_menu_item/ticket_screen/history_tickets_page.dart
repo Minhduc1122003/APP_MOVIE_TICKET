@@ -317,17 +317,32 @@ class _HistoryTicketsPageState extends State<HistoryTicketsPage> {
                                             );
                                           } else {
                                             // In ra posterUrl khi nhấn vào Card
-                                            print(ticket.buyTicketId);
-                                            Navigator.push(
-                                              context,
-                                              SlideFromRightPageRoute(
-                                                page: InfoticketPage(
-                                                  buyTicketID:
-                                                      ticket.buyTicketId,
-                                                  thanhToan: 1,
+                                            if (ticket.status ==
+                                                'Chưa thanh toán') {
+                                              print(ticket.buyTicketId);
+                                              Navigator.push(
+                                                context,
+                                                SlideFromRightPageRoute(
+                                                  page: InfoticketPage(
+                                                    buyTicketID:
+                                                        ticket.buyTicketId,
+                                                    thanhToan: 1,
+                                                  ),
                                                 ),
-                                              ),
-                                            );
+                                              );
+                                            } else {
+                                              print(ticket.buyTicketId);
+                                              Navigator.push(
+                                                context,
+                                                SlideFromRightPageRoute(
+                                                  page: InfoticketPage(
+                                                    buyTicketID:
+                                                        ticket.buyTicketId,
+                                                    thanhToan: 0,
+                                                  ),
+                                                ),
+                                              );
+                                            }
                                           }
                                         },
                                         child: Card(
