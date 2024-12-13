@@ -70,7 +70,7 @@ class DetailInvoiceState extends State<DetailInvoice>
   void initState() {
     super.initState();
     _apiService = ApiService();
-    _remainingTime = 1 * 60;
+    _remainingTime = 15 * 60;
 
     WidgetsBinding.instance.addObserver(this); // Thêm observer
 

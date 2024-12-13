@@ -36,7 +36,7 @@ class ApiService {
     // String? ip = await info.getWifiIP(); // 192.168.1.43
 
     // wifi cf24/24
-    baseUrl = 'http://192.168.29.42:8081';
+    baseUrl = 'http://192.168.1.181:8081';
 
 // server public
 //     baseUrl = 'https://nodejs-sql-server-api.onrender.com';
@@ -1264,7 +1264,8 @@ class ApiService {
     try {
       // Gửi yêu cầu GET đến API
       final response = await http.get(
-        Uri.parse('$baseUrl/getFilmFavourire/$userID'),
+        Uri.parse('$baseUrl/'
+            '/$userID'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
