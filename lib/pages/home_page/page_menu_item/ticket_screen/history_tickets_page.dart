@@ -41,7 +41,7 @@ class _HistoryTicketsPageState extends State<HistoryTicketsPage> {
       listBuyTicket = []; // Clear dữ liệu hiện tại
       isLoading = true;
     });
-    print('đã gọi load data');
+    print('Đã gọi load data');
 
     try {
       List<BuyTicket> buyticket = await _apiService
@@ -51,14 +51,36 @@ class _HistoryTicketsPageState extends State<HistoryTicketsPage> {
       List<BuyTicket> ticketsToDelete = [];
 
       for (var ticket in buyticket) {
-        // Convert CreateDate từ chuỗi JSON sang DateTime
-        DateTime createDate = DateTime.parse(ticket.createDate);
+        try {
+          // Lấy thời gian tạo từ server
+          String createTimeStr =
+              ticket.createDate.split("T")[1]; // "HH:mm:ss.SSSZ"
+          List<String> createTimeParts = createTimeStr.split(":");
+          int createHour = int.parse(createTimeParts[0]);
+          int createMinute = int.parse(createTimeParts[1]);
+          String secondPart =
+              createTimeParts[2].split(".")[0]; // Lấy giây trước khi có ".SSSZ"
+          int createSecond = int.parse(secondPart);
 
-        // Kiểm tra xem đã qua 15 phút chưa
-        if (ticket.status == "Chưa thanh toán" &&
-            DateTime.now().difference(createDate).inMinutes > 15) {
-          ticketsToDelete
-              .add(ticket); // Thêm vào danh sách xóa nếu đã qua 15 phút
+          // Tạo DateTime từ thời gian tạo
+          DateTime createDate = DateTime(
+            DateTime.parse(ticket.createDate).year,
+            DateTime.parse(ticket.createDate).month,
+            DateTime.parse(ticket.createDate).day,
+            createHour,
+            createMinute,
+            createSecond,
+          );
+
+          // Kiểm tra xem đã qua 15 phút chưa
+          if (ticket.status == "Chưa thanh toán" &&
+              DateTime.now().difference(createDate).inMinutes > 15) {
+            ticketsToDelete
+                .add(ticket); // Thêm vào danh sách xóa nếu đã qua 15 phút
+          }
+        } catch (e) {
+          print(
+              'Lỗi khi xử lý thời gian cho vé: ${ticket.buyTicketId}, lỗi: $e');
         }
       }
 

@@ -5,7 +5,11 @@ import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/components/my_textfield.dart';
+import 'package:flutter_app_chat/components/spinkit.dart';
+import 'package:flutter_app_chat/models/user_manager.dart';
+import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/pages/home_page/home_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/home_manager_page.dart';
 import 'package:flutter_app_chat/pages/register_page/register_page_2.dart';
 import 'package:flutter_app_chat/pages/register_page/sendCodeBloc/sendcode_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -96,7 +100,6 @@ class _RegisterPageState extends State<RegisterPage> {
       }
     });
 
-    // Loại bỏ tất cả các ký tự không phải chữ cái và số
     result = result.replaceAll(RegExp(r'[^a-zA-Z0-9]'), ' ');
 
     return result.toLowerCase(); // Chuyển tất cả về chữ thường
@@ -189,43 +192,43 @@ class _RegisterPageState extends State<RegisterPage> {
           : null;
       errorMessages['username'] = _usernameController.text.isEmpty
           ? 'Thông tin bạn điền chưa đầy đủ'
-          : null;
+          : errorMessages['username']; // Không ghi đè lỗi đã có sẵn
 
       errorMessages['password'] = _passwordController.text.isEmpty
           ? 'Thông tin bạn điền chưa đầy đủ'
           : null;
     });
-    // Check if the passwords match
+
+    // Kiểm tra mật khẩu nhập lại
     if (_passwordController.text != _checkPassword.text) {
-      errorMessages['password'] =
-          'Mật khẩu nhập lại chưa đúng'; // Set error message
+      errorMessages['password'] = 'Mật khẩu nhập lại chưa đúng';
     } else if (_passwordController.text.isNotEmpty) {
-      errorMessages['password'] =
-          null; // Clear error message if passwords match
+      errorMessages['password'] = null; // Xóa lỗi nếu mật khẩu khớp
     }
 
+    // Trả về false nếu có bất kỳ lỗi nào
     return errorMessages.values.every((error) => error == null);
+  }
+
+  void _checkCode() {
+    final String passwordConfirm = _codeController.text;
+    isCodeNotifier.value = codeIs == _codeController.text;
   }
 
   @override
   void initState() {
     super.initState();
+    _codeController.addListener(_checkCode);
     _checkPasswordFocusNode.addListener(() {
       if (!_checkPasswordFocusNode.hasFocus) {
         _validatePasswordMatch(); // Validate password match when focus is lost
       }
     });
     _lastnameController.addListener(() {
-      if (_firstnameController.text.isNotEmpty &&
-          _lastnameController.text.isNotEmpty) {
-        checkAndSuggestUsername();
-      }
+      checkAndSuggestUsername();
     });
     _firstnameController.addListener(() {
-      if (_firstnameController.text.isNotEmpty &&
-          _lastnameController.text.isNotEmpty) {
-        checkAndSuggestUsername();
-      }
+      checkAndSuggestUsername();
     });
     // Thêm listener cho username textfield
     _usernameController.addListener(() {
@@ -286,6 +289,9 @@ class _RegisterPageState extends State<RegisterPage> {
     _lastnameController.removeListener(checkAndSuggestUsername);
     _debounceTimer?.cancel();
     _usernameDebouncer?.cancel();
+    _firstnameController.dispose();
+    _lastnameController.dispose();
+    _usernameController.dispose();
     super.dispose();
   }
 
@@ -553,48 +559,100 @@ class _RegisterPageState extends State<RegisterPage> {
                                                       .text.isEmpty) {
                                                     EasyLoading.showError(
                                                         "Vui lòng nhập mã xác nhận!");
-                                                  } else {
-                                                    print('codeIs: $codeIs');
-                                                    if (_codeController.text ==
-                                                        codeIs) {
-                                                      try {
-                                                        final String
-                                                            CreateAccount =
-                                                            await apiService
-                                                                .createAccount(
-                                                          _emailController.text,
-                                                          _passwordController
-                                                              .text,
-                                                          _usernameController
-                                                              .text,
-                                                          "${_lastnameController.text} ${_firstnameController.text}",
-                                                          '123456789',
-                                                        );
+                                                    isCodeNotifier.value =
+                                                        false; // Hiển thị x đỏ
+                                                  } else if (_codeController
+                                                          .text ==
+                                                      codeIs) {
+                                                    EasyLoading.showSuccess(
+                                                        "Mã xác nhận chính xác!");
+                                                    isCodeNotifier.value =
+                                                        true; // Hiển thị tích xanh
+                                                    try {
+                                                      final String
+                                                          CreateAccount =
+                                                          await apiService
+                                                              .createAccount(
+                                                        _emailController.text,
+                                                        _passwordController
+                                                            .text,
+                                                        _usernameController
+                                                            .text,
+                                                        "${_lastnameController.text} ${_firstnameController.text}",
+                                                        '123456789',
+                                                      );
 
-                                                        if (CreateAccount ==
-                                                            'Account created successfully') {
-                                                          EasyLoading.showSuccess(
-                                                              "Đăng ký thành công!");
-                                                          Navigator.of(context)
-                                                              .pop(); // Đóng dialog
-                                                          Navigator.push(
-                                                            context,
-                                                            SlideFromRightPageRoute(
-                                                                page:
-                                                                    HomePage()),
-                                                          );
+                                                      if (CreateAccount ==
+                                                          'Account created successfully') {
+                                                        EasyLoading.showSuccess(
+                                                            "Đăng ký thành công!");
+                                                        Navigator.of(context)
+                                                            .pop(); // Đóng dialog
+
+                                                        final User? user =
+                                                            await apiService.login(
+                                                                _usernameController
+                                                                    .text,
+                                                                _passwordController
+                                                                    .text);
+
+                                                        // Kiểm tra user có tồn tại và hợp lệ không
+                                                        if (user != null) {
+                                                          if (UserManager
+                                                                  .instance
+                                                                  .user
+                                                                  ?.role ==
+                                                              0) {
+                                                            ApiService
+                                                                apiService =
+                                                                ApiService();
+                                                            final moviesDangChieu =
+                                                                await apiService
+                                                                    .getMoviesDangChieu();
+                                                            final moviesSapChieu =
+                                                                await apiService
+                                                                    .getMoviesSapChieu();
+                                                            hideLoadingSpinner(
+                                                                context);
+
+                                                            Navigator
+                                                                .pushAndRemoveUntil(
+                                                              context,
+                                                              SlideFromLeftPageRoute(
+                                                                  page:
+                                                                      HomePage(
+                                                                filmDangChieu:
+                                                                    moviesDangChieu,
+                                                                filmSapChieu:
+                                                                    moviesSapChieu,
+                                                              )),
+                                                              (Route<dynamic>
+                                                                      route) =>
+                                                                  false, // Xóa tất cả các route trước đó
+                                                            );
+                                                          } else {
+                                                            Navigator
+                                                                .pushAndRemoveUntil(
+                                                              context,
+                                                              ZoomPageRoute(
+                                                                  page:
+                                                                      HomeTab()),
+                                                              (Route<dynamic>
+                                                                      route) =>
+                                                                  false,
+                                                            );
+                                                          }
                                                         }
-                                                      } catch (e) {
-                                                        EasyLoading.showError(
-                                                            "Đăng ký thất bại: ${e.toString()}");
-                                                      } catch (e) {
-                                                        EasyLoading.showError(
-                                                            "Có lỗi xảy ra: ${e.toString()}");
                                                       }
-                                                    } else {
+                                                    } catch (e) {
                                                       EasyLoading.showError(
-                                                          "Mã xác nhận không đúng!");
+                                                          "Đăng ký thất bại: ${e.toString()}");
                                                     }
+                                                  } else {
+                                                    EasyLoading.showError(
+                                                        "Mã xác nhận không đúng!");
+                                                    isCodeNotifier.value =
+                                                        false; // Hiển thị x đỏ
                                                   }
                                                 },
                                               ),
@@ -608,7 +666,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                     }
                                   } else {
                                     EasyLoading.showError(
-                                        "Vui lòng điền đầy đủ thông tin!");
+                                        "Vui lòng điền đúng thông tin!");
                                   }
                                 },
                               ),

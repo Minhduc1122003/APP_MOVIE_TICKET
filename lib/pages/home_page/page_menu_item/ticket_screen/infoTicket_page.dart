@@ -54,32 +54,45 @@ class InfoticketPageState extends State<InfoticketPage>
     try {
       BuyTicket buyTicket = await _futureBuyTickets;
 
-      // Parse the server timestamp
-      DateTime createDate = DateTime.parse(buyTicket.createDate);
+      // Lấy thời gian tạo từ server
+      String createTimeStr = buyTicket.createDate
+          .split("T")[1]; // Giả sử định dạng là "YYYY-MM-DDTHH:mm:ss.SSSZ"
+      List<String> createTimeParts = createTimeStr.split(":");
+      int createHour = int.parse(createTimeParts[0]);
+      int createMinute = int.parse(createTimeParts[1]);
 
-      // Get current time in UTC
-      DateTime currentTime = DateTime.now().toUtc();
+      // Xử lý phần giây để loại bỏ thập phân hoặc ký tự Z
+      String secondPart =
+          createTimeParts[2].split(".")[0]; // Loại bỏ ".SSSZ" nếu có
+      int createSecond = int.parse(secondPart);
 
-      // Calculate elapsed time
-      Duration elapsedTime = currentTime.difference(createDate);
+      // Lấy thời gian hiện tại
+      DateTime now = DateTime.now();
+      int currentHour = now.hour;
+      int currentMinute = now.minute;
+      int currentSecond = now.second;
 
-      // Assuming the ticket has a standard validity period (e.g., 30 minutes = 1800 seconds)
-      int totalValiditySeconds = 1800;
-      int elapsedSeconds = elapsedTime.inSeconds;
+      // Tính chênh lệch giờ, phút và giây
+      int hourDifference = currentHour - createHour;
+      int minuteDifference = currentMinute - createMinute;
+      int secondDifference = currentSecond - createSecond;
 
-      // Calculate remaining time
-      int remainingTime = totalValiditySeconds - elapsedSeconds;
+      // Chuyển đổi chênh lệch sang giây
+      int totalSecondsDifference =
+          ((hourDifference * 60 + minuteDifference) * 60) + secondDifference;
 
-      // Ensure remaining time is not negative
-      remainingTime = remainingTime < 0 ? 0 : remainingTime;
+      // In ra kết quả
+      print('Thời gian tạo: $createHour:$createMinute:$createSecond');
+      print('Thời gian hiện tại: $currentHour:$currentMinute:$currentSecond');
+      print('Chênh lệch thời gian: $totalSecondsDifference giây');
 
+      // Cập nhật _remainingTime
       setState(() {
-        _remainingTime = remainingTime;
+        _remainingTime = (15 * 60) -
+            totalSecondsDifference; // Cập nhật thời gian chênh lệch tính bằng giây
       });
-
-      print('Thời gian còn lại: $_remainingTime giây');
     } catch (e) {
-      print('Lỗi khi tính thời gian còn lại: $e');
+      print('Lỗi khi tính thời gian chênh lệch: $e');
     }
   }
 

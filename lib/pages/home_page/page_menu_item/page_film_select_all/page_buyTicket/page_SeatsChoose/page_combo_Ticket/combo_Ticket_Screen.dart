@@ -163,8 +163,8 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                                   ],
                                 ),
                                 SizedBox(
-                                  height:
-                                      430, // Set a fixed height for the TabBarView
+                                  height: MediaQuery.of(context).size.height -
+                                      150, // Tính chiều cao động dựa trên kích thước màn hình
                                   child: TabBarView(
                                     children: [
                                       // Combo tab content
@@ -182,8 +182,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                                                   formatPrice(combo.price) +
                                                       ' VND',
                                                   combo.image,
-                                                  itemId: combo
-                                                      .comboId, // Sử dụng comboId thay vì id
+                                                  itemId: combo.comboId,
                                                 );
                                               },
                                             ),

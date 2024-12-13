@@ -15,7 +15,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(LoginWaiting());
 
     // Đợi một thời gian ngắn (có thể là để hiển thị loading spinner)
-    await Future.delayed(const Duration(milliseconds: 600));
 
     try {
       // Lấy thông tin từ event
