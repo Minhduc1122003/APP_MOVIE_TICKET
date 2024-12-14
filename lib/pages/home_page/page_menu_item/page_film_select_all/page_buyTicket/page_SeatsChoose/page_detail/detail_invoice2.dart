@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/models/Movie_modal.dart';
 import 'package:flutter_app_chat/pages/home_page/home_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/home_manager_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -26,6 +27,7 @@ class DetailInvoice2 extends StatefulWidget {
   final String startTime;
   final String endTime;
   final MovieDetails? movieDetails;
+  final int isTienmat;
 
   const DetailInvoice2({
     Key? key,
@@ -44,6 +46,7 @@ class DetailInvoice2 extends StatefulWidget {
     required this.startTime,
     required this.endTime,
     required this.movieDetails,
+    this.isTienmat = 0,
   }) : super(key: key);
 
   @override
@@ -472,12 +475,21 @@ class DetailInvoice2State extends State<DetailInvoice2>
                   ),
                   child: InkWell(
                     onTap: () {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        SlideFromLeftPageRoute(page: HomePage()),
-                        (Route<dynamic> route) =>
-                            false, // Xóa tất cả các route trước đó
-                      );
+                      if (widget.isTienmat == 1) {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          SlideFromLeftPageRoute(page: HomeTab()),
+                          (Route<dynamic> route) =>
+                              false, // Xóa tất cả các route trước đó
+                        );
+                      } else {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          SlideFromLeftPageRoute(page: HomePage()),
+                          (Route<dynamic> route) =>
+                              false, // Xóa tất cả các route trước đó
+                        );
+                      }
                     },
                     child: const Text(
                       'Về trang chủ',

@@ -61,7 +61,6 @@ class _BillTicketScreenState extends State<BillTicketScreen>
   final ScrollController _scrollController = ScrollController();
   bool _isScrolled = false;
   String _selectedPaymentMethod = '';
-  String _selectedPaymentMethodCash = '';
   late final String idTicket;
   String seatsID = '';
   String comboIDList = '';
@@ -91,7 +90,6 @@ class _BillTicketScreenState extends State<BillTicketScreen>
     _remainingTime = 15 * 60;
     _startTimer();
     _scrollController.addListener(_scrollListener);
-    _insertBuyTicket();
   }
 
   void _scrollListener() {
@@ -624,36 +622,33 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                           text: 'Thanh toán',
                           isBold: true,
                           onTap: () {
-                            if (_selectedPaymentMethod == 'Tiền mặt') {
-                              // Chuyển trực tiếp đến DetailInvoice khi chọn tiền mặt
-                              Navigator.push(
-                                context,
-                                SlideFromRightPageRoute(
-                                  page: DetailInvoice(
-                                    movieDetails: _movieDetails,
-                                    quantity: widget.quantity,
-                                    sumPrice: tongTienConLai,
-                                    showTimeID: widget.showTimeID,
-                                    seatCodes: widget.seatCodes,
-                                    idTicket: idTicket,
-                                    tongTienConLai: tongTienConLai,
-                                    quantityCombo: widget.quantityCombo,
-                                    ticketPrice: widget.ticketPrice,
-                                    titleCombo: widget.titleCombo,
-                                    totalComboPrice: widget.totalComboPrice,
-                                    showtimeDate: widget.showtimeDate,
-                                    cinemaRoomID: widget.cinemaRoomID,
-                                    startTime: widget.startTime,
-                                    endTime: widget.endTime,
-                                  ),
-                                ),
-                              );
-                            } else {
-                              // Xử lý bình thường cho các phương thức khác (VNPAY, MOMO)
-                              print(
-                                  "Phương thức khác: $_selectedPaymentMethod");
-                              // Gọi các API hoặc xử lý cần thiết ở đây
+                            _insertBuyTicket();
+                            int tienmat = 0;
+                            if (UserManager.instance.user?.role != 0) {
+                              tienmat = 1;
                             }
+                            Navigator.push(
+                              context,
+                              SlideFromRightPageRoute(
+                                  page: DetailInvoice(
+                                      movieDetails: _movieDetails,
+                                      quantity: selectedCount,
+                                      sumPrice: (_movieDetails!.price! *
+                                          selectedCount),
+                                      showTimeID: widget.showTimeID,
+                                      seatCodes: widget.seatCodes,
+                                      idTicket: idTicket,
+                                      tongTienConLai: tongTienConLai,
+                                      quantityCombo: widget.quantityCombo,
+                                      ticketPrice: widget.ticketPrice,
+                                      titleCombo: widget.titleCombo,
+                                      totalComboPrice: widget.totalComboPrice,
+                                      showtimeDate: widget.showtimeDate,
+                                      cinemaRoomID: widget.cinemaRoomID,
+                                      startTime: widget.startTime,
+                                      endTime: widget.endTime,
+                                      isThanhtoan: tienmat)),
+                            );
                           },
                         ),
                       ),

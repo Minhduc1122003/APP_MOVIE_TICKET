@@ -33,7 +33,7 @@ class DetailInvoice extends StatefulWidget {
   final String startTime;
   final String endTime;
   final MovieDetails? movieDetails;
-
+  final int? isThanhtoan;
   const DetailInvoice({
     Key? key,
     required this.quantity,
@@ -51,6 +51,7 @@ class DetailInvoice extends StatefulWidget {
     required this.startTime,
     required this.endTime,
     required this.movieDetails,
+    this.isThanhtoan = 0,
   }) : super(key: key);
 
   @override
@@ -71,16 +72,15 @@ class DetailInvoiceState extends State<DetailInvoice>
     super.initState();
     _apiService = ApiService();
     _remainingTime = 15 * 60;
-
-    WidgetsBinding.instance.addObserver(this); // Thêm observer
-
-    print("Creating Momo Payment...");
     _createMomoPayment();
 
-    print("Starting Periodic Check...");
-    _startPeriodicCheck();
-    print("Starting Timer...");
-    _startTimer();
+    WidgetsBinding.instance.addObserver(this); // Thêm observer
+    if (widget.isThanhtoan == 0) {
+      print("Starting Periodic Check...");
+      _startPeriodicCheck();
+      print("Starting Timer...");
+      _startTimer();
+    }
   }
 
   String _formatRemainingTime() {
@@ -137,9 +137,45 @@ class DetailInvoiceState extends State<DetailInvoice>
         widget.idTicket,
         'Thanh toán hóa đơn ${UserManager.instance.user?.fullName}',
       );
-
       setState(() => _payUrl = payUrl);
-      await _launchInWebView(Uri.parse(payUrl));
+
+      if (widget.isThanhtoan == 0) {
+        await _launchInWebView(Uri.parse(payUrl));
+      } else {
+        EasyLoading.show();
+
+        String result =
+            await _apiService.updateStatusBuyTicketInfo(widget.idTicket);
+        EasyLoading.dismiss();
+        print('result: $result');
+        EasyLoading.showSuccess('Thanh toán thành công!',
+            duration: const Duration(seconds: 2));
+        setState(() {
+          status = 'Thành công!';
+        });
+
+        Navigator.push(
+          context,
+          SlideFromRightPageRoute(
+              page: DetailInvoice2(
+                  quantity: widget.quantity,
+                  sumPrice: widget.sumPrice,
+                  showTimeID: widget.showTimeID,
+                  seatCodes: widget.seatCodes,
+                  idTicket: widget.idTicket,
+                  tongTienConLai: widget.tongTienConLai,
+                  quantityCombo: widget.quantityCombo,
+                  ticketPrice: widget.ticketPrice,
+                  titleCombo: widget.titleCombo,
+                  totalComboPrice: widget.totalComboPrice,
+                  showtimeDate: widget.showtimeDate,
+                  cinemaRoomID: widget.cinemaRoomID,
+                  startTime: widget.startTime,
+                  endTime: widget.endTime,
+                  movieDetails: widget.movieDetails,
+                  isTienmat: 1)),
+        );
+      }
     } catch (e) {
       print("Lỗi khi gọi API thanh toán MoMo: $e");
     }
@@ -268,10 +304,12 @@ class DetailInvoiceState extends State<DetailInvoice>
         _timer?.cancel(); // Hủy timer để không gọi lại mỗi 5 giây nữa
 
         // Đóng WebView nếu đang mở
-        try {
-          closeInAppWebView();
-        } catch (e) {
-          print("Lỗi khi đóng WebView: $e");
+        if (status == 'Thành công!') {
+          try {
+            closeInAppWebView();
+          } catch (e) {
+            print("Lỗi khi đóng WebView: $e");
+          }
         }
 
         return; // Dừng hàm
