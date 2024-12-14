@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
+import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/fim_info/film_information.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_film_select_all/page_buyTicket/buyTicket_page.dart';
 
 class GridviewCardFilmsapchieu extends StatelessWidget {
@@ -145,7 +146,10 @@ class GridviewCardFilmsapchieu extends StatelessWidget {
                   paddingText: 5,
                   fontsize: 14,
                   onTap: () {
-                    // Hàm xử lý khi bấm nút mua vé
+                    Navigator.push(
+                        context,
+                        SlideFromRightPageRoute(
+                            page: FilmInformation(movieId: movieId)));
                   },
                 ),
               ),

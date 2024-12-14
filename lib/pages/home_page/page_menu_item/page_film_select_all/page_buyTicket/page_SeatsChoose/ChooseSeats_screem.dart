@@ -46,6 +46,7 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
   List<Map<String, dynamic>> selectedChairsInfo =
       []; // List to store selected chair info
   List<Map<String, dynamic>> seatIDList = [];
+
   @override
   void initState() {
     super.initState();

@@ -37,10 +37,10 @@ class ApiService {
 
     // wifi cf24/24
 
-    // baseUrl = 'http://192.168.1.180:8081';
+    baseUrl = 'http://192.168.1.180:8081';
 
 // server public
-    baseUrl = 'https://nodejs-sql-server-api.onrender.com';
+    //baseUrl = 'https://nodejs-sql-server-api.onrender.com';
   }
 
   late Response response;
@@ -1265,8 +1265,7 @@ class ApiService {
     try {
       // Gửi yêu cầu GET đến API
       final response = await http.get(
-        Uri.parse('$baseUrl/'
-            '/$userID'),
+        Uri.parse('$baseUrl/getFilmFavourire/$userID'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },

@@ -67,6 +67,7 @@ class _BillTicketScreenState extends State<BillTicketScreen>
   String countComboID = '';
   String result = '';
   double tongTienConLai = 0.0;
+  final int role = UserManager.instance.user?.role ?? 0;
 
   @override
   void initState() {
@@ -541,7 +542,63 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                                   : mainColor),
                                         ],
                                       ),
-                                    )
+                                    ),
+                                    SizedBox(height: 8),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        elevation: 1,
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        minimumSize: Size(double.infinity, 50),
+                                        backgroundColor: _selectedPaymentMethod ==
+                                                'Tiền mặt'
+                                            ? mainColor
+                                            : Colors
+                                                .white, // Đổi màu nền khi đã chọn
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                              10), // Bo góc 10 cho button
+                                          side: BorderSide(
+                                            color: _selectedPaymentMethod ==
+                                                    'Tiền mặt'
+                                                ? Colors.transparent
+                                                : mainColor, // Đổi màu viền khi chưa chọn
+                                          ),
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _selectedPaymentMethod =
+                                              'Tiền mặt'; // Cập nhật phương thức thanh toán khi nhấn
+                                        });
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.money,
+                                              color: _selectedPaymentMethod ==
+                                                      'Tiền mặt'
+                                                  ? Colors.white
+                                                  : Colors.pink),
+                                          SizedBox(width: 16),
+                                          Text(
+                                            'Tiền mặt',
+                                            style: TextStyle(
+                                              color: _selectedPaymentMethod ==
+                                                      'Tiền mặt'
+                                                  ? Colors.white
+                                                  : mainColor, // Đổi màu text khi đã chọn
+                                            ),
+                                          ),
+                                          Spacer(),
+                                          Icon(Icons.arrow_forward_ios,
+                                              size: 16,
+                                              color: _selectedPaymentMethod ==
+                                                      'Tiền mặt'
+                                                  ? Colors.white
+                                                  : mainColor),
+                                        ],
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
