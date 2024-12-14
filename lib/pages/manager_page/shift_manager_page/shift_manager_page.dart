@@ -6,7 +6,7 @@ import 'package:flutter_app_chat/components/my_InfoCard.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_info_manager_page/personnel_info_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_manager_page.dart';
-import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_manager_page2.dart';
+import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/personnel_management_page/personnel_manager_page2.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/calendar_shift_manager_page/calendar_shift_list_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/location_manager_page/location_list_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/shift_page/shift_list_page.dart';
@@ -234,7 +234,9 @@ class _ShiftManagerPageState extends State<ShiftManagerPage> {
                                     context,
                                     SlideFromRightPageRoute(
                                       page: PersonnelManagerPage2(
-                                          role: 1), // Role = 0 (Khách hàng)
+                                        role:
+                                            -1, // Giá trị đặc biệt để xác định lấy cả role 1 và 2
+                                      ),
                                     ),
                                   );
                                 },

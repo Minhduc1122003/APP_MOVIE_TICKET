@@ -2023,4 +2023,33 @@ class ApiService {
       rethrow; // Ném lại lỗi để xử lý phía trên nếu cần
     }
   }
+
+  Future<void> updateUserRole(int userId, int role) async {
+    await _initBaseUrl(); // Đảm bảo rằng baseUrl đã được khởi tạo
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/updateUserRole'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'UserId': userId,
+          'Role': role,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+      } else {
+        // Log lỗi khi server trả về lỗi
+        print('Lỗi cập nhật trạng thái: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        throw Exception('Cập nhật trạng thái không thành công');
+      }
+    } catch (e) {
+      // Log chi tiết lỗi ngoại lệ
+      print('Lỗi khi gọi API updateUserStatus: $e');
+      rethrow; // Ném lại lỗi để xử lý phía trên nếu cần
+    }
+  }
 }

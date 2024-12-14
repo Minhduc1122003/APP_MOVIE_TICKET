@@ -783,24 +783,22 @@ class UserRating extends StatelessWidget {
                 return Text('Không có bài đánh giá nào!');
               }
 
-              // Dùng ListView.separated để thêm Divider
-              return ListView.separated(
-                shrinkWrap: true,
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) {
+              // Dùng Column để hiển thị tất cả các item
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: List.generate(snapshot.data!.length, (index) {
                   final rating = snapshot.data![index];
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: 8),
-                    child: _buildRatingItem(rating),
+                  return Column(
+                    children: [
+                      _buildRatingItem(rating),
+                      if (index < snapshot.data!.length - 1)
+                        Divider(
+                          color: Colors.grey.shade300,
+                          thickness: 2,
+                        ),
+                    ],
                   );
-                },
-                separatorBuilder: (context, index) {
-                  // Divider giữa các item
-                  return Divider(
-                    color: Colors.grey.shade300,
-                    thickness: 2,
-                  );
-                },
+                }),
               );
             },
           ),

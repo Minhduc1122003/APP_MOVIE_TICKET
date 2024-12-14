@@ -38,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    _emailController.text = 'tan';
+    _emailController.text = 'minhduc11220032';
     _passwordController.text = '123';
     super.initState();
   }

@@ -15,7 +15,7 @@ import 'package:flutter_app_chat/pages/manager_page/combo_ticket_staff_page/comb
 import 'package:flutter_app_chat/pages/manager_page/movie_manager_page/movie_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_manager_tab.dart';
-import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_manager_tab2.dart';
+import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/personnel_management_page/personnel_manager_tab2.dart';
 import 'package:flutter_app_chat/pages/manager_page/scan_code_manager/scan_QRcode.dart';
 import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/shift_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/showtime_manager_page/showtime_manager_page.dart';

@@ -3,6 +3,7 @@ import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_info_manager_page/personnel_info_manager_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/shift_manager_page/personnel_management_page/personnel_info_manager_page2.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 
 class PersonnelManagerPage2 extends StatefulWidget {
@@ -37,6 +38,13 @@ class _PersonnelManagerPage2State extends State<PersonnelManagerPage2>
 
   Future<List<User>> _filterUsersByRole(int role) async {
     final users = await _APIService.getUserListForAdmin();
+
+    // Nếu role là -1, lấy cả role 1 và 2
+    if (role == -1) {
+      return users.where((user) => [1, 2].contains(user.role)).toList();
+    }
+
+    // Lấy danh sách theo role cụ thể
     return users.where((user) => user.role == role).toList();
   }
 
@@ -63,8 +71,8 @@ class _PersonnelManagerPage2State extends State<PersonnelManagerPage2>
             final shouldRefresh = await Navigator.push(
               context,
               SlideFromRightPageRoute(
-                page:
-                    PersonnelInfoManagerPage(user: user, isUpdate: widget.role),
+                page: PersonnelInfoManagerPage2(
+                    user: user, isUpdate: widget.role),
               ),
             );
 
@@ -97,7 +105,9 @@ class _PersonnelManagerPage2State extends State<PersonnelManagerPage2>
               },
             ),
             title: Text(
-              widget.role == 1 ? 'Chọn nhân viên' : 'Chọn người dùng',
+              [1, 2].contains(widget.role)
+                  ? 'Danh sách nhân viên' // Role 1 và 2
+                  : 'Danh sách người dùng', // Role khác
               style: TextStyle(color: Colors.white, fontSize: 20),
             ),
             centerTitle: false,

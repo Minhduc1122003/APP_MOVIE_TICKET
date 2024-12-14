@@ -148,65 +148,60 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
             : Column(
                 children: [
                   Expanded(
-                    child: SingleChildScrollView(
+                    child: DefaultTabController(
+                      length: 2,
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          DefaultTabController(
-                            length: 2,
-                            child: Column(
+                          TabBar(
+                            tabs: [
+                              Tab(text: 'Combo'),
+                              Tab(text: 'Bán lẻ'),
+                            ],
+                          ),
+                          Expanded(
+                            // Sử dụng Expanded để hạn chế chiều cao
+                            child: TabBarView(
                               children: [
-                                TabBar(
-                                  tabs: [
-                                    Tab(text: 'Combo'),
-                                    Tab(text: 'Bán lẻ'),
-                                  ],
+                                SingleChildScrollView(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: comboItems.isEmpty
+                                        ? [
+                                            Center(
+                                                child:
+                                                    CircularProgressIndicator()),
+                                          ]
+                                        : comboItems.map((combo) {
+                                            return _buildComboItem(
+                                              combo.title,
+                                              combo.subtitle,
+                                              formatPrice(combo.price) + ' VND',
+                                              combo.image,
+                                              itemId: combo.comboId,
+                                            );
+                                          }).toList(),
+                                  ),
                                 ),
-                                SizedBox(
-                                  height: MediaQuery.of(context).size.height -
-                                      150, // Tính chiều cao động dựa trên kích thước màn hình
-                                  child: TabBarView(
-                                    children: [
-                                      // Combo tab content
-                                      comboItems.isEmpty
-                                          ? Center(
-                                              child:
-                                                  CircularProgressIndicator())
-                                          : ListView.builder(
-                                              itemCount: comboItems.length,
-                                              itemBuilder: (context, index) {
-                                                final combo = comboItems[index];
-                                                return _buildComboItem(
-                                                  combo.title,
-                                                  combo.subtitle,
-                                                  formatPrice(combo.price) +
-                                                      ' VND',
-                                                  combo.image,
-                                                  itemId: combo.comboId,
-                                                );
-                                              },
-                                            ),
-                                      // Bán lẻ tab content
-                                      nonComboItems.isEmpty
-                                          ? Center(
-                                              child:
-                                                  CircularProgressIndicator())
-                                          : ListView.builder(
-                                              itemCount: nonComboItems.length,
-                                              itemBuilder: (context, index) {
-                                                final item =
-                                                    nonComboItems[index];
-                                                return _buildSingleItem(
-                                                  item.title,
-                                                  item.subtitle,
-                                                  formatPrice(item.price) +
-                                                      ' VND',
-                                                  item.image,
-                                                  itemId: item.comboId,
-                                                );
-                                              },
-                                            ),
-                                    ],
+                                SingleChildScrollView(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: nonComboItems.isEmpty
+                                        ? [
+                                            Center(
+                                                child:
+                                                    CircularProgressIndicator()),
+                                          ]
+                                        : nonComboItems.map((item) {
+                                            return _buildSingleItem(
+                                              item.title,
+                                              item.subtitle,
+                                              formatPrice(item.price) + ' VND',
+                                              item.image,
+                                              itemId: item.comboId,
+                                            );
+                                          }).toList(),
                                   ),
                                 ),
                               ],
@@ -216,6 +211,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                       ),
                     ),
                   ),
+
                   // Bottom elements
                   const Divider(
                     height: 0,
@@ -336,7 +332,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                     ),
                   ),
 
-// Row 2: Tiền combo
+                  // Row 2: Tiền combo
                   Padding(
                     padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
                     child: Row(
@@ -463,7 +459,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
                     isBold: true,
                     onTap: () {
                       infoCombo.clear();
-// In ra danh sách combo đã chọn
+                      // In ra danh sách combo đã chọn
                       print('Danh sách combo đã chọn:');
                       itemCounts.forEach((comboId, quantity) {
                         // Tìm item trong danh sách comboItems và nonComboItems
@@ -521,7 +517,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
               isBold: true,
               onTap: () {
                 infoCombo.clear();
-// In ra danh sách combo đã chọn
+                // In ra danh sách combo đã chọn
                 print('Danh sách combo đã chọn:');
                 itemCounts.forEach((comboId, quantity) {
                   // Tìm item trong danh sách comboItems và nonComboItems
@@ -577,7 +573,7 @@ class _ComboTicketScreenState extends State<ComboTicketScreen>
     );
   }
 
-// Method để hiển thị modal bottom sheet chứa các items trong giỏ hàng
+  // Method để hiển thị modal bottom sheet chứa các items trong giỏ hàng
   void _showCartItems() {
     showModalBottomSheet(
       context: context,
