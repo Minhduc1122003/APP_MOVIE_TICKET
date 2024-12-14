@@ -61,13 +61,13 @@ class _BillTicketScreenState extends State<BillTicketScreen>
   final ScrollController _scrollController = ScrollController();
   bool _isScrolled = false;
   String _selectedPaymentMethod = '';
+  String _selectedPaymentMethodCash = '';
   late final String idTicket;
   String seatsID = '';
   String comboIDList = '';
   String countComboID = '';
   String result = '';
   double tongTienConLai = 0.0;
-  final int role = UserManager.instance.user?.role ?? 0;
 
   @override
   void initState() {
@@ -458,6 +458,7 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                           _selectedPaymentMethod =
                                               'VNPAY'; // Cập nhật phương thức thanh toán khi nhấn
                                         });
+                                        print('VNPAY button clicked');
                                       },
                                       child: Row(
                                         children: [
@@ -515,6 +516,7 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                           _selectedPaymentMethod =
                                               'MOMO'; // Cập nhật phương thức thanh toán khi nhấn
                                         });
+                                        print('MOMO button clicked');
                                       },
                                       child: Row(
                                         children: [
@@ -544,61 +546,64 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                       ),
                                     ),
                                     SizedBox(height: 8),
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        elevation: 1,
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 16),
-                                        minimumSize: Size(double.infinity, 50),
-                                        backgroundColor: _selectedPaymentMethod ==
-                                                'Tiền mặt'
-                                            ? mainColor
-                                            : Colors
-                                                .white, // Đổi màu nền khi đã chọn
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                              10), // Bo góc 10 cho button
-                                          side: BorderSide(
-                                            color: _selectedPaymentMethod ==
-                                                    'Tiền mặt'
-                                                ? Colors.transparent
-                                                : mainColor, // Đổi màu viền khi chưa chọn
-                                          ),
-                                        ),
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _selectedPaymentMethod =
-                                              'Tiền mặt'; // Cập nhật phương thức thanh toán khi nhấn
-                                        });
-                                      },
-                                      child: Row(
-                                        children: [
-                                          Icon(Icons.money,
+                                    if (UserManager.instance.user?.role != 0)
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          elevation: 1,
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 16),
+                                          minimumSize:
+                                              Size(double.infinity, 50),
+                                          backgroundColor: _selectedPaymentMethod ==
+                                                  'Tiền mặt'
+                                              ? mainColor
+                                              : Colors
+                                                  .white, // Đổi màu nền khi đã chọn
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                                10), // Bo góc 10 cho button
+                                            side: BorderSide(
                                               color: _selectedPaymentMethod ==
                                                       'Tiền mặt'
-                                                  ? Colors.white
-                                                  : Colors.pink),
-                                          SizedBox(width: 16),
-                                          Text(
-                                            'Tiền mặt',
-                                            style: TextStyle(
-                                              color: _selectedPaymentMethod ==
-                                                      'Tiền mặt'
-                                                  ? Colors.white
-                                                  : mainColor, // Đổi màu text khi đã chọn
+                                                  ? Colors.transparent
+                                                  : mainColor, // Đổi màu viền khi chưa chọn
                                             ),
                                           ),
-                                          Spacer(),
-                                          Icon(Icons.arrow_forward_ios,
-                                              size: 16,
-                                              color: _selectedPaymentMethod ==
-                                                      'Tiền mặt'
-                                                  ? Colors.white
-                                                  : mainColor),
-                                        ],
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _selectedPaymentMethod =
+                                                'Tiền mặt'; // Cập nhật phương thức thanh toán khi nhấn
+                                          });
+                                          print('Cash button clicked');
+                                        },
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.money,
+                                                color: _selectedPaymentMethod ==
+                                                        'Tiền mặt'
+                                                    ? Colors.white
+                                                    : Colors.pink),
+                                            SizedBox(width: 16),
+                                            Text(
+                                              'Tiền mặt',
+                                              style: TextStyle(
+                                                color: _selectedPaymentMethod ==
+                                                        'Tiền mặt'
+                                                    ? Colors.white
+                                                    : mainColor, // Đổi màu text khi đã chọn
+                                              ),
+                                            ),
+                                            Spacer(),
+                                            Icon(Icons.arrow_forward_ios,
+                                                size: 16,
+                                                color: _selectedPaymentMethod ==
+                                                        'Tiền mặt'
+                                                    ? Colors.white
+                                                    : mainColor),
+                                          ],
+                                        ),
                                       ),
-                                    ),
                                   ],
                                 ),
                               ),
@@ -619,28 +624,36 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                           text: 'Thanh toán',
                           isBold: true,
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              SlideFromRightPageRoute(
+                            if (_selectedPaymentMethod == 'Tiền mặt') {
+                              // Chuyển trực tiếp đến DetailInvoice khi chọn tiền mặt
+                              Navigator.push(
+                                context,
+                                SlideFromRightPageRoute(
                                   page: DetailInvoice(
-                                movieDetails: _movieDetails,
-                                quantity: selectedCount,
-                                sumPrice:
-                                    (_movieDetails!.price! * selectedCount),
-                                showTimeID: widget.showTimeID,
-                                seatCodes: widget.seatCodes,
-                                idTicket: idTicket,
-                                tongTienConLai: tongTienConLai,
-                                quantityCombo: widget.quantityCombo,
-                                ticketPrice: widget.ticketPrice,
-                                titleCombo: widget.titleCombo,
-                                totalComboPrice: widget.totalComboPrice,
-                                showtimeDate: widget.showtimeDate,
-                                cinemaRoomID: widget.cinemaRoomID,
-                                startTime: widget.startTime,
-                                endTime: widget.endTime,
-                              )),
-                            );
+                                    movieDetails: _movieDetails,
+                                    quantity: widget.quantity,
+                                    sumPrice: tongTienConLai,
+                                    showTimeID: widget.showTimeID,
+                                    seatCodes: widget.seatCodes,
+                                    idTicket: idTicket,
+                                    tongTienConLai: tongTienConLai,
+                                    quantityCombo: widget.quantityCombo,
+                                    ticketPrice: widget.ticketPrice,
+                                    titleCombo: widget.titleCombo,
+                                    totalComboPrice: widget.totalComboPrice,
+                                    showtimeDate: widget.showtimeDate,
+                                    cinemaRoomID: widget.cinemaRoomID,
+                                    startTime: widget.startTime,
+                                    endTime: widget.endTime,
+                                  ),
+                                ),
+                              );
+                            } else {
+                              // Xử lý bình thường cho các phương thức khác (VNPAY, MOMO)
+                              print(
+                                  "Phương thức khác: $_selectedPaymentMethod");
+                              // Gọi các API hoặc xử lý cần thiết ở đây
+                            }
                           },
                         ),
                       ),

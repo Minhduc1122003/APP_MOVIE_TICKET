@@ -5,7 +5,7 @@ class User {
   final String fullName;
   final int phoneNumber; // Đảm bảo phoneNumber là int
   final String? photo; // Đổi thành String? để cho phép giá trị null
-  final int role;
+  late final int role;
   final DateTime createDate;
   final String status;
   final bool isDelete;

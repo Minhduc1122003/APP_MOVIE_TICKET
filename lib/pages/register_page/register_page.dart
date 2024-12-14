@@ -588,61 +588,6 @@ class _RegisterPageState extends State<RegisterPage> {
                                                             "Đăng ký thành công!");
                                                         Navigator.of(context)
                                                             .pop(); // Đóng dialog
-
-                                                        final User? user =
-                                                            await apiService.login(
-                                                                _usernameController
-                                                                    .text,
-                                                                _passwordController
-                                                                    .text);
-
-                                                        // Kiểm tra user có tồn tại và hợp lệ không
-                                                        if (user != null) {
-                                                          if (UserManager
-                                                                  .instance
-                                                                  .user
-                                                                  ?.role ==
-                                                              0) {
-                                                            ApiService
-                                                                apiService =
-                                                                ApiService();
-                                                            final moviesDangChieu =
-                                                                await apiService
-                                                                    .getMoviesDangChieu();
-                                                            final moviesSapChieu =
-                                                                await apiService
-                                                                    .getMoviesSapChieu();
-                                                            hideLoadingSpinner(
-                                                                context);
-
-                                                            Navigator
-                                                                .pushAndRemoveUntil(
-                                                              context,
-                                                              SlideFromLeftPageRoute(
-                                                                  page:
-                                                                      HomePage(
-                                                                filmDangChieu:
-                                                                    moviesDangChieu,
-                                                                filmSapChieu:
-                                                                    moviesSapChieu,
-                                                              )),
-                                                              (Route<dynamic>
-                                                                      route) =>
-                                                                  false, // Xóa tất cả các route trước đó
-                                                            );
-                                                          } else {
-                                                            Navigator
-                                                                .pushAndRemoveUntil(
-                                                              context,
-                                                              ZoomPageRoute(
-                                                                  page:
-                                                                      HomeTab()),
-                                                              (Route<dynamic>
-                                                                      route) =>
-                                                                  false,
-                                                            );
-                                                          }
-                                                        }
                                                       }
                                                     } catch (e) {
                                                       EasyLoading.showError(
