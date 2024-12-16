@@ -5,7 +5,9 @@ import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/components/my_textfield.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
+import 'package:flutter_app_chat/pages/home_page/home_page.dart';
 import 'package:flutter_app_chat/pages/home_page/page_menu_item/page_profile/page_user/forgot_user/forgot_pass_user.dart';
+import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
@@ -114,7 +116,34 @@ class _InfoUser extends State<InfoUser> {
       );
 
       // Hiển thị thông báo thành công
-      EasyLoading.showSuccess(response);
+      EasyLoading.showSuccess("Thay đổi thông tin thành công");
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Thông báo'),
+            content: const Text('Bạn cần đăng nhập lại để sử dụng dịch vụ!'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () async {
+                  UserManager.instance.clearUser();
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    SlideFromLeftPageRoute(page: LoginPage()),
+                    (Route<dynamic> route) =>
+                        false, // Xóa tất cả các route trước đó
+                  );
+                },
+                child: const Text(
+                  'Đăng xuất',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          );
+        },
+      );
     } catch (e) {
       EasyLoading.showError('Lỗi: $e'); // Show error message
     } finally {

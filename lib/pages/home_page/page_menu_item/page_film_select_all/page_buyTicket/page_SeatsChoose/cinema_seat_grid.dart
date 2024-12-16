@@ -80,6 +80,25 @@ class _CinemaSeatGridState extends State<CinemaSeatGrid> {
             return GestureDetector(
               onTap: () {
                 setState(() {
+                  if (chair.defectiveChair) {
+                    // Ghế bị hư
+                    if (_toastTimer == null || !_toastTimer!.isActive) {
+                      Fluttertoast.showToast(
+                        msg: "Ghế này đang được bảo trì!",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.CENTER,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.black.withOpacity(0.8),
+                        textColor: Colors.white,
+                        fontSize: 16.0,
+                      );
+                      _toastTimer = Timer(Duration(seconds: 2), () {
+                        _toastTimer = null;
+                      });
+                    }
+                    return; // Dừng xử lý nếu ghế bị hư
+                  }
+
                   if (chair.reservationStatus) {
                     // Ghế đã được đặt trước
                     if (_toastTimer == null || !_toastTimer!.isActive) {

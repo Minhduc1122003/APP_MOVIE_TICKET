@@ -199,7 +199,7 @@ class _LoginPageState extends State<LoginPage> {
                             children: [
                               const SizedBox(height: 20),
                               MyTextfield(
-                                placeHolder: "Email",
+                                placeHolder: "Tên người dùng",
                                 controller: _emailController,
                                 icon: Icons
                                     .email_outlined, // Hiển thị biểu tượng người ở bên trái

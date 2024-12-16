@@ -222,6 +222,8 @@ class _ChooseseatsPageState extends State<ChooseseatsPage>
                                         isEmpty: true),
                                     _buildLegendItem(mainColor, 'Ghế bạn chọn'),
                                     _buildLegendItem(Colors.red, 'Đã đặt'),
+                                    _buildLegendItem(
+                                        Colors.black, 'Ghế bảo trì'),
                                   ],
                                 ),
                                 const SizedBox(height: 40),

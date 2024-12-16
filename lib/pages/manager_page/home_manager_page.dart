@@ -12,6 +12,7 @@ import 'package:flutter_app_chat/pages/manager_page/bloc/hometab_bloc.dart';
 import 'package:flutter_app_chat/pages/manager_page/book_ticket_staff_page/book_ticket_staff_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/checkin_checkout_manager/check_in_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/combo_ticket_staff_page/combo_ticket_staff_page.dart';
+import 'package:flutter_app_chat/pages/manager_page/history_manager_page/history_tickets_page2.dart';
 import 'package:flutter_app_chat/pages/manager_page/movie_manager_page/movie_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_manager_page.dart';
 import 'package:flutter_app_chat/pages/manager_page/personnel_manager_page/personnel_manager_tab.dart';
@@ -528,12 +529,12 @@ class _HomeTabState extends State<HomeTab> {
               Navigator.push(context,
                   SlideFromRightPageRoute(page: BookTicketStaffPage()));
             }),
-            _buildGridItem('Đặt combo', 'Thêm bắp/nước', state.tuyenDung,
-                Icons.fastfood, Colors.green, () {
-              Navigator.push(context,
-                  SlideFromRightPageRoute(page: ComboTicketStaffPage()));
-              // Thêm sự kiện khi tap vào Tuyển dụng
-            }),
+            // _buildGridItem('Đặt combo', 'Thêm bắp/nước', state.tuyenDung,
+            //     Icons.fastfood, Colors.green, () {
+            //   Navigator.push(context,
+            //       SlideFromRightPageRoute(page: ComboTicketStaffPage()));
+            //   // Thêm sự kiện khi tap vào Tuyển dụng
+            // }),
             _buildGridItem('Quét mã', 'QR vào cổng', state.donTu,
                 Icons.qr_code_scanner, Colors.orange, () {
               Navigator.push(
@@ -542,6 +543,9 @@ class _HomeTabState extends State<HomeTab> {
             }),
             _buildGridItem('Lịch sử', 'Lịch sử đặt vé/combo', state.count,
                 Icons.history, Colors.blue, () {
+              Navigator.push(context,
+                  SlideFromRightPageRoute(page: HistoryTicketsPage2()));
+
               // Thêm sự kiện khi tap vào Cuộc họp
             }),
             if (UserManager.instance.user?.role == 2)

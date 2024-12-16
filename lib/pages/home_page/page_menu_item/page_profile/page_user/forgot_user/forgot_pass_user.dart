@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
+import 'package:flutter_app_chat/components/animation_page.dart';
 import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/components/my_textfield.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
+import 'package:flutter_app_chat/pages/login_page/login_page.dart';
 import 'package:flutter_app_chat/themes/colorsTheme.dart';
 
 class ForgotPassUser extends StatefulWidget {
@@ -58,18 +60,27 @@ class _ForgotPassUserState extends State<ForgotPassUser> {
 
       // Hiển thị thông báo thành công
       showDialog(
+        barrierDismissible: false,
         context: context,
-        builder: (context) {
+        builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Thành công'),
-            content: Text(message),
-            actions: [
+            title: const Text('Thông báo'),
+            content: const Text('Bạn cần đăng nhập lại để sử dụng dịch vụ!'),
+            actions: <Widget>[
               TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Đóng dialog
-                  Navigator.of(context).pop(); // Quay lại trang trước
+                onPressed: () async {
+                  UserManager.instance.clearUser();
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    SlideFromLeftPageRoute(page: LoginPage()),
+                    (Route<dynamic> route) =>
+                        false, // Xóa tất cả các route trước đó
+                  );
                 },
-                child: Text('Đóng'),
+                child: const Text(
+                  'Đăng xuất',
+                  style: TextStyle(color: Colors.red),
+                ),
               ),
             ],
           );

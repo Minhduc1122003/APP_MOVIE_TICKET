@@ -588,6 +588,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                                             "Đăng ký thành công!");
                                                         Navigator.of(context)
                                                             .pop(); // Đóng dialog
+                                                        Navigator.of(context)
+                                                            .pop(); // Đóng dialog
                                                       }
                                                     } catch (e) {
                                                       EasyLoading.showError(

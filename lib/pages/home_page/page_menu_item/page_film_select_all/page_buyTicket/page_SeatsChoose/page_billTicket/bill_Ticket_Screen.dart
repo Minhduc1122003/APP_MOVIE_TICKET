@@ -622,33 +622,89 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                           text: 'Thanh toán',
                           isBold: true,
                           onTap: () {
-                            _insertBuyTicket();
-                            int tienmat = 0;
-                            if (UserManager.instance.user?.role != 0) {
-                              tienmat = 1;
+                            print(_selectedPaymentMethod);
+                            if (_selectedPaymentMethod == 'VNPAY') {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('Thông báo'),
+                                    content: const Text(
+                                        'Thanh toán VNPAY hiện không khả dụng!'),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text(
+                                          'Đồng ý',
+                                          style: TextStyle(
+                                            color: mainColor,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                              return; // Dừng thực thi hàm
                             }
-                            Navigator.push(
-                              context,
-                              SlideFromRightPageRoute(
-                                  page: DetailInvoice(
-                                      movieDetails: _movieDetails,
-                                      quantity: selectedCount,
-                                      sumPrice: (_movieDetails!.price! *
-                                          selectedCount),
-                                      showTimeID: widget.showTimeID,
-                                      seatCodes: widget.seatCodes,
-                                      idTicket: idTicket,
-                                      tongTienConLai: tongTienConLai,
-                                      quantityCombo: widget.quantityCombo,
-                                      ticketPrice: widget.ticketPrice,
-                                      titleCombo: widget.titleCombo,
-                                      totalComboPrice: widget.totalComboPrice,
-                                      showtimeDate: widget.showtimeDate,
-                                      cinemaRoomID: widget.cinemaRoomID,
-                                      startTime: widget.startTime,
-                                      endTime: widget.endTime,
-                                      isThanhtoan: tienmat)),
-                            );
+                            if (_selectedPaymentMethod == 'MOMO') {
+                              _insertBuyTicket();
+                              Navigator.push(
+                                context,
+                                SlideFromRightPageRoute(
+                                    page: DetailInvoice(
+                                  movieDetails: _movieDetails,
+                                  quantity: selectedCount,
+                                  sumPrice:
+                                      (_movieDetails!.price! * selectedCount),
+                                  showTimeID: widget.showTimeID,
+                                  seatCodes: widget.seatCodes,
+                                  idTicket: idTicket,
+                                  tongTienConLai: tongTienConLai,
+                                  quantityCombo: widget.quantityCombo,
+                                  ticketPrice: widget.ticketPrice,
+                                  titleCombo: widget.titleCombo,
+                                  totalComboPrice: widget.totalComboPrice,
+                                  showtimeDate: widget.showtimeDate,
+                                  cinemaRoomID: widget.cinemaRoomID,
+                                  startTime: widget.startTime,
+                                  endTime: widget.endTime,
+                                )),
+                              );
+                            }
+                            if (_selectedPaymentMethod == 'Tiền mặt') {
+                              _insertBuyTicket();
+
+                              int tienmat = 0;
+                              if (UserManager.instance.user?.role != 0) {
+                                tienmat = 1;
+                              }
+                              Navigator.push(
+                                context,
+                                SlideFromRightPageRoute(
+                                    page: DetailInvoice(
+                                        movieDetails: _movieDetails,
+                                        quantity: selectedCount,
+                                        sumPrice: (_movieDetails!.price! *
+                                            selectedCount),
+                                        showTimeID: widget.showTimeID,
+                                        seatCodes: widget.seatCodes,
+                                        idTicket: idTicket,
+                                        tongTienConLai: tongTienConLai,
+                                        quantityCombo: widget.quantityCombo,
+                                        ticketPrice: widget.ticketPrice,
+                                        titleCombo: widget.titleCombo,
+                                        totalComboPrice: widget.totalComboPrice,
+                                        showtimeDate: widget.showtimeDate,
+                                        cinemaRoomID: widget.cinemaRoomID,
+                                        startTime: widget.startTime,
+                                        endTime: widget.endTime,
+                                        isThanhtoan: tienmat)),
+                              );
+                            }
                           },
                         ),
                       ),
