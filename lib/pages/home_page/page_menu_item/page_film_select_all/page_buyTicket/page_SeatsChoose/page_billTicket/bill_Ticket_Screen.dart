@@ -705,6 +705,33 @@ class _BillTicketScreenState extends State<BillTicketScreen>
                                         isThanhtoan: tienmat)),
                               );
                             }
+                            if (_selectedPaymentMethod == '') {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('Thông báo'),
+                                    content: const Text(
+                                        'Chưa chọn hình thức thanh toán!'),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text(
+                                          'Đồng ý',
+                                          style: TextStyle(
+                                            color: mainColor,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                              return; // Dừng thực thi hàm
+                            }
                           },
                         ),
                       ),
