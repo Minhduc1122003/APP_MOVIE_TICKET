@@ -59,8 +59,10 @@ class GridviewCardFilmsapchieu extends StatelessWidget {
                 flex: 5,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
-                  child: Image.asset(
-                    'assets/images/$imageUrl',
+                  child: Image.network(
+                    imageUrl,
+                    width: 150,
+                    height: 220,
                     fit: BoxFit.cover,
                   ),
                 ),

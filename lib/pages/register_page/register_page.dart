@@ -579,7 +579,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                                         _usernameController
                                                             .text,
                                                         "${_lastnameController.text} ${_firstnameController.text}",
-                                                        '123456789',
+                                                        '',
                                                       );
 
                                                       if (CreateAccount ==

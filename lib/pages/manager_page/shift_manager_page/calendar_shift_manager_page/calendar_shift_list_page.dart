@@ -42,7 +42,9 @@ class _CalendarShiftListPageState extends State<CalendarShiftListPage> {
   void initState() {
     super.initState();
     _APIService = ApiService();
-    _alluser = _APIService.getUserListForAdmin();
+    _alluser = _APIService.getUserListForAdmin().then(
+      (users) => users.where((user) => user.role == 1).toList(),
+    );
     _allShift = _APIService.getAllListShift();
     _selectedDate = DateTime.now();
     _updateDateController();
@@ -645,9 +647,18 @@ class _CalendarShiftListPageState extends State<CalendarShiftListPage> {
                     return ListTile(
                       title: Text(user.fullName),
                       subtitle: Text(user.email),
-                      leading: user.photo != null
-                          ? Image.network(user.photo!)
-                          : Icon(Icons.person),
+                      leading: CircleAvatar(
+                        radius: 30,
+                        backgroundImage: user.photo != null
+                            ? NetworkImage(user.photo!)
+                            : null,
+                        backgroundColor:
+                            user.photo == null ? Colors.grey[300] : null,
+                        child: user.photo == null
+                            ? Icon(Icons.person,
+                                size: 40, color: Colors.grey[400])
+                            : null,
+                      ),
                       trailing: Text(user.status),
                       onTap: () {
                         _showShiftBottomSheet(context, mainColor,

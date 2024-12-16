@@ -117,23 +117,33 @@ class _MyListviewCardItemState extends State<MyListviewCardItem> {
   }
 
   Widget _buildFilmImage(String imageUrl) {
+    // Loại bỏ "assets/images/" nếu tồn tại
+    String filteredUrl = imageUrl.replaceFirst("assets/images/", "");
+
     return Container(
       constraints: const BoxConstraints(maxWidth: 150, maxHeight: 220),
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: CachedNetworkImage(
-          imageUrl: imageUrl,
-          width: 150, // Chiều rộng của ảnh
-          height: 220, // Chiều cao của ảnh
-          fit: BoxFit.cover, // Cách co giãn ảnh để vừa vặn với kích thước
-          placeholder: (context, url) =>
-              const CircularProgressIndicator(), // Hiển thị vòng tròn khi đang tải
-          errorWidget: (context, url, error) => const Icon(
-              Icons.error), // Hiển thị icon lỗi nếu tải ảnh không thành công
-          fadeInDuration:
-              const Duration(seconds: 1), // Thời gian hiệu ứng fade-in
+        child: Image.network(
+          filteredUrl,
+          width: 150,
+          height: 220,
+          fit: BoxFit.cover,
         ),
+
+        // CachedNetworkImage(
+        //   imageUrl: imageUrl,
+        //   width: 150, // Chiều rộng của ảnh
+        //   height: 220, // Chiều cao của ảnh
+        //   fit: BoxFit.cover, // Cách co giãn ảnh để vừa vặn với kích thước
+        //   placeholder: (context, url) =>
+        //       const CircularProgressIndicator(), // Hiển thị vòng tròn khi đang tải
+        //   errorWidget: (context, url, error) => const Icon(
+        //       Icons.error), // Hiển thị icon lỗi nếu tải ảnh không thành công
+        //   fadeInDuration:
+        //       const Duration(seconds: 1), // Thời gian hiệu ứng fade-in
+        // ),
       ),
     );
   }

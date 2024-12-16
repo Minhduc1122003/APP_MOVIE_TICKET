@@ -63,9 +63,15 @@ class _PersonnelManagerPage2State extends State<PersonnelManagerPage2>
         return ListTile(
           title: Text(user.fullName),
           subtitle: Text(user.email),
-          leading: user.photo != null
-              ? Image.network(user.photo!)
-              : Icon(Icons.person),
+          leading: CircleAvatar(
+            radius: 30,
+            backgroundImage:
+                user.photo != null ? NetworkImage(user.photo!) : null,
+            backgroundColor: user.photo == null ? Colors.grey[300] : null,
+            child: user.photo == null
+                ? Icon(Icons.person, size: 40, color: Colors.grey[400])
+                : null,
+          ),
           trailing: Text(user.status),
           onTap: () async {
             final shouldRefresh = await Navigator.push(

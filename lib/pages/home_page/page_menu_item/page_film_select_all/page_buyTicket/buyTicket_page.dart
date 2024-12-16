@@ -116,7 +116,7 @@ class _BuyTicketPageState extends State<BuyTicketPage> {
   Future<void> _loadShowtimes({DateTime? selectedDate}) async {
     // Nếu không có ngày được chọn, sử dụng ngày hiện tại
     DateTime dateGet = selectedDate ?? DateTime.now();
-    TimeOfDay timeGet = TimeOfDay(hour: 08, minute: 0);
+    TimeOfDay timeGet = TimeOfDay(hour: dateGet.hour, minute: dateGet.minute);
 
     try {
       _showtimes =
