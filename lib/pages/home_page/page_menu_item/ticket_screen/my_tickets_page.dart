@@ -26,18 +26,20 @@ class MyTicketsPage extends StatefulWidget {
 
 class _MyTicketsPageState extends State<MyTicketsPage> {
   late ApiService _apiService;
-  late Future<List<BuyTicket>> _futureBuyTickets;
+  late Future<List<BuyTicket>> _futureBuyTickets1;
+  late Future<List<BuyTicket>> _futureBuyTickets2;
 
   @override
   void initState() {
     super.initState();
     _apiService = ApiService();
     if (UserManager.instance.user != null) {
-      _futureBuyTickets = _fetchBuyticket();
+      _futureBuyTickets1 = _fetchBuyticket1();
+      _futureBuyTickets2 = _fetchBuyticket2();
     }
   }
 
-  Future<List<BuyTicket>> _fetchBuyticket() async {
+  Future<List<BuyTicket>> _fetchBuyticket1() async {
     print('đã gọi load data');
     try {
       // Lấy tất cả danh sách BuyTicket từ API
@@ -60,10 +62,34 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
     }
   }
 
+  Future<List<BuyTicket>> _fetchBuyticket2() async {
+    print('đã gọi load data');
+    try {
+      // Lấy tất cả danh sách BuyTicket từ API
+      List<BuyTicket> buyticket = await _apiService
+          .findAllBuyTicketByUserId(UserManager.instance.user!.userId);
+
+      // Lọc ra các mục có isCheckIn = false và status = 'Đã thanh toán'
+      List<BuyTicket> filteredBuyTickets = buyticket.where((ticket) {
+        return ticket.isCheckIn == true &&
+            (ticket.status == 'Đã thanh toán' ||
+                ticket.status == 'Ðã thanh toán');
+      }).toList();
+
+      widget.onRefresh?.call();
+
+      return filteredBuyTickets; // Trả về danh sách đã lọc
+    } catch (e) {
+      print('Error fetching buy tickets: $e');
+      return [];
+    }
+  }
+
   void refreshBuyticket() {
     if (UserManager.instance.user != null) {
       setState(() {
-        _futureBuyTickets = _fetchBuyticket();
+        _futureBuyTickets1 = _fetchBuyticket1();
+        _futureBuyTickets2 = _fetchBuyticket2();
       });
     }
   }
@@ -85,6 +111,7 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
         backgroundColor: Colors.white,
         body: Stack(
           children: [
+            // Nền mờ
             Positioned.fill(
               child: ColorFiltered(
                 colorFilter: ColorFilter.mode(
@@ -97,26 +124,36 @@ class _MyTicketsPageState extends State<MyTicketsPage> {
                 ),
               ),
             ),
-            if (UserManager.instance.user == null) _buildLoginPromptCard(),
-            if (UserManager.instance.user != null)
-              FutureBuilder<List<BuyTicket>>(
-                future: _futureBuyTickets,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error loading tickets'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return _buildNoTicketsCard();
-                  } else {
-                    return _buildTicketsList(snapshot.data!);
-                  }
-                },
-              ),
+            // Nội dung chính
+            UserManager.instance.user == null
+                ? _buildLoginPromptCard() // Hiển thị thông báo đăng nhập nếu user null
+                : FutureBuilder<List<BuyTicket>>(
+                    future: _combineFutureLists(), // Method to combine lists
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error loading tickets'));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return _buildNoTicketsCard();
+                      } else {
+                        return _buildTicketsList(snapshot.data!);
+                      }
+                    },
+                  ),
           ],
         ),
       ),
     );
+  }
+
+  Future<List<BuyTicket>> _combineFutureLists() async {
+    final results = await Future.wait([
+      _futureBuyTickets1,
+      _futureBuyTickets2,
+    ]);
+
+    return [...results[0], ...results[1]];
   }
 
   Widget _buildLoginPromptCard() {

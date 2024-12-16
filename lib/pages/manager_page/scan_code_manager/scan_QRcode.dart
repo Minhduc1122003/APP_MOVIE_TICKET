@@ -18,8 +18,10 @@ class _ScanQrcodeState extends State<ScanQrcode>
     with AutomaticKeepAliveClientMixin {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? controller;
-  String result = "Chưa quét được mã";
+  String result = "";
   TextEditingController _idTicket = TextEditingController();
+  late int QRScan = 0;
+  late List<String> scannedCodes = [];
 
   @override
   void reassemble() {
@@ -265,15 +267,53 @@ class _ScanQrcodeState extends State<ScanQrcode>
     );
   }
 
+// Danh sách lưu các mã đã quét
+
   void _onQRViewCreated(QRViewController controller) {
     setState(() {
       this.controller = controller;
     });
-    controller.scannedDataStream.listen((scanData) {
-      if (scanData.code != null) {
+
+    controller.scannedDataStream.listen((scanData) async {
+      if (scanData.code != null && QRScan == 0) {
+        final scannedCode = scanData.code!;
+
+        // Kiểm tra nếu mã đã tồn tại trong danh sách
+        if (scannedCodes.contains(scannedCode)) {
+          result = 'Mã này đã được quét trước đó!';
+          return; // Không tiếp tục xử lý nếu mã đã tồn tại
+        }
+
         setState(() {
-          result = scanData.code!;
+          result = scannedCode;
+          QRScan = 1; // Ngăn quét liên tục
         });
+
+        final result2 = await Navigator.push(
+          context,
+          SlideFromRightPageRoute(
+            page: QrinfoticketPage(
+              buyTicketID: result,
+            ),
+          ),
+        );
+
+        if (result2 == 'Không tồn tại') {
+          EasyLoading.showError('Lỗi không tìm thấy vé');
+          scannedCodes.add(scannedCode); // Lưu mã vào danh sách
+
+          setState(() {
+            QRScan = 0; // Cho phép quét lại
+            result = 'Mã này đã được quét trước đó!';
+
+            // Không xóa mã khỏi danh sách ngay cả khi không hợp lệ
+          });
+        } else {
+          // Nếu vé tồn tại, cho phép quét tiếp
+          setState(() {
+            QRScan = 0;
+          });
+        }
       } else {
         setState(() {
           result = "Không quét được mã!";

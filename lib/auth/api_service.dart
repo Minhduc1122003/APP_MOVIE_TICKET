@@ -38,6 +38,7 @@ class ApiService {
     // wifi cf24/24
 
     // baseUrl = 'http://192.168.1.33:8081';
+    // baseUrl = 'http://192.168.1.180:8081';
 
 // server public
     baseUrl = 'https://nodejs-sql-server-api.onrender.com';
