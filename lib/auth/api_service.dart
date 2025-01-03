@@ -37,11 +37,10 @@ class ApiService {
 
     // wifi cf24/24
 
-    // baseUrl = 'http://192.168.1.33:8081';
-    baseUrl = 'http://192.168.1.39:8081';
+    baseUrl = 'http://172.20.10.11:8081';
 
 // server public
-    //baseUrl = 'https://nodejs-sql-server-api.onrender.com';
+//     baseUrl = 'https://nodejs-sql-server-api.onrender.com';
   }
 
   late Response response;
@@ -191,6 +190,24 @@ class ApiService {
     } else {
       // Nếu server trả về lỗi
       throw Exception('Failed to login');
+    }
+  }
+
+  Future<bool> checkEmail(String Email) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/checkEmail'), // Thay bằng endpoint của bạn
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'Email': Email}), // Truyền username cần kiểm tra
+    );
+
+    if (response.statusCode == 200) {
+      print('email đã tồn tại.');
+      return true; // Username tồn tại
+    } else if (response.statusCode == 404) {
+      print('email không tồn tại.');
+      return false; // Username không tồn tại
+    } else {
+      throw Exception('Lỗi khi kiểm tra username: ${response.statusCode}');
     }
   }
 

@@ -364,7 +364,7 @@ class _HomeTabState extends State<HomeTab> {
                                         style: TextStyle(
                                           color: Colors.black,
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 14,
+                                          fontSize: 12,
                                         ),
                                         textAlign: TextAlign.left,
                                         maxLines: 1,

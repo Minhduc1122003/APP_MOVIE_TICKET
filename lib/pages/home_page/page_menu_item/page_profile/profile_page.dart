@@ -401,9 +401,9 @@ class _ProfilePage extends State<ProfilePage> {
           CircleAvatar(
             radius: 30,
             backgroundColor: Colors.blue,
-            child: (UserManager.instance.user?.photo == null)
-                ? Image.asset('assets/images/avatar.jpg')
-                : Image.network('${UserManager.instance.user?.photo}'),
+            backgroundImage: UserManager.instance.user?.photo != null
+                ? NetworkImage(UserManager.instance.user!.photo!)
+                : AssetImage('assets/images/avatar.jpg') as ImageProvider,
           ),
           const SizedBox(height: 8),
           Column(

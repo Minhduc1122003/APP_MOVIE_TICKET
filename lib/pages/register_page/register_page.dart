@@ -105,6 +105,24 @@ class _RegisterPageState extends State<RegisterPage> {
     return result.toLowerCase(); // Chuyển tất cả về chữ thường
   }
 
+  void showEmailExistsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Thông báo'),
+        content: Text('Email đã tồn tại. Vui lòng sử dụng email khác!'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void checkAndSuggestUsername() {
     _debounceTimer?.cancel();
 
@@ -503,117 +521,135 @@ class _RegisterPageState extends State<RegisterPage> {
                                 text: 'Đăng ký',
                                 showIcon: false,
                                 onTap: () async {
-                                  if (_validateFields()) {
-                                    try {
-                                      BlocProvider.of<SendCodeBloc>(context)
-                                          .add(SendCode(
-                                              '', '', _emailController.text));
+                                  String email = _emailController
+                                      .text; // Lấy email từ TextField
+                                  try {
+                                    bool emailExists =
+                                        await apiService.checkEmail(email);
 
-                                      showDialog(
-                                        context: context,
-                                        barrierDismissible: false,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            title: Text('Nhập mã xác nhận'),
-                                            content: SingleChildScrollView(
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  ValueListenableBuilder<bool>(
-                                                    valueListenable:
-                                                        isCodeNotifier,
-                                                    builder: (context, isCode,
-                                                        child) {
-                                                      return MyTextfield(
-                                                        isPassword: false,
-                                                        placeHolder:
-                                                            "Mã xác nhận",
-                                                        controller:
-                                                            _codeController,
-                                                        sendCode: false,
-                                                        isCode: isCode,
-                                                        focusNode:
-                                                            _codeFocusNode,
-                                                        errorMessage:
-                                                            errorMessages[
-                                                                'code'],
-                                                        icon: Icons
-                                                            .privacy_tip_outlined,
-                                                      );
+                                    if (emailExists) {
+                                      showEmailExistsDialog(context);
+                                    } else {
+                                      // Nếu email không tồn tại, thực hiện logic đăng ký ở đây
+                                      if (_validateFields()) {
+                                        try {
+                                          BlocProvider.of<SendCodeBloc>(context)
+                                              .add(SendCode('', '',
+                                                  _emailController.text));
+
+                                          showDialog(
+                                            context: context,
+                                            barrierDismissible: false,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: Text('Nhập mã xác nhận'),
+                                                content: SingleChildScrollView(
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      ValueListenableBuilder<
+                                                          bool>(
+                                                        valueListenable:
+                                                            isCodeNotifier,
+                                                        builder: (context,
+                                                            isCode, child) {
+                                                          return MyTextfield(
+                                                            isPassword: false,
+                                                            placeHolder:
+                                                                "Mã xác nhận",
+                                                            controller:
+                                                                _codeController,
+                                                            sendCode: false,
+                                                            isCode: isCode,
+                                                            focusNode:
+                                                                _codeFocusNode,
+                                                            errorMessage:
+                                                                errorMessages[
+                                                                    'code'],
+                                                            icon: Icons
+                                                                .privacy_tip_outlined,
+                                                          );
+                                                        },
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    child: Text('Hủy'),
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                  ),
+                                                  TextButton(
+                                                    child: Text('Xác nhận'),
+                                                    onPressed: () async {
+                                                      if (_codeController
+                                                          .text.isEmpty) {
+                                                        EasyLoading.showError(
+                                                            "Vui lòng nhập mã xác nhận!");
+                                                        isCodeNotifier.value =
+                                                            false; // Hiển thị x đỏ
+                                                      } else if (_codeController
+                                                              .text ==
+                                                          codeIs) {
+                                                        isCodeNotifier.value =
+                                                            true; // Hiển thị tích xanh
+                                                        try {
+                                                          final String
+                                                              CreateAccount =
+                                                              await apiService
+                                                                  .createAccount(
+                                                            _emailController
+                                                                .text,
+                                                            _passwordController
+                                                                .text,
+                                                            _usernameController
+                                                                .text,
+                                                            "${_lastnameController.text} ${_firstnameController.text}",
+                                                            '',
+                                                          );
+
+                                                          if (CreateAccount ==
+                                                              'Account created successfully') {
+                                                            EasyLoading.showSuccess(
+                                                                "Đăng ký thành công!");
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(); // Đóng dialog
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(); // Đóng dialog
+                                                          }
+                                                        } catch (e) {
+                                                          EasyLoading.showError(
+                                                              "Đăng ký thất bại: ${e.toString()}");
+                                                        }
+                                                      } else {
+                                                        EasyLoading.showError(
+                                                            "Mã xác nhận không đúng!");
+                                                        isCodeNotifier.value =
+                                                            false; // Hiển thị x đỏ
+                                                      }
                                                     },
                                                   ),
                                                 ],
-                                              ),
-                                            ),
-                                            actions: [
-                                              TextButton(
-                                                child: Text('Hủy'),
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                },
-                                              ),
-                                              TextButton(
-                                                child: Text('Xác nhận'),
-                                                onPressed: () async {
-                                                  if (_codeController
-                                                      .text.isEmpty) {
-                                                    EasyLoading.showError(
-                                                        "Vui lòng nhập mã xác nhận!");
-                                                    isCodeNotifier.value =
-                                                        false; // Hiển thị x đỏ
-                                                  } else if (_codeController
-                                                          .text ==
-                                                      codeIs) {
-                                                    EasyLoading.showSuccess(
-                                                        "Mã xác nhận chính xác!");
-                                                    isCodeNotifier.value =
-                                                        true; // Hiển thị tích xanh
-                                                    try {
-                                                      final String
-                                                          CreateAccount =
-                                                          await apiService
-                                                              .createAccount(
-                                                        _emailController.text,
-                                                        _passwordController
-                                                            .text,
-                                                        _usernameController
-                                                            .text,
-                                                        "${_lastnameController.text} ${_firstnameController.text}",
-                                                        '',
-                                                      );
-
-                                                      if (CreateAccount ==
-                                                          'Account created successfully') {
-                                                        EasyLoading.showSuccess(
-                                                            "Đăng ký thành công!");
-                                                        Navigator.of(context)
-                                                            .pop(); // Đóng dialog
-                                                        Navigator.of(context)
-                                                            .pop(); // Đóng dialog
-                                                      }
-                                                    } catch (e) {
-                                                      EasyLoading.showError(
-                                                          "Đăng ký thất bại: ${e.toString()}");
-                                                    }
-                                                  } else {
-                                                    EasyLoading.showError(
-                                                        "Mã xác nhận không đúng!");
-                                                    isCodeNotifier.value =
-                                                        false; // Hiển thị x đỏ
-                                                  }
-                                                },
-                                              ),
-                                            ],
+                                              );
+                                            },
                                           );
-                                        },
-                                      );
-                                    } catch (e) {
-                                      EasyLoading.showError(
-                                          "Có lỗi xảy ra: ${e.toString()}");
+                                        } catch (e) {
+                                          EasyLoading.showError(
+                                              "Có lỗi xảy ra: ${e.toString()}");
+                                        }
+                                      } else {
+                                        EasyLoading.showError(
+                                            "Vui lòng điền đúng thông tin!");
+                                      }
                                     }
-                                  } else {
-                                    EasyLoading.showError(
-                                        "Vui lòng điền đúng thông tin!");
+                                  } catch (e) {
+                                    print('Lỗi khi kiểm tra email: $e');
                                   }
                                 },
                               ),

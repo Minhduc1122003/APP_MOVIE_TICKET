@@ -211,7 +211,7 @@ class _InfoUser extends State<InfoUser> {
                               radius: 40,
                               backgroundColor: Colors.blue,
                               child: ClipOval(
-                                child: kIsWeb // Kiểm tra nếu là Web
+                                child: kIsWeb // Kiểm tra nếu là  Web
                                     ? Image.network(
                                         imageUrl,
                                         fit: BoxFit.cover,

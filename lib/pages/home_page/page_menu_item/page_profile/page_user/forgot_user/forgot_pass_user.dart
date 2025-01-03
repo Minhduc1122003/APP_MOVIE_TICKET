@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_chat/auth/api_service.dart';
 import 'package:flutter_app_chat/components/animation_page.dart';
-import 'package:flutter_app_chat/components/my_button.dart';
 import 'package:flutter_app_chat/components/my_textfield.dart';
 import 'package:flutter_app_chat/models/user_manager.dart';
 import 'package:flutter_app_chat/models/user_model.dart';
@@ -37,16 +36,28 @@ class _ForgotPassUserState extends State<ForgotPassUser> {
     final newPassword = passnewController.text.trim();
     final confirmPassword = ConfirmPassController.text.trim();
 
+    // Kiểm tra trường trống
     if (oldPassword.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin!')),
+        const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin!')),
       );
       return;
     }
 
+    // Kiểm tra mật khẩu mới và xác nhận mật khẩu
     if (newPassword != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Mật khẩu mới và xác nhận không khớp!')),
+        const SnackBar(content: Text('Mật khẩu mới và xác nhận không khớp!')),
+      );
+      return;
+    }
+
+    // Kiểm tra mật khẩu mới không trùng với mật khẩu cũ
+    if (oldPassword == newPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Mật khẩu mới không được trùng với mật khẩu cũ!'),
+        ),
       );
       return;
     }
@@ -73,8 +84,7 @@ class _ForgotPassUserState extends State<ForgotPassUser> {
                   Navigator.pushAndRemoveUntil(
                     context,
                     SlideFromLeftPageRoute(page: LoginPage()),
-                    (Route<dynamic> route) =>
-                        false, // Xóa tất cả các route trước đó
+                    (Route<dynamic> route) => false,
                   );
                 },
                 child: const Text(
@@ -156,13 +166,12 @@ class _ForgotPassUserState extends State<ForgotPassUser> {
                   radius: 40,
                   backgroundColor: Colors.blue,
                   child: ClipOval(
-                    child: Image.asset(
-                      'assets/images/${user.photo}',
-                      fit: BoxFit.cover,
-                      width: 80,
-                      height: 80,
-                    ),
-                  ),
+                      child: Image.network(
+                    '${user.photo}',
+                    fit: BoxFit.cover,
+                    width: 80,
+                    height: 80,
+                  )),
                 ),
                 const SizedBox(width: 15),
                 Column(

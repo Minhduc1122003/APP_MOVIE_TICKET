@@ -243,8 +243,10 @@ class _HomePage extends State<HomePage> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   image: DecorationImage(
-                    image: AssetImage(
-                        'assets/images/${UserManager.instance.user!.photo ?? 'avatar.jpg'}'),
+                    image: UserManager.instance.user!.photo != null
+                        ? NetworkImage(UserManager.instance.user!.photo!)
+                        : AssetImage('assets/images/avatar.jpg')
+                            as ImageProvider,
                     fit: BoxFit.cover, // Điều chỉnh hình ảnh
                   ),
                 ),
